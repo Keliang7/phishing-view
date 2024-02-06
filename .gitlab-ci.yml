@@ -1,0 +1,69 @@
+image: node:18.16.0
+variables:
+  SOFT_VERSION: $SOFT_VERSION
+  DOCK_HUB: 10.10.11.145:8082
+  DOCK_HUB_USER: admin
+  DOCK_HUB_PASSWD: 'gqYXy2cPEAgAJ8W'
+  HUB_GROUP_PASSWD: 1234QWERasdf
+  LAY_OUT_URL: ${DOCK_HUB}/phishing-system
+
+stages:
+  # - test
+  - build
+  # - test-deploy
+  # - prod-deploy
+
+# 缓存
+cache:
+  paths:
+    - node_modules
+
+before_script:
+  # npm install的依赖配置
+  - git config --global url."https://".insteadOf git://
+  - docker login -u ${DOCK_HUB_USER} -p${DOCK_HUB_PASSWD} http://${DOCK_HUB}
+  # TAG版本号
+  - export TM=`date +%y%m%d%H%M`
+  - export TAG="${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA:0:8}-build${CI_PIPELINE_ID}-${SOFT_VERSION}"
+
+# 打包微服务镜像
+build:
+  stage: build
+  tags:
+    - baler
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule"
+      when: manual
+    - if: $CI_COMMIT_BRANCH == "release" && $CI_PIPELINE_SOURCE == "schedule"
+      when: on_success
+  # artifacts:
+  #   expire_in: 1 week
+  #   paths:
+  #     - build/deploy_on_k8s/infra_all.yaml
+  script:
+    - docker build --force-rm -t ${LAY_OUT_URL}/phishing-view:${TAG} -f ./Dockerfile .
+    - docker push ${LAY_OUT_URL}/phishing-view:${TAG}
+    - docker rmi ${LAY_OUT_URL}/phishing-view:${TAG}
+# test环境部署微服务
+# test_infra_service_deploy:
+#   stage: test-deploy
+#   tags:
+#     - test-env
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE != "schedule"
+#       when: manual
+#     - if: $CI_COMMIT_BRANCH == "release" && $CI_PIPELINE_SOURCE == "schedule"
+#       when: on_success
+#   script:
+#     - kubectl apply -f build/deploy_on_k8s/infra_all.yaml -n ${TEST_INFRA_NAMESPACE}
+# MARK: @zcf 注释掉原本计划但是没有被使用的"部署预发版环境"
+# # prod环境部署微服务
+# prod_infra_service_deploy:
+#   stage: prod-deploy
+#   tags:
+#     - prod-env
+#   when: manual
+#   # only:
+#   #   - main
+#   script:
+#     - kubectl apply -f build/deploy_on_k8s/infra_all.yaml -n ${PROD_INFRA_NAMESPACE}
