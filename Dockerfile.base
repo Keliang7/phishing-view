@@ -7,15 +7,5 @@ RUN npm config set registry http://registry.npm.taobao.org/
 # # RUN npm config set registry http://172.16.20.30:4873
 RUN npm install vite -g
 RUN npm install pnpm -g
-COPY . .
+COPY package.json package.json
 RUN npm install
-RUN npm run build:pro
-
-
-# production stage
-FROM nginx
-COPY scripts/nginx/api_proxy.conf /etc/nginx/conf.d/api_proxy.conf
-COPY --from=build-stage /app/dist-pro /usr/share/nginx/html
-
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
