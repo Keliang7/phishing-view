@@ -2,11 +2,12 @@
 import { ref, reactive, unref, onMounted } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import type { TabsPaneContext } from 'element-plus'
 import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getUrlBWListApi, getUrlDomainListApi } from '@/api/table'
+import { getPolicyWhiteListApi } from '@/api/table'
 import { useTable } from '@/hooks/web/useTable'
+import { formatTime } from '@/utils/index'
+import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 
 // 使用useI18n钩子函数获取国际化相关数据和方法
@@ -16,9 +17,10 @@ const { tableRegister, tableMethods, tableState } = useTable({
   // fetchDataApi方法用于异步获取表格数据
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
-    const res = await getUrlBWListApi({
+    const res = await getPolicyWhiteListApi({
       pageIndex: unref(currentPage),
-      pageSize: unref(pageSize)
+      pageSize: unref(pageSize),
+      ...searchData.value
     })
     console.log('list:', res.data.list)
 
@@ -28,6 +30,7 @@ const { tableRegister, tableMethods, tableState } = useTable({
     }
   }
 })
+const systemConstants = useSystemConstantsWithOut()
 // 获取tableState中的数据和方法
 let { loading, total, dataList, currentPage, pageSize } = tableState
 const { setProps } = tableMethods
@@ -35,23 +38,28 @@ const { setProps } = tableMethods
 const tabColumns = [
   {
     label: t('tableDemo.whitelistManagement'),
-    num: 2000000,
+
     name: 'whitelistManagement'
   },
   {
     label: t('tableDemo.extensiveRuleManagement'),
-    num: 2000000,
+
     name: 'extensiveRuleManagement'
   },
   {
     label: t('tableDemo.policyConfiguration'),
-    num: 2000000,
+
     name: 'policyConfiguration'
   }
 ]
+// 高级搜索的数据
+const searchData = ref({})
+const dataArray = ref(['ruleContent', 'addType', 'createdBy', 'createdTime', 'operate'])
+const optionArray = ref({ systemAddType: systemConstants.whiteListFrom })
+
 const activeName = ref(tabColumns[0].name)
 // 定义分页器展示的内容
-const layout = 'prev, pager, next, sizes, jumper'
+const layout = 'prev, pager, next, sizes,jumper,->, total'
 // 定义columns变量，用于存储表格的列配置
 let columns = reactive<TableColumn[]>([])
 const whiteColumns: TableColumn[] = [
@@ -62,22 +70,23 @@ const whiteColumns: TableColumn[] = [
   {
     field: 'ruleContent',
     label: t('tableDemo.ruleContent'),
-    width: 240
+    width: 250
   },
   {
     field: 'addType',
     label: t('tableDemo.addType'),
-    width: 240
+    width: 250
   },
   {
     field: 'createdBy',
     label: t('tableDemo.createdBy'),
-    width: 240
+    width: 250
   },
   {
     field: 'createdTime',
     label: t('tableDemo.createdTime'),
-    width: 300
+    width: 300,
+    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
     field: 'action',
@@ -85,20 +94,11 @@ const whiteColumns: TableColumn[] = [
     fixed: 'right',
     headerAlign: 'center',
     align: 'center',
-    width: 320,
+    width: 150,
     slots: {
       default: (data) => {
         return (
           <div>
-            <ElButton type="text" size="small" onClick={() => viewFn(data)}>
-              {t('tableDemo.view')}
-            </ElButton>
-            <ElButton type="text" size="small" onClick={() => editFn(data)}>
-              {t('tableDemo.edit')}
-            </ElButton>
-            <ElButton type="text" size="small" onClick={() => stopFn(data)}>
-              {t('tableDemo.stop')}
-            </ElButton>
             <ElButton type="text" size="small" onClick={() => deleteFn(data)}>
               {t('tableDemo.delete')}
             </ElButton>
@@ -131,7 +131,8 @@ const policyColumns: TableColumn[] = [
   {
     field: 'createdTime',
     label: t('tableDemo.createdTime'),
-    width: 300
+    width: 300,
+    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
     field: 'action',
@@ -185,33 +186,26 @@ const stopFn = (data: TableSlotDefault) => {
 const deleteFn = (data: TableSlotDefault) => {
   console.log(data)
 }
-const handleClick = async (tab: TabsPaneContext) => {
+const handleClick = async (tab) => {
   loading.value = true
   if (tab.props.name === 'whitelistManagement') {
-    dataType.value = 8
-
+    dataArray.value = ['ruleContent', 'addType', 'createdBy', 'createdTime', 'operate']
     setProps({
       columns: whiteColumns
     })
-    const res = await getUrlBWListApi({
+    const res = await getPolicyWhiteListApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize)
     })
     dataList.value = res.data.list
     total.value = res.data.total
   } else if (tab.props.name === 'extensiveRuleManagement') {
-    dataType.value = 8
+    dataArray.value = ['ruleContent', 'addType', 'createdBy', 'createdTime', 'operate']
     setProps({
       columns: whiteColumns
     })
-    const res = await getUrlDomainListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize)
-    })
-    dataList.value = res.data.list
-    total.value = res.data.total
   } else if (tab.props.name === 'policyConfiguration') {
-    dataType.value = 9
+    dataArray.value = ['dataSources', 'createdBy', 'createdTime', 'operate']
     setProps({
       columns: policyColumns
     })
@@ -221,11 +215,15 @@ const handleClick = async (tab: TabsPaneContext) => {
 const checkedAll = ref(false)
 // 定义canShowPagination变量，用于控制是否显示分页
 const canShowPagination = ref(true)
-const dataType = ref(8)
+// 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
+const searchTable = async (value) => {
+  searchData.value = value
+  handleClick(activeName)
+}
 </script>
 <template>
-  <AdvancedSearch :dataType="dataType" :isTip="false" />
-  <ContentWrap>
+  <AdvancedSearch :dataArray="dataArray" :optionArray="optionArray" @search-data="searchTable" />
+  <ContentWrap class="table-box">
     <div class="table-btn">
       <ElButton type="default">
         <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />
@@ -233,9 +231,9 @@ const dataType = ref(8)
       <ElButton type="default"> 批量删除 </ElButton>
       <ElButton type="primary"> 添加 </ElButton>
 
-      <ElButton type="primary" v-show="dataType === 8"> 导入数据 </ElButton>
+      <ElButton type="primary" v-show="activeName !== 'policyConfiguration'"> 导入数据 </ElButton>
 
-      <ElButton type="primary" v-show="dataType === 8">
+      <ElButton type="primary" v-show="activeName !== 'policyConfiguration'">
         <Icon icon="tdesign:upload" /> 导出数据
       </ElButton>
     </div>
@@ -243,7 +241,7 @@ const dataType = ref(8)
       <ElTabPane
         v-for="item in tabColumns"
         :key="item.name"
-        :label="`${item.label}（${total}）`"
+        :label="item.label"
         :name="item.name"
       />
       <Table
@@ -266,12 +264,18 @@ const dataType = ref(8)
     </ElTabs>
   </ContentWrap>
 </template>
-<style lang="less">
+<style lang="less" scoped>
 .demo-tabs > .el-tabs__content {
   padding: 0px;
   color: #6b778c;
   font-size: 32px;
   font-weight: 500;
+}
+.table-box {
+  position: relative;
+}
+.el-tabs__header {
+  z-index: 888;
 }
 .el-tabs__item {
   margin-bottom: 15px;
@@ -280,7 +284,10 @@ const dataType = ref(8)
   position: static;
 }
 .table-btn {
-  float: right;
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  z-index: 999;
 }
 .el-pagination {
   float: right;

@@ -1,8 +1,11 @@
-export type AnalysisTotalTypes = {
-  users: number
-  messages: number
-  moneys: number
-  shoppings: number
+export type TotalNumberTypes = {
+  accessTotalNum: number
+  pendUrlNum: number
+  suspectCounterfeitNum: number
+  pushDataNum: number
+  affirmCounterfeitNum: number
+  understatementNum: number
+  misinformationNum: number
 }
 
 export type UserAccessSource = {

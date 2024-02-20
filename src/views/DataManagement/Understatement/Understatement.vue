@@ -2,9 +2,9 @@
 import { ref, reactive, unref, onMounted, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElTabs, ElTabPane, ElButton, ElCheckbox, ElTable } from 'element-plus'
+import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getSuspectCounterfeitApi, getInjuredPartyApi, getUrlDomainListApi } from '@/api/table'
+import { getSuspectCounterfeitApi, getInjuredPartyApi } from '@/api/table'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import { TabSideColumns } from '../types/index'
@@ -27,10 +27,9 @@ const { tableRegister, tableMethods, tableState } = useTable({
   }
 })
 const systemConstants = useSystemConstantsWithOut()
-
 // 获取tableState中的数据和方法
 let { loading, total, dataList, currentPage, pageSize } = tableState
-const { setProps, getElTableExpose } = tableMethods
+const { setProps } = tableMethods
 // 定义表格切换器内容
 const tabHeadColumns = [
   {
@@ -76,11 +75,16 @@ const Columns: TableColumn[] = [
       default: (data) => {
         return (
           <ElButton onClick={() => openDrawerInfo(data)} type="text" size="small">
-            {`${data.row.dataSources?.length}个`}
+            {`${data.row.dataSources.length}个`}
           </ElButton>
         )
       }
     }
+  },
+  {
+    field: 'omissionReason',
+    label: t('tableDemo.omissionReason'),
+    width: 130
   },
   {
     field: 'dataID',
@@ -215,17 +219,6 @@ const Columns: TableColumn[] = [
     width: 120
   },
   {
-    field: 'pushTime',
-    label: t('tableDemo.pushTime'),
-    width: 180,
-    formatter: (data) => formatTime(data.pushTime, 'yyyy-MM-dd HH:mm:ss')
-  },
-  {
-    field: 'pushState',
-    label: t('tableDemo.pushState'),
-    width: 120
-  },
-  {
     field: 'extensionTime',
     label: t('tableDemo.extensionTime'),
     width: 180,
@@ -272,20 +265,22 @@ const dataArray = ref([
   'url',
   'domain',
   'ip',
-  'collectionStatus',
   'expandStatus',
+  'collectionStatus',
   'updateStatus',
   'discoveryTime',
   'victim',
+  'omissionReason',
   'operate'
 ])
+const tipTitle = ref('系统默认展示当天接入数据，最多可查看5年内数据，超出5年数据不会留存。')
 const optionArray = ref({
   expandStatus: systemConstants.expandStatus,
+  collectionStatus: systemConstants.collectionStatus,
   updateStatus: systemConstants.updateStatus,
-  collectionStatus: systemConstants.collectionStatus
+  omissionReason: systemConstants.omissionReason
 })
 
-const tipTitle = ref('系统默认展示当天接入数据，最多可查看5年内数据，超出5年数据不会留存。')
 // 右侧弹窗信息
 const isDrawerInfo = ref(false)
 // 右侧弹窗信息-弹窗标题
@@ -317,12 +312,10 @@ onMounted(async () => {
     })
   }, 0)
 })
-// 获取侧边栏数据
 const getInjuredParty = async (params: any) => {
   const res = await getInjuredPartyApi(params)
   tabSideColumns.value = res.data.list
   activeNameS.value = tabSideColumns.value[0].victimName
-  console.log(tabSideColumns, activeNameS, 111)
 }
 // 定义表格内操作函数，用于处理点击表格列时的操作
 const updateFn = (data: TableSlotDefault) => {
@@ -337,12 +330,12 @@ const pushFn = (data: TableSlotDefault) => {
 const extensionFn = (data: TableSlotDefault) => {
   console.log(data)
 }
+
 // 表格查看信息事件
 const openDrawerInfo = async (data: TableSlotDefault) => {
   if (data.column.property == 'dataSourcesNum') {
     isDrawerInfo.value = true
     titleDrawer.value = '数据源'
-    console.log(data.column.property)
     bodyInfo.value = []
     dataSourceInfo.value = data.row.dataSources.map((item) => ({
       source: sourceMap[item.source],
@@ -364,6 +357,18 @@ const openDrawerInfo = async (data: TableSlotDefault) => {
 const getTableData = async (params) => {
   loading.value = true
   if (params[0] === 'bw') {
+    dataArray.value = [
+      'url',
+      'domain',
+      'ip',
+      'expandStatus',
+      'collectionStatus',
+      'updateStatus',
+      'discoveryTime',
+      'victim',
+      'omissionReason',
+      'operate'
+    ]
     const res = await getSuspectCounterfeitApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
@@ -374,15 +379,6 @@ const getTableData = async (params) => {
     dataList.value = res.data.list
     total.value = res.data.total
   } else if (params[0] === 'domainMonitor') {
-    const res = await getUrlDomainListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize),
-      originType: params[0],
-      victimType: params[1],
-      ...searchData.value
-    })
-    dataList.value = res.data.list
-    total.value = res.data.total
   } else if (params[0] === 'urlLog') {
   } else if (params[0] === 'tlsLog') {
   }
@@ -404,46 +400,6 @@ watch(
     immediate: true
   }
 )
-// 选择全部
-const toggleSelection = async () => {
-  console.log('选择全部')
-  // checkedAll.value = true
-  const elTableRef = await getElTableExpose()
-  elTableRef?.toggleAllSelection()
-}
-// 导出多选数据
-const getSelections = async () => {
-  console.log('导出多选数据')
-  const elTableRef = await getElTableExpose()
-  const selections = elTableRef?.getSelectionRows()
-  console.log(selections)
-}
-const multipleTableRef = ref<InstanceType<typeof ElTable>>()
-const multipleSelection = ref<TableColumn[]>([])
-
-const dataIDs = ref(new Set())
-const getRowKeys = (row): string => {
-  // a++
-  // console.log(row, 'row.dataID')
-  dataIDs.value.add(row.dataID)
-  return row.dataID
-}
-const handleSelectionChange = async (val) => {
-  console.log('选项变化')
-  console.log('multipleTableRef', multipleTableRef)
-  console.log('dataIDs', dataIDs)
-  console.log(val, 'val', multipleTableRef.value)
-  const elTableRef = await getElTableExpose()
-  if (dataIDs.value) {
-    dataIDs.value.forEach((dataID) => {
-      elTableRef?.toggleRowSelection(dataID, true)
-      // multipleTableRef.value!.toggleRowSelection(dataID, true)
-    })
-  } else {
-    multipleTableRef.value!.clearSelection()
-  }
-  multipleSelection.value = val
-}
 </script>
 <template>
   <AdvancedSearch
@@ -454,14 +410,12 @@ const handleSelectionChange = async (val) => {
   />
   <ContentWrap class="table-box" :title="t('tableDemo.SuspectCounterfeit')">
     <div class="table-btn">
-      <ElButton type="default" @click="toggleSelection()">
+      <ElButton type="default">
         <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />
       </ElButton>
       <ElButton type="default"> 批量设置 </ElButton>
       <ElButton type="primary"> 推送参数配置 </ElButton>
-      <ElButton type="primary" @click="getSelections()">
-        <Icon icon="tdesign:upload" /> 导出数据
-      </ElButton>
+      <ElButton type="primary"> <Icon icon="tdesign:upload" /> 导出数据 </ElButton>
     </div>
     <ElTabs v-model="activeNameH" class="demo-tabs">
       <ElTabPane
@@ -481,7 +435,6 @@ const handleSelectionChange = async (val) => {
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"
           stripe
-          :row-key="getRowKeys"
           :columns="columns"
           :data="dataList"
           :loading="loading"
@@ -495,7 +448,6 @@ const handleSelectionChange = async (val) => {
               : undefined
           "
           @register="tableRegister"
-          @selection-change="handleSelectionChange"
         />
       </ElTabs>
     </ElTabs>

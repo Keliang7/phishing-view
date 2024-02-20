@@ -1,5 +1,6 @@
 <script setup lang="tsx">
-import { ElDrawer, ElInput } from 'element-plus'
+import { ElDrawer, ElInput, ElTimeline, ElTimelineItem } from 'element-plus'
+
 defineProps({
   title: {
     type: String,
@@ -9,13 +10,13 @@ defineProps({
     type: Boolean,
     default: false
   },
-  requestBody: {
-    type: String,
-    default: '暂无内容'
+  bodyInfo: {
+    type: Object,
+    default: null
   },
-  responseBody: {
-    type: String,
-    default: '暂无内容'
+  dataSourceInfo: {
+    type: Object,
+    default: null
   }
 })
 const emit = defineEmits(['update:isDrawer'])
@@ -35,28 +36,30 @@ const open = () => {
     custom-class="drawerWidth"
     @open="open"
   >
-    <div>
-      <p>请求体：</p>
-      <ElInput
-        :modelValue="requestBody"
-        type="textarea"
-        :autosize="{ minRows: 11, maxRows: 16 }"
-        :disabled="true"
-        resize="none"
-        placeholder="暂无内容"
-      />
+    <div v-if="bodyInfo">
+      <div v-for="(item, index) in bodyInfo" :key="index">
+        <p>{{ item.name }}：</p>
+        <ElInput
+          :modelValue="item.value"
+          type="textarea"
+          :autosize="{ minRows: 11, maxRows: 16 }"
+          :disabled="true"
+          resize="none"
+          placeholder="暂无内容"
+        />
+      </div>
     </div>
-    <div>
-      <p>响应体：</p>
-      <ElInput
-        :modelValue="responseBody"
-        type="textarea"
-        :autosize="{ minRows: 11, maxRows: 16 }"
-        :disabled="true"
-        resize="none"
-        placeholder="暂无内容"
-      />
-    </div>
+    <ElTimeline v-if="dataSourceInfo">
+      <ElTimelineItem
+        v-for="(item, index) in dataSourceInfo"
+        :key="index"
+        :color="index == '0' ? '#009dd9' : '#f59a23'"
+        :timestamp="item.timestamp"
+        placement="top"
+      >
+        {{ item.source }}
+      </ElTimelineItem>
+    </ElTimeline>
   </ElDrawer>
 </template>
 <style lang="less" scope>

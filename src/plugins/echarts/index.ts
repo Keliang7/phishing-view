@@ -6,7 +6,8 @@ import {
   PieChart,
   MapChart,
   PictorialBarChart,
-  RadarChart
+  RadarChart,
+  FunnelChart
 } from 'echarts/charts'
 
 import {
@@ -30,6 +31,7 @@ echarts.use([
   AriaComponent,
   ParallelComponent,
   BarChart,
+  FunnelChart,
   LineChart,
   PieChart,
   MapChart,
