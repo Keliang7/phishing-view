@@ -7,4 +7,5 @@ dist-ssr
 *-lock.*
 pnpm-debug
 stats.html
+.pnpm-store
 

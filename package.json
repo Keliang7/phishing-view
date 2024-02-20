@@ -8,6 +8,7 @@
     "i": "pnpm install",
     "dev": "pnpm vite --mode base",
     "ts:check": "pnpm vue-tsc --noEmit --skipLibCheck",
+    "build": "pnpm vite build --mode base",
     "build:pro": "pnpm vite build --mode pro",
     "build:gitee": "pnpm vite build --mode gitee",
     "build:dev": "pnpm vite build --mode dev",
