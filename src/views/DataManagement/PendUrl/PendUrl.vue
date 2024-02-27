@@ -2,12 +2,12 @@
 import { ref, reactive, unref, onMounted } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import type { TabsPaneContext } from 'element-plus'
 import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getUrlBWListApi, getUrlDomainListApi } from '@/api/table'
+import { getUrlBWListApi, getUrlBWwebInfoApi, getUrlDomainListApi } from '@/api/table'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
+import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
 import DrawerOperate from '@/components/DrawerOperate/DrawerOperate.vue'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
@@ -18,62 +18,68 @@ const { t } = useI18n()
 const { tableRegister, tableMethods, tableState } = useTable({
   // fetchDataApi方法用于异步获取表格数据
   fetchDataApi: async () => {
-    const { currentPage, pageSize } = tableState
-    const res = await getUrlBWListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize)
-    })
+    let res = await getTableData(activeName.value)
 
     return {
-      list: res.data.list,
-      total: res.data.total
+      list: res.list,
+      total: res.total
     }
   }
 })
+const systemConstants = useSystemConstantsWithOut()
+// 获取tableState中的数据和方法
+const { loading, total, dataList, currentPage, pageSize } = tableState
+const { setProps, getElTableExpose } = tableMethods
 // 查看网页信息
 const isDrawerInfo = ref(false)
+// 查看网页信息-弹窗标题
 const titleDrawer = ref('')
-const requestBody = ref('')
-const responseBody = ref('')
-
+// 查看网页信息-弹窗内容
+const bodyInfo = ref([{}])
+// 高级搜索的数据
+const searchData = ref({})
+// 表格是否全选
+const checkedAll = ref(false)
+// 定义canShowPagination变量，用于控制是否显示分页
+const canShowPagination = ref(true)
+// 该字段用来区别不同页面之间的高级搜索需要展示的内容
+const dataArray = ref(['url', 'domain', 'ip', 'collectionStatus', 'discoveryTime', 'operate'])
+const optionArray = ref({ collectionStatus: systemConstants.collectionStatus })
+const tipTitle = ref('系统默认展示当天接入数据，最多可查看7天内数据，超出7天数据不会留存。')
 // 采集任务弹窗
 const isDrawerOperate = ref(false)
 
-// 获取tableState中的数据和方法
-let { loading, total, dataList, currentPage, pageSize } = tableState
-const { setProps } = tableMethods
 // 定义表格切换器内容
 const tabColumns = [
   {
-    label: t('tableDemo.bwMonitor'),
-    num: 2000000,
-    name: 'bwMonitor'
+    label: t('tableDemo.bw'),
+    name: 'bw'
   },
   {
     label: t('tableDemo.domainMonitor'),
-    num: 2000000,
     name: 'domainMonitor'
   },
   {
-    label: t('tableDemo.urlMonitor'),
-    num: 2000000,
-    name: 'urlMonitor'
+    label: t('tableDemo.urlLog'),
+    name: 'urlLog'
   },
   {
-    label: t('tableDemo.tlsMonitor'),
-    num: 2000000,
-    name: 'tlsMonitor'
+    label: t('tableDemo.tlsLog'),
+    name: 'tlsLog'
   }
 ]
+// 表格切换器-默认高亮的tab选项
 const activeName = ref(tabColumns[0].name)
 // 定义分页器展示的内容
-const layout = 'prev, pager, next, sizes, jumper'
+const layout = 'prev, pager, next, sizes,jumper,->, total'
 // 定义columns变量，用于存储表格的列配置
 let columns = reactive<TableColumn[]>([])
+// BW监测子系统表头内容
 const BWColumns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    reserveSelection: true
   },
   {
     field: 'dataID',
@@ -175,6 +181,7 @@ const BWColumns: TableColumn[] = [
     }
   }
 ]
+// 域名监测子系统表头内容
 const DomainColumns: TableColumn[] = [
   {
     field: 'selection',
@@ -241,6 +248,7 @@ const DomainColumns: TableColumn[] = [
     }
   }
 ]
+// URL日志子系统表头内容
 const URLColumns: TableColumn[] = [
   {
     field: 'selection',
@@ -346,6 +354,7 @@ const URLColumns: TableColumn[] = [
     }
   }
 ]
+// TLS日志子系统表头内容
 const TLSColumns: TableColumn[] = [
   {
     field: 'selection',
@@ -446,82 +455,162 @@ const TLSColumns: TableColumn[] = [
     }
   }
 ]
+
 // 在页面加载完成后，设置columns的值
 onMounted(() => {
   setTimeout(() => {
-    // 设置columns的值为一个包含列配置的数组
+    // 设置页面初始表格为BW检测子系统列表
     setProps({
       columns: BWColumns
     })
   }, 0)
 })
 
-// 定义actionFn函数，用于处理点击action列时的操作
+/**
+ * 定义表格中的一些操作函数
+ */
+// 采集任务事件
 const gatherFn = (data: TableSlotDefault) => {
   console.log('添加任务', data)
   titleDrawer.value = '添加任务'
   isDrawerOperate.value = true
 }
-const openDrawerInfo = (data: TableSlotDefault) => {
-  isDrawerInfo.value = true
-  titleDrawer.value = '查看网页信息'
-  requestBody.value = data.webInfo.request
-  responseBody.value = data.webInfo.response
-  console.log('查看网页信息', data.webInfo)
+// 表格查看信息事件
+const openDrawerInfo = async (data: TableSlotDefault) => {
+  console.log('查看网页信息', data.row.dataID)
+  let res
+  if (activeName.value == 'bw') {
+    isDrawerInfo.value = true
+    titleDrawer.value = '查看网页信息'
+    res = await getUrlBWwebInfoApi(data.row.dataID)
+    bodyInfo.value = [
+      {
+        value: res.data.webInfo.request,
+        name: '请求体'
+      },
+      {
+        value: res.data.webInfo.response,
+        name: '响应体'
+      }
+    ]
+  } else if (activeName.value == 'urlLog') {
+    isDrawerInfo.value = true
+    titleDrawer.value = '查看网页信息'
+    res = await getUrlBWwebInfoApi(data.row.dataID)
+    bodyInfo.value = [
+      {
+        value: res.data.webInfo.request,
+        name: '请求体'
+      },
+      {
+        value: res.data.webInfo.response,
+        name: '响应体'
+      }
+    ]
+  } else {
+    isDrawerInfo.value = true
+    titleDrawer.value = '查看证书信息'
+    res = await getUrlBWwebInfoApi(data.row.dataID)
+    bodyInfo.value = [
+      {
+        value: res.data.webInfo.request,
+        name: '证书信息'
+      }
+    ]
+  }
 }
-const handleClick = async (tab: TabsPaneContext) => {
+const getTableData = async (params) => {
   loading.value = true
-  if (tab.props.name === 'bwMonitor') {
+  if (params === 'bw') {
     setProps({
       columns: BWColumns
     })
     const res = await getUrlBWListApi({
       pageIndex: unref(currentPage),
-      pageSize: unref(pageSize)
+      pageSize: unref(pageSize),
+      ...searchData.value
     })
     dataList.value = res.data.list
     total.value = res.data.total
-  } else if (tab.props.name === 'domainMonitor') {
+  } else if (params === 'domainMonitor') {
     setProps({
       columns: DomainColumns
     })
     const res = await getUrlDomainListApi({
       pageIndex: unref(currentPage),
-      pageSize: unref(pageSize)
+      pageSize: unref(pageSize),
+      ...searchData.value
     })
     dataList.value = res.data.list
     total.value = res.data.total
-  } else if (tab.props.name === 'urlMonitor') {
+  } else if (params === 'urlLog') {
     setProps({
       columns: URLColumns
     })
-  } else if (tab.props.name === 'tlsMonitor') {
+  } else if (params === 'tlsLog') {
     setProps({
       columns: TLSColumns
     })
   }
   loading.value = false
+  return {
+    list: dataList.value,
+    total: total.value
+  }
 }
-const checkedAll = ref(false)
-// 定义canShowPagination变量，用于控制是否显示分页
-const canShowPagination = ref(true)
-const dataType = ref(1)
+// 表格切换器的点击事件
+const handleClick = async (tab) => {
+  currentPage.value = 1
+  pageSize.value = 10
+  await getTableData(tab.props.name)
+}
+// 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
+const searchTable = async (value) => {
+  searchData.value = value
+  currentPage.value = 1
+  pageSize.value = 10
+  await getTableData(activeName.value)
+}
+// 选择全部
+const toggleSelection = async () => {
+  const elTableRef = await getElTableExpose()
+  elTableRef?.toggleAllSelection()
+}
+// 导出多选数据
+const getSelections = async () => {
+  const elTableRef = await getElTableExpose()
+  const selections = elTableRef?.getSelectionRows()
+  console.log(selections)
+}
+// const getRowKeys = (row: any) => {
+//   return row.id
+// }
+// const handleSelectionChange = (data) => {
+//   console.log(data)
+// }
 </script>
 <template>
-  <AdvancedSearch :dataType="dataType" />
-  <ContentWrap :title="`${t('tableDemo.pendUrl')}(${total})`">
+  <AdvancedSearch
+    :dataArray="dataArray"
+    :optionArray="optionArray"
+    :tipTitle="tipTitle"
+    @search-data="searchTable"
+  />
+  <ContentWrap class="table-box" :title="t('tableDemo.pendUrl')">
     <div class="table-btn">
-      <ElButton type="default" click="">
+      <ElButton type="default" @click="toggleSelection()">
         <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />
       </ElButton>
       <ElButton type="default"> 批量采集 </ElButton>
-      <ElButton type="primary"> <Icon icon="tdesign:upload" /> 导出数据 </ElButton>
+      <ElButton type="primary" @click="getSelections()">
+        <Icon icon="tdesign:upload" /> 导出数据
+      </ElButton>
     </div>
     <ElTabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
       <ElTabPane
         v-for="item in tabColumns"
         :key="item.name"
-        :label="`${item.label}（${total}）`"
+        :label="item.label"
         :name="item.name"
       />
       <Table
@@ -543,20 +632,21 @@ const dataType = ref(1)
       />
     </ElTabs>
   </ContentWrap>
-  <DrawerInfo
-    v-model:isDrawer="isDrawerInfo"
-    :title="titleDrawer"
-    :requestBody="requestBody"
-    :responseBody="responseBody"
-  />
+  <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="titleDrawer" :bodyInfo="bodyInfo" />
   <DrawerOperate v-model:isDrawer="isDrawerOperate" :title="titleDrawer" />
 </template>
-<style lang="less">
+<style lang="less" scoped>
 .demo-tabs > .el-tabs__content {
   padding: 0px;
   color: #6b778c;
   font-size: 32px;
   font-weight: 500;
+}
+.table-box {
+  position: relative;
+}
+.el-tabs__header {
+  z-index: 888;
 }
 .el-tabs__item {
   margin-bottom: 15px;
@@ -565,7 +655,10 @@ const dataType = ref(1)
   position: static;
 }
 .table-btn {
-  float: right;
+  position: absolute;
+  right: 20px;
+  top: 75px;
+  z-index: 999;
 }
 .el-pagination {
   float: right;

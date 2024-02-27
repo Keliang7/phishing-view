@@ -141,6 +141,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         // 选项写法
         '/api/v1': {
           target: 'http://172.16.20.30:32080',
+          // target: 'http://172.16.20.84:32080',
           changeOrigin: true
         }
       },
