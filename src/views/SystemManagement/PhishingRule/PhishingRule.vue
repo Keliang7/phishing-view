@@ -66,8 +66,8 @@ const tabColumns = [
     name: 'phishingMorphemeManagement'
   },
   {
-    label: t('tableDemo.phishingSignatureManagement'),
-    name: 'phishingSignatureManagement'
+    label: t('tableDemo.phishingSampleManagement'),
+    name: 'phishingSampleManagement'
   }
 ]
 const activeName = ref(tabColumns[0].name)
@@ -85,6 +85,11 @@ const DetectionColumns: TableColumn[] = [
     field: 'featureID',
     label: t('tableDemo.featureID'),
     width: 140
+  },
+  {
+    field: 'matchPhishingNum',
+    label: t('tableDemo.matchPhishingNum'),
+    width: 240
   },
   {
     field: 'featureName',
@@ -480,7 +485,7 @@ const getTableData = async (params) => {
     setProps({
       columns: MorphemeColumns
     })
-  } else if (params === 'phishingSignatureManagement') {
+  } else if (params === 'phishingSampleManagement') {
     dataArray.value = [
       'domain',
       'addType',
@@ -528,10 +533,12 @@ const searchTable = async (value) => {
     />
     <ContentWrap>
       <div class="table-btn">
-        <ElButton type="default">
+        <ElButton type="default" v-show="activeName !== 'phishingDetectionFeature'">
           <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />
         </ElButton>
-        <ElButton type="default"> 批量删除 </ElButton>
+        <ElButton type="default" v-show="activeName !== 'phishingDetectionFeature'">
+          批量删除
+        </ElButton>
         <ElButton type="primary"> 添加 </ElButton>
 
         <ElButton type="primary" v-show="activeName === 'phishingDetectionFeature'">
@@ -541,8 +548,7 @@ const searchTable = async (value) => {
         <ElButton
           type="primary"
           v-show="
-            activeName === 'phishingDetectionFeature' ||
-            activeName === 'phishingSignatureManagement'
+            activeName === 'phishingDetectionFeature' || activeName === 'phishingSampleManagement'
           "
         >
           <Icon icon="tdesign:upload" /> 导出数据

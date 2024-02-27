@@ -51,6 +51,11 @@ const tabHeadColumns = [
     label: t('tableDemo.tlsLog'),
 
     name: 'tlsLog'
+  },
+  {
+    label: t('tableDemo.extensionData'),
+
+    name: 'extensionData'
   }
 ]
 const tabSideColumns = ref<TabSideColumns[]>([])
@@ -240,18 +245,17 @@ const Columns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="text" size="small" onClick={() => updateFn(data)}>
-              {t('tableDemo.update')}
-            </ElButton>
-            <ElButton type="text" size="small" onClick={() => gatherFn(data)}>
-              {t('tableDemo.gather')}
-            </ElButton>
-            <ElButton type="text" size="small" onClick={() => pushFn(data)}>
-              {t('tableDemo.push')}
-            </ElButton>
-            <ElButton type="text" size="small" onClick={() => extensionFn(data)}>
-              {t('tableDemo.extension')}
-            </ElButton>
+            <div class="action-btn">
+              <ElButton type="text" size="small" onClick={() => gatherFn(data)}>
+                {t('tableDemo.gather')}
+              </ElButton>
+              <ElButton type="text" size="small" onClick={() => extensionFn(data)}>
+                {t('tableDemo.extension')}
+              </ElButton>
+              <ElButton type="text" size="small" onClick={() => addCounterfeitFn(data)}>
+                {t('tableDemo.addCounterfeitSample')}
+              </ElButton>
+            </div>
           </div>
         )
       }
@@ -318,13 +322,10 @@ const getInjuredParty = async (params: any) => {
   activeNameS.value = tabSideColumns.value[0].victimName
 }
 // 定义表格内操作函数，用于处理点击表格列时的操作
-const updateFn = (data: TableSlotDefault) => {
-  console.log(data)
-}
 const gatherFn = (data: TableSlotDefault) => {
   console.log(data)
 }
-const pushFn = (data: TableSlotDefault) => {
+const addCounterfeitFn = (data: TableSlotDefault) => {
   console.log(data)
 }
 const extensionFn = (data: TableSlotDefault) => {
@@ -381,6 +382,7 @@ const getTableData = async (params) => {
   } else if (params[0] === 'domainMonitor') {
   } else if (params[0] === 'urlLog') {
   } else if (params[0] === 'tlsLog') {
+  } else if (params[0] === 'extensionData') {
   }
   loading.value = false
   return {
@@ -408,7 +410,7 @@ watch(
     :tipTitle="tipTitle"
     @search-data="searchTable"
   />
-  <ContentWrap class="table-box" :title="t('tableDemo.SuspectCounterfeit')">
+  <ContentWrap class="table-box" :title="t('tableDemo.UnderstatementCounterfeit')">
     <div class="table-btn">
       <ElButton type="default">
         <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />

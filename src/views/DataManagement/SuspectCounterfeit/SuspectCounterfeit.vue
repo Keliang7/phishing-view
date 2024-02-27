@@ -1,8 +1,8 @@
 <script setup lang="tsx">
-import { ref, reactive, unref, onMounted, watch } from 'vue'
+import { ref, reactive, unref, onMounted, watch, nextTick } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElTabs, ElTabPane, ElButton, ElCheckbox, ElTable } from 'element-plus'
+import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
 import { getSuspectCounterfeitApi, getInjuredPartyApi, getUrlDomainListApi } from '@/api/table'
 import { useTable } from '@/hooks/web/useTable'
@@ -404,45 +404,71 @@ watch(
     immediate: true
   }
 )
+const selectedData = ref([{}])
+const abc = ref(1)
 // 选择全部
 const toggleSelection = async () => {
   console.log('选择全部')
   // checkedAll.value = true
+  // const elTableRef = await getElTableExpose()
+  // elTableRef?.toggleAllSelection()
+  // const selections = elTableRef?.getSelectionRows()
+  // // console.log('multipleSelection', multipleSelection.value)
+  // console.log(selections, elTableRef, 'selections99999999999')
   const elTableRef = await getElTableExpose()
   elTableRef?.toggleAllSelection()
+  // const res = await getSuspectCounterfeitApi({
+  //   originType: 'bw',
+  //   victimType: 1,
+  //   ...searchData.value
+  // })
+  const res = await getUrlDomainListApi({
+    ...searchData.value
+  })
+  selectedData.value = res.data.list.slice(unref(pageSize), res.data.total + 1)
+
+  // dataList.value = res.data.list
+  // total.value = res.data.total
+  console.log(selectedData.value, dataList.value, 123455)
+
+  if (checkedAll.value) {
+    // getSelections()
+    console.log('来看一下', multipleSelection.value)
+
+    if (selectedData.value) {
+      selectedData.value.forEach((item) => {
+        elTableRef?.toggleRowSelection(item, true)
+        // elTableRef?.toggleRowSelection(dataID, true)
+      })
+    }
+  } else {
+    elTableRef?.clearSelection()
+  }
+  nextTick(() => {
+    abc.value = 2
+    // 在下次 DOM 更新循环结束后执行回调函数
+    console.log('DOM 已经更新完毕！')
+  })
 }
 // 导出多选数据
 const getSelections = async () => {
   console.log('导出多选数据')
   const elTableRef = await getElTableExpose()
   const selections = elTableRef?.getSelectionRows()
-  console.log(selections)
+  console.log(selections, multipleSelection.value)
 }
-const multipleTableRef = ref<InstanceType<typeof ElTable>>()
 const multipleSelection = ref<TableColumn[]>([])
 
 const dataIDs = ref(new Set())
 const getRowKeys = (row): string => {
-  // a++
-  // console.log(row, 'row.dataID')
-  dataIDs.value.add(row.dataID)
+  // console.log(row, 'row2222222')
+  dataIDs.value.add(row)
   return row.dataID
 }
 const handleSelectionChange = async (val) => {
   console.log('选项变化')
-  console.log('multipleTableRef', multipleTableRef)
-  console.log('dataIDs', dataIDs)
-  console.log(val, 'val', multipleTableRef.value)
-  const elTableRef = await getElTableExpose()
-  if (dataIDs.value) {
-    dataIDs.value.forEach((dataID) => {
-      elTableRef?.toggleRowSelection(dataID, true)
-      // multipleTableRef.value!.toggleRowSelection(dataID, true)
-    })
-  } else {
-    multipleTableRef.value!.clearSelection()
-  }
   multipleSelection.value = val
+  console.log(multipleSelection.value, val, 'val')
 }
 </script>
 <template>
@@ -481,7 +507,8 @@ const handleSelectionChange = async (val) => {
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"
           stripe
-          :row-key="getRowKeys"
+          :rowKey="getRowKeys"
+          :reserveSelection="true"
           :columns="columns"
           :data="dataList"
           :loading="loading"
