@@ -51,6 +51,11 @@ const tabHeadColumns = [
     label: t('tableDemo.tlsLog'),
 
     name: 'tlsLog'
+  },
+  {
+    label: t('tableDemo.extensionData'),
+
+    name: 'extensionData'
   }
 ]
 const tabSideColumns = ref<TabSideColumns[]>([])
@@ -288,6 +293,7 @@ const getTableData = async (params) => {
   } else if (params[0] === 'domainMonitor') {
   } else if (params[0] === 'urlLog') {
   } else if (params[0] === 'tlsLog') {
+  } else if (params[0] === 'extensionData') {
   }
   loading.value = false
   return {
@@ -315,7 +321,7 @@ watch(
     :tipTitle="tipTitle"
     @search-data="searchTable"
   />
-  <ContentWrap class="table-box" :title="t('tableDemo.SuspectCounterfeit')">
+  <ContentWrap class="table-box" :title="t('tableDemo.MisinformationCounterfeit')">
     <div class="table-btn">
       <ElButton type="default">
         <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />

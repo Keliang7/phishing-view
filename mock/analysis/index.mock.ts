@@ -13,9 +13,8 @@ export default [
       return {
         code: SUCCESS_CODE,
         data: {
-          accessTotalNum: 102400,
           pendUrlNum: 81212,
-          suspectCounterfeitNum: 9280,
+          CounterfeitNum: 9280,
           pushDataNum: 13600,
           affirmCounterfeitNum: 1045,
           understatementNum: 27,

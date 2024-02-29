@@ -33,14 +33,14 @@ export default [
                     title: 'router.pend_url'
                   }
                 },
-                {
-                  path: 'suspect_counterfeit',
-                  component: 'views/DataManagement/SuspectCounterfeit/SuspectCounterfeit',
-                  name: 'SuspectCounterfeit',
-                  meta: {
-                    title: 'router.suspect_counterfeit'
-                  }
-                },
+                // {
+                //   path: 'suspect_counterfeit',
+                //   component: 'views/DataManagement/SuspectCounterfeit/SuspectCounterfeit',
+                //   name: 'SuspectCounterfeit',
+                //   meta: {
+                //     title: 'router.suspect_counterfeit'
+                //   }
+                // },
                 {
                   path: 'counterfeit_management',
                   component: 'views/DataManagement/CounterfeitManagement/CounterfeitManagement',

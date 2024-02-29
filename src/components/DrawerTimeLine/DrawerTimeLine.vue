@@ -1,6 +1,5 @@
 <script setup lang="tsx">
-import { ElDrawer, ElInput } from 'element-plus'
-// import { ElDrawer, ElInput, ElTimeline, ElTimelineItem } from 'element-plus'
+import { ElDrawer, ElTimeline, ElTimelineItem } from 'element-plus'
 
 defineProps({
   title: {
@@ -11,7 +10,7 @@ defineProps({
     type: Boolean,
     default: false
   },
-  bodyInfo: {
+  dataSourceInfo: {
     type: Object,
     default: null
   }
@@ -33,17 +32,17 @@ const open = () => {
     custom-class="drawerWidth"
     @open="open"
   >
-    <div v-for="(item, index) in bodyInfo" :key="index">
-      <p>{{ item.name }}：</p>
-      <ElInput
-        :modelValue="item.value"
-        type="textarea"
-        :autosize="{ minRows: 11, maxRows: 16 }"
-        :disabled="true"
-        resize="none"
-        placeholder="暂无内容"
-      />
-    </div>
+    <ElTimeline>
+      <ElTimelineItem
+        v-for="(item, index) in dataSourceInfo"
+        :key="index"
+        :color="index == '0' ? '#009dd9' : '#f59a23'"
+        :timestamp="item.timestamp"
+        placement="top"
+      >
+        {{ item.source }}
+      </ElTimelineItem>
+    </ElTimeline>
   </ElDrawer>
 </template>
 <style lang="less" scope>

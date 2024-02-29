@@ -41,11 +41,11 @@ const tabColumns = [
 
     name: 'whitelistManagement'
   },
-  {
-    label: t('tableDemo.extensiveRuleManagement'),
+  // {
+  //   label: t('tableDemo.extensiveRuleManagement'),
 
-    name: 'extensiveRuleManagement'
-  },
+  //   name: 'extensiveRuleManagement'
+  // },
   {
     label: t('tableDemo.policyConfiguration'),
 
@@ -70,6 +70,11 @@ const whiteColumns: TableColumn[] = [
   {
     field: 'ruleContent',
     label: t('tableDemo.ruleContent'),
+    width: 250
+  },
+  {
+    field: 'matchNum',
+    label: t('tableDemo.matchNum'),
     width: 250
   },
   {
@@ -148,14 +153,8 @@ const policyColumns: TableColumn[] = [
             <ElButton type="text" size="small" onClick={() => viewFn(data)}>
               {t('tableDemo.view')}
             </ElButton>
-            <ElButton type="text" size="small" onClick={() => editFn(data)}>
-              {t('tableDemo.edit')}
-            </ElButton>
             <ElButton type="text" size="small" onClick={() => stopFn(data)}>
               {t('tableDemo.stop')}
-            </ElButton>
-            <ElButton type="text" size="small" onClick={() => deleteFn(data)}>
-              {t('tableDemo.delete')}
             </ElButton>
           </div>
         )
@@ -177,9 +176,6 @@ onMounted(() => {
 const viewFn = (data: TableSlotDefault) => {
   console.log(data)
 }
-const editFn = (data: TableSlotDefault) => {
-  console.log(data)
-}
 const stopFn = (data: TableSlotDefault) => {
   console.log(data)
 }
@@ -199,12 +195,14 @@ const handleClick = async (tab) => {
     })
     dataList.value = res.data.list
     total.value = res.data.total
-  } else if (tab.props.name === 'extensiveRuleManagement') {
-    dataArray.value = ['ruleContent', 'addType', 'createdBy', 'createdTime', 'operate']
-    setProps({
-      columns: whiteColumns
-    })
-  } else if (tab.props.name === 'policyConfiguration') {
+  }
+  // else if (tab.props.name === 'extensiveRuleManagement') {
+  //   dataArray.value = ['ruleContent', 'addType', 'createdBy', 'createdTime', 'operate']
+  //   setProps({
+  //     columns: whiteColumns
+  //   })
+  // }
+  else if (tab.props.name === 'policyConfiguration') {
     dataArray.value = ['dataSources', 'createdBy', 'createdTime', 'operate']
     setProps({
       columns: policyColumns

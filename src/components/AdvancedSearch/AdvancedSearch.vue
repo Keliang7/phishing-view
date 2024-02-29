@@ -6,7 +6,6 @@ import { useForm } from '@/hooks/web/useForm'
 import { Form, FormSchema } from '@/components/Form'
 import { ElAlert } from 'element-plus'
 import { formatTime, Timestamp } from '@/utils'
-// import { getSystemConstantApi } from '@/api/table/index'
 import { BaseButton } from '@/components/Button'
 
 const props = defineProps({
@@ -30,28 +29,7 @@ const { getElFormExpose, getFormData } = formMethods
 const emit = defineEmits(['search-data'])
 // 用来调整表单的布局样式
 let operateClass = ref('')
-// // 资产采集状态
-// let collectionStatus = ref([{}])
-// // 资产仿冒状态
-// let phishingStatus = ref([{}])
-// // 扩线状态
-// let expandStatus = ref([{}])
-// // 仿冒数据来源
-// let phishingSource = ref([{}])
-// // 向分析处置的推送状态
-// let pusherStatus = ref([{}])
-// // 白名单-添加方式
-// let whiteListFrom = ref([{}])
-// // 仿冒检测规则-添加方式
-// let ruleFrom = ref([{}])
-// // 受害方类型
-// let victimType = ref([{}])
-// // 仿冒检测规则-审核状态
-// let ruleCheck = ref([{}])
-// // 仿冒数据-更新状态(查询ZDTC)
-// let updateStatus = ref([{}])
-// // 添加方式-【说明】其他的高级搜索页面也有添加方式，为了方便管理，决定采用统一赋值。
-// let systemAddType = ref([{}])
+
 // 查询到的表格数据
 let searchData = reactive({})
 
@@ -308,60 +286,7 @@ watch(
     schemaCopy.value = schema.value.filter((field) => props.dataArray.includes(field.field))
   }
 )
-// // 获取系统全局静态变量-下拉选框内容：状态、受害方分类、添加方式...
-// const getSystemConstant = async () => {
-//   const res = await getSystemConstantApi()
-//   // 资产采集状态
-//   collectionStatus.value = Object.entries(res.data.collectionStatus).map(([value, label]) => ({
-//     value,
-//     label
-//   }))
-//   // 资产仿冒状态
-//   phishingStatus.value = Object.entries(res.data.phishingStatus).map(([value, label]) => ({
-//     value,
-//     label
-//   }))
-//   // 扩线状态
-//   expandStatus.value = Object.entries(res.data.expandStatus).map(([value, label]) => ({
-//     value,
-//     label
-//   }))
-//   // 向分析处置的推送状态
-//   pusherStatus.value = Object.entries(res.data.pusherStatus).map(([value, label]) => ({
-//     value,
-//     label
-//   }))
-//   // 仿冒数据来源
-//   phishingSource.value = Object.entries(res.data.phishingSource).map(([value, label]) => ({
-//     value,
-//     label
-//   }))
-//   // 白名单-添加方式
-//   whiteListFrom.value = Object.entries(res.data.whiteListFrom).map(([value, label]) => ({
-//     value,
-//     label
-//   }))
-//   // 仿冒检测规则-添加方式
-//   ruleFrom.value = Object.entries(res.data.ruleFrom).map(([value, label]) => ({
-//     value,
-//     label
-//   }))
-//   // 受害方类型
-//   victimType.value = Object.entries(res.data.victimType).map(([value, label]) => ({
-//     value,
-//     label
-//   }))
-//   // 仿冒数据-更新状态(查询ZDTC)
-//   ruleCheck.value = Object.entries(res.data.ruleCheck).map(([value, label]) => ({
-//     value,
-//     label
-//   }))
-//   // 仿冒数据-更新状态(查询ZDTC)
-//   updateStatus.value = Object.entries(res.data.updateStatus).map(([value, label]) => ({
-//     value,
-//     label
-//   }))
-// }
+
 // 重置
 const verifyReset = async () => {
   const elFormExpose = await getElFormExpose()
