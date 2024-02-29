@@ -46,7 +46,7 @@ const canShowPagination = ref(true)
 const dataArray = ref(['url', 'domain', 'ip', 'collectionStatus', 'discoveryTime', 'operate'])
 const optionArray = ref({ collectionStatus: systemConstants.collectionStatus })
 const tipTitle = ref('系统默认展示当天接入数据，最多可查看7天内数据，超出7天数据不会留存。')
-// 采集任务弹窗
+// 操作任务弹窗
 const isDrawerOperate = ref(false)
 
 // 定义表格切换器内容

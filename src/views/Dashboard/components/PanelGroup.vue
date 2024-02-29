@@ -33,13 +33,13 @@ getCount()
 </script>
 
 <template>
-  <ElRow :gutter="20" justify="start" :class="prefixCls">
+  <ElRow :gutter="10" justify="start" :class="prefixCls">
     <ElCol
-      :xl="6"
-      :lg="6"
-      :md="12"
-      :sm="12"
-      :xs="24"
+      :xl="4"
+      :lg="4"
+      :md="6"
+      :sm="6"
+      :xs="12"
       v-for="(item, index) in totalState"
       :key="index"
     >
