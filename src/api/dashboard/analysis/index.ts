@@ -1,23 +1,18 @@
 import request from '@/axios'
-import type {
-  AnalysisTotalTypes,
-  UserAccessSource,
-  WeeklyUserActivity,
-  MonthlySales
-} from './types'
+import type { TotalNumberTypes, UserAccessSource, WeeklyUserActivity, MonthlySales } from './types'
 
-export const getCountApi = (): Promise<IResponse<AnalysisTotalTypes[]>> => {
-  return request.get({ url: '/mock/analysis/total' })
+export const getCountApi = (): Promise<IResponse<TotalNumberTypes[]>> => {
+  return request.get({ url: '/mock/dashboard/total' })
 }
 
 export const getUserAccessSourceApi = (): Promise<IResponse<UserAccessSource[]>> => {
-  return request.get({ url: '/mock/analysis/userAccessSource' })
+  return request.get({ url: '/mock/dashboard/userAccessSource' })
 }
 
 export const getWeeklyUserActivityApi = (): Promise<IResponse<WeeklyUserActivity[]>> => {
-  return request.get({ url: '/mock/analysis/weeklyUserActivity' })
+  return request.get({ url: '/mock/dashboard/weeklyUserActivity' })
 }
 
 export const getMonthlySalesApi = (): Promise<IResponse<MonthlySales[]>> => {
-  return request.get({ url: '/mock/analysis/monthlySales' })
+  return request.get({ url: '/mock/dashboard/monthlySales' })
 }

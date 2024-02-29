@@ -1,12 +1,12 @@
 <script setup lang="tsx">
-import { ElDrawer, ElInput, FormItemProp } from 'element-plus'
+import { ElDrawer, ElInput, FormItemProp, ElMessageBox, ElMessage } from 'element-plus'
 import { useI18n } from '@/hooks/web/useI18n'
 import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
-import { formatTime } from '@/utils'
+// import { formatTime } from '@/utils'
 import { useValidator } from '@/hooks/web/useValidator'
 import { BaseButton } from '@/components/Button'
-import { reactive, PropType, ref, onMounted, watch } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 
 const props = defineProps({
   title: {
@@ -28,21 +28,12 @@ const props = defineProps({
 })
 const { t } = useI18n()
 const { required } = useValidator()
-const exploreAimBody = ref('')
+let exploreAimBody = ref('')
 const explorePlaceholder =
   '请输入IP、IP段，可支持多行，最多支持10000个目标\n支持格式如下：\n192.168.10.0-100\n192.168.1.2\n192.168.1.0/32'
 const { formRegister, formMethods } = useForm()
-const {
-  setProps,
-  delSchema,
-  addSchema,
-  setValues,
-  setSchema,
-  getComponentExpose,
-  getFormItemExpose,
-  getElFormExpose,
-  getFormData
-} = formMethods
+const { getElFormExpose, getFormData } = formMethods
+
 const schema = reactive<FormSchema[]>([
   {
     field: 'taskName',
@@ -103,6 +94,7 @@ const schema = reactive<FormSchema[]>([
     component: 'Upload',
     componentProps: {
       limit: 1,
+      // action: 'http://172.16.20.30:32080',
       multiple: true,
       onPreview: (uploadFile) => {
         console.log(uploadFile)
@@ -124,17 +116,17 @@ const schema = reactive<FormSchema[]>([
         )
       },
       slots: {
-        default: () => <BaseButton type="primary">点击上传</BaseButton>,
-        tip: () => (
+        trigger: () => <BaseButton type="primary">点击上传</BaseButton>,
+        default: () => (
           <div class="el-upload__tip">
             <p>
               支持上传.xlsx、.xls、.txt、.xml、.json、.csv文件，最大上传文件为1M <a>下载模板</a>
             </p>
             <p class="attention">注意：目标地址添加方式为文件上传时，系统调度策略默认按IP拆分。</p>
             <ElInput
-              v-mode={exploreAimBody}
+              v-model={exploreAimBody.value}
               type="textarea"
-              rows="11"
+              autosize={{ minRows: 8, maxRows: 16 }}
               resize="none"
               placeholder={explorePlaceholder}
             />
@@ -192,6 +184,26 @@ const close = () => {
 const open = () => {
   console.log('打开弹窗')
 }
+const formValidate = (prop: FormItemProp, isValid: boolean, message: string) => {
+  console.log(prop, isValid, message)
+}
+
+// 重置
+const resetClick = async () => {
+  const elFormExpose = await getElFormExpose()
+  elFormExpose?.resetFields()
+}
+// 查询
+const confirmClick = async () => {
+  const elFormExpose = await getElFormExpose()
+  const formData = await getFormData()
+  console.log(formData, 'formData')
+  elFormExpose?.validate(async (isValid) => {
+    if (isValid) {
+      console.log('验证未通过')
+    }
+  })
+}
 </script>
 <template>
   <ElDrawer
@@ -210,7 +222,7 @@ const open = () => {
     />
     <template #footer>
       <div style="margin-right: 20px">
-        <BaseButton type="default" @click="cancelClick">重 置</BaseButton>
+        <BaseButton type="default" @click="resetClick">重 置</BaseButton>
         <BaseButton type="primary" @click="confirmClick">确 定</BaseButton>
       </div>
     </template>

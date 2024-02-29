@@ -1,28 +1,61 @@
 <script setup lang="tsx">
 import { ContentWrap } from '@/components/ContentWrap'
 import { useI18n } from '@/hooks/web/useI18n'
-import { reactive, ref, onMounted, watch } from 'vue'
+import { reactive, ref, onMounted, watch, defineEmits } from 'vue'
 import { useForm } from '@/hooks/web/useForm'
 import { Form, FormSchema } from '@/components/Form'
-import { FormItemProp, ElAlert } from 'element-plus'
-import { formatTime } from '@/utils'
+import { ElAlert } from 'element-plus'
+import { formatTime, Timestamp } from '@/utils'
+// import { getSystemConstantApi } from '@/api/table/index'
 import { BaseButton } from '@/components/Button'
 
 const props = defineProps({
-  dataType: {
-    type: Number,
-    default: 1
+  dataArray: {
+    type: Array,
+    default: null
   },
-  isTip: {
-    type: Boolean,
-    default: true
+  optionArray: {
+    type: Object,
+    default: null
+  },
+  tipTitle: {
+    type: String,
+    default: ''
   }
 })
 
 const { t } = useI18n()
-const { formRegister } = useForm()
+const { formRegister, formMethods } = useForm()
+const { getElFormExpose, getFormData } = formMethods
+const emit = defineEmits(['search-data'])
+// 用来调整表单的布局样式
 let operateClass = ref('')
-let schema = reactive<FormSchema[]>([
+// // 资产采集状态
+// let collectionStatus = ref([{}])
+// // 资产仿冒状态
+// let phishingStatus = ref([{}])
+// // 扩线状态
+// let expandStatus = ref([{}])
+// // 仿冒数据来源
+// let phishingSource = ref([{}])
+// // 向分析处置的推送状态
+// let pusherStatus = ref([{}])
+// // 白名单-添加方式
+// let whiteListFrom = ref([{}])
+// // 仿冒检测规则-添加方式
+// let ruleFrom = ref([{}])
+// // 受害方类型
+// let victimType = ref([{}])
+// // 仿冒检测规则-审核状态
+// let ruleCheck = ref([{}])
+// // 仿冒数据-更新状态(查询ZDTC)
+// let updateStatus = ref([{}])
+// // 添加方式-【说明】其他的高级搜索页面也有添加方式，为了方便管理，决定采用统一赋值。
+// let systemAddType = ref([{}])
+// 查询到的表格数据
+let searchData = reactive({})
+
+let schema = ref<FormSchema[]>([
   {
     field: 'url',
     label: `${t('formDemo.url')}：`,
@@ -48,29 +81,12 @@ let schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'state',
-    label: `${t('formDemo.state')}：`,
+    field: 'dataSource',
+    label: `${t('formDemo.dataSource')}：`,
     component: 'Select',
     componentProps: {
-      options: [
-        {
-          label: '未采集到',
-          value: '1'
-        },
-        {
-          label: '采集中',
-          value: '2'
-        },
-        {
-          label: '待采集',
-          value: '3'
-        },
-        {
-          label: '采集完成',
-          value: '4'
-        }
-      ],
-      placeholder: '请选择状态'
+      options: props.optionArray?.dataSource,
+      placeholder: '请选择数据来源'
     }
   },
   {
@@ -83,56 +99,6 @@ let schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'victim',
-    label: `${t('formDemo.victim')}：`,
-    component: 'Input',
-    componentProps: {
-      placeholder: '请输入受害方'
-    }
-  },
-  {
-    field: 'victimType',
-    label: `${t('formDemo.victimType')}：`,
-    component: 'Select',
-    componentProps: {
-      options: [
-        {
-          label: '政府',
-          value: '1'
-        },
-        {
-          label: '公检法部门',
-          value: '2'
-        },
-        {
-          label: '税务部门',
-          value: '3'
-        },
-        {
-          label: '金融',
-          value: '4'
-        },
-        {
-          label: '证券',
-          value: '5'
-        },
-        {
-          label: '国企',
-          value: '6'
-        },
-        {
-          label: '高校',
-          value: '7'
-        },
-        {
-          label: '电子商务',
-          value: '8'
-        }
-      ],
-      placeholder: '请选择受害方类型'
-    }
-  },
-  {
     field: 'ruleContent',
     label: `${t('formDemo.ruleContent')}：`,
     component: 'Input',
@@ -141,25 +107,54 @@ let schema = reactive<FormSchema[]>([
     }
   },
   {
+    field: 'ruleID',
+    label: `${t('formDemo.ruleID')}：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入规则ID'
+    }
+  },
+  {
+    field: 'featureContent',
+    label: `${t('formDemo.featureContent')}：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入特征内容'
+    }
+  },
+  {
+    field: 'featureID',
+    label: `${t('formDemo.featureID')}：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入特征ID'
+    }
+  },
+  // 添加方式用key值
+  {
     field: 'addType',
     label: `${t('formDemo.addType')}：`,
     component: 'Select',
     componentProps: {
-      options: [
-        {
-          label: '全部',
-          value: '1'
-        },
-        {
-          label: '系统预置',
-          value: '2'
-        },
-        {
-          label: '自定义',
-          value: '3'
-        }
-      ],
+      options: props.optionArray?.systemAddType,
       placeholder: '请选择添加方式'
+    }
+  },
+  {
+    field: 'victim',
+    label: `${t('formDemo.victim')}：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入受害者'
+    }
+  },
+  {
+    field: 'victimType',
+    label: `${t('formDemo.victimType')}：`,
+    component: 'Select',
+    componentProps: {
+      options: props.optionArray?.victimType,
+      placeholder: '请选择受害方类型'
     }
   },
   {
@@ -209,7 +204,69 @@ let schema = reactive<FormSchema[]>([
       placeholder: formatTime(new Date(), 'yyyy-MM-dd')
     }
   },
-
+  {
+    field: 'collectionStatus',
+    label: `${t('formDemo.collectionStatus')}：`,
+    component: 'Select',
+    componentProps: {
+      options: props.optionArray?.collectionStatus,
+      placeholder: '请选择状态'
+    }
+  },
+  {
+    field: 'phishingStatus',
+    label: `${t('formDemo.phishingStatus')}：`,
+    component: 'Select',
+    componentProps: {
+      options: props.optionArray?.phishingStatus,
+      placeholder: '请选择状态'
+    }
+  },
+  {
+    field: 'expandStatus',
+    label: `${t('formDemo.expandStatus')}：`,
+    component: 'Select',
+    componentProps: {
+      options: props.optionArray?.expandStatus,
+      placeholder: '请选择状态'
+    }
+  },
+  {
+    field: 'pusherStatus',
+    label: `${t('formDemo.pusherStatus')}：`,
+    component: 'Select',
+    componentProps: {
+      options: props.optionArray?.pusherStatus,
+      placeholder: '请选择状态'
+    }
+  },
+  {
+    field: 'ruleCheck',
+    label: `${t('formDemo.ruleCheck')}：`,
+    component: 'Select',
+    componentProps: {
+      options: props.optionArray?.ruleCheck,
+      placeholder: '请选择状态'
+    }
+  },
+  {
+    field: 'updateStatus',
+    label: `${t('formDemo.updateStatus')}：`,
+    component: 'Select',
+    componentProps: {
+      options: props.optionArray?.updateStatus,
+      placeholder: '请选择状态'
+    }
+  },
+  {
+    field: 'omissionReason',
+    label: `${t('formDemo.omissionReason')}：`,
+    component: 'Select',
+    componentProps: {
+      options: props.optionArray?.omissionReason,
+      placeholder: '请选择漏报原因'
+    }
+  },
   {
     field: 'operate',
     component: 'RadioButton',
@@ -217,76 +274,133 @@ let schema = reactive<FormSchema[]>([
       slots: {
         default: () => (
           <div class={operateClass.value}>
-            <BaseButton type="default">重置</BaseButton>
-            <BaseButton type="primary">查询</BaseButton>
+            <BaseButton type="default" onClick={verifyReset}>
+              重置
+            </BaseButton>
+            <BaseButton type="primary" onClick={searchFn}>
+              查询
+            </BaseButton>
           </div>
         )
       }
     }
   }
 ])
-let schemaCopy = reactive<FormSchema[]>([])
-onMounted(() => {
-  console.log(222, props.dataType)
-  let fieldsToRemove = ['']
-  if (props.dataType == 1) {
-    fieldsToRemove = ['url', 'domain', 'ip', 'state', 'discoveryTime', 'operate']
-    tipTitle.value = '系统默认展示当天接入数据，最多可查看7天内数据，超出7天数据不会留存。'
-  } else if (props.dataType == 2) {
-    fieldsToRemove = [
-      'url',
-      'domain',
-      'ip',
-      'state',
-      'discoveryTime',
-      'victim',
-      'victimType',
-      'operate'
-    ]
-    tipTitle.value = '系统默认展示当天接入数据，最多可查看5年内数据，超出5年数据不会留存。'
-  } else if (props.dataType == 8) {
-    fieldsToRemove = ['ruleContent', 'addType', 'createdBy', 'createdTime', 'operate']
-    tipTitle.value = '白名单数据存储提示'
-  }
-  operateClass.value = fieldsToRemove.length % 2 === 1 ? 'advance-btn' : 'search-btn'
-  schemaCopy = schema.filter((field) => fieldsToRemove.includes(field.field))
+
+let schemaCopy = ref<FormSchema[]>([])
+const tipCont = ref('')
+onMounted(async () => {
+  // await getSystemConstant()
+  await getShowData()
 })
-const formValidate = (prop: FormItemProp, isValid: boolean, message: string) => {
-  console.log(prop, isValid, message)
+const getShowData = () => {
+  tipCont.value = props.tipTitle
+  operateClass.value = props.dataArray.length % 2 === 1 ? 'advance-btn' : 'search-btn'
+  schemaCopy.value = schema.value.filter((field) => props.dataArray.includes(field.field))
 }
-const tipTitle = ref('')
+
+// 当同一个页面，不同的高级搜索组件进行切换时，需要用watch来监听变化。
 watch(
-  () => props.dataType,
+  () => props.dataArray,
   () => {
-    let fieldsToRemove = ['']
-    if (props.dataType == 8) {
-      fieldsToRemove = ['ruleContent', 'addType', 'createdBy', 'createdTime', 'operate']
-      tipTitle.value = '白名单数据存储提示'
-    } else if (props.dataType == 9) {
-      fieldsToRemove = ['dataSources', 'createdBy', 'createdTime', 'operate']
-      tipTitle.value = '策略配置数据存储提示'
-    }
-    operateClass.value = fieldsToRemove.length % 2 === 1 ? 'advance-btn' : 'search-btn'
-    schemaCopy = schema.filter((field) => fieldsToRemove.includes(field.field))
+    tipCont.value = props.tipTitle
+    operateClass.value = props.dataArray.length % 2 === 1 ? 'advance-btn' : 'search-btn'
+    schemaCopy.value = schema.value.filter((field) => props.dataArray.includes(field.field))
   }
 )
+// // 获取系统全局静态变量-下拉选框内容：状态、受害方分类、添加方式...
+// const getSystemConstant = async () => {
+//   const res = await getSystemConstantApi()
+//   // 资产采集状态
+//   collectionStatus.value = Object.entries(res.data.collectionStatus).map(([value, label]) => ({
+//     value,
+//     label
+//   }))
+//   // 资产仿冒状态
+//   phishingStatus.value = Object.entries(res.data.phishingStatus).map(([value, label]) => ({
+//     value,
+//     label
+//   }))
+//   // 扩线状态
+//   expandStatus.value = Object.entries(res.data.expandStatus).map(([value, label]) => ({
+//     value,
+//     label
+//   }))
+//   // 向分析处置的推送状态
+//   pusherStatus.value = Object.entries(res.data.pusherStatus).map(([value, label]) => ({
+//     value,
+//     label
+//   }))
+//   // 仿冒数据来源
+//   phishingSource.value = Object.entries(res.data.phishingSource).map(([value, label]) => ({
+//     value,
+//     label
+//   }))
+//   // 白名单-添加方式
+//   whiteListFrom.value = Object.entries(res.data.whiteListFrom).map(([value, label]) => ({
+//     value,
+//     label
+//   }))
+//   // 仿冒检测规则-添加方式
+//   ruleFrom.value = Object.entries(res.data.ruleFrom).map(([value, label]) => ({
+//     value,
+//     label
+//   }))
+//   // 受害方类型
+//   victimType.value = Object.entries(res.data.victimType).map(([value, label]) => ({
+//     value,
+//     label
+//   }))
+//   // 仿冒数据-更新状态(查询ZDTC)
+//   ruleCheck.value = Object.entries(res.data.ruleCheck).map(([value, label]) => ({
+//     value,
+//     label
+//   }))
+//   // 仿冒数据-更新状态(查询ZDTC)
+//   updateStatus.value = Object.entries(res.data.updateStatus).map(([value, label]) => ({
+//     value,
+//     label
+//   }))
+// }
+// 重置
+const verifyReset = async () => {
+  const elFormExpose = await getElFormExpose()
+  elFormExpose?.resetFields()
+}
+// 查询
+const searchFn = async () => {
+  const formData = await getFormData()
+  formData.discoveryTime = Timestamp(formData.discoveryTime)
+  formData.createdTime = Timestamp(formData.createdTime)
+  searchData = formData
+  emit('search-data', searchData)
+}
 </script>
 <template>
-  <ContentWrap style="margin-bottom: 20px">
+  <ContentWrap class="advance-search" style="margin-bottom: 20px">
     <ElAlert
-      v-show="isTip"
+      v-show="tipTitle"
       title="温馨提示："
       type="success"
-      :description="tipTitle"
+      :description="tipCont"
       :closable="false" />
-    <Form
-      :autoSetPlaceholder="false"
-      :schema="schemaCopy"
-      @register="formRegister"
-      @validate="formValidate"
+    <Form :autoSetPlaceholder="false" :schema="schemaCopy" @register="formRegister"
   /></ContentWrap>
 </template>
 <style lang="less">
+.advance-search {
+  max-height: 250px;
+  overflow-y: auto;
+}
+.advance-search::-webkit-scrollbar {
+  height: 25px;
+  width: 5px;
+  cursor: pointer;
+}
+.advance-search::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: var(--el-color-info-light-7);
+}
 .search-btn {
   position: absolute;
   right: 0;

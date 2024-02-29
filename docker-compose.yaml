@@ -1,0 +1,13 @@
+version: '3.2'
+services:
+  phishing-view:
+    container_name: phishing-view
+    image: '10.10.11.145:8082/phishing-system/phishing-view:feat-projectBase-zcf-adfa5b4e-build87928-V0.1'
+    privileged: true
+    restart: always
+    ports:
+      - 80:80
+    # links:
+    #   - admin-manager
+    environment:
+      "API_HOST": "http://172.16.20.30:32080"

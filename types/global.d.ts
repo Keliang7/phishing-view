@@ -46,6 +46,7 @@ declare global {
   }
 
   declare interface IResponse<T = any> {
+[x: string]: any
     code: number
     data: T extends any ? T : T & any
   }

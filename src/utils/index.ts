@@ -105,6 +105,13 @@ export function formatTime(time: Date | number | string, fmt: string) {
     return fmt
   }
 }
+/**
+ * 时间转换为时间戳
+ */
+export function Timestamp(time: Date | number | string) {
+  if (!time) return 0
+  else return Date.parse(new Date(time).toString())
+}
 
 /**
  * 生成随机字符串

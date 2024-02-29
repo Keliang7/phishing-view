@@ -3,6 +3,84 @@ import { useI18n } from '@/hooks/web/useI18n'
 
 const { t } = useI18n()
 
+export const funnelOptions: EChartsOption = {
+  title: {
+    text: t('analysis.dataConversion'),
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'item',
+    formatter: '{a} <br/>{b} : {c}%'
+  },
+  toolbox: {
+    feature: {
+      dataView: { readOnly: false },
+      restore: {},
+      saveAsImage: {}
+    }
+  },
+  legend: {
+    data: [
+      t('analysis.accessTotalNum'),
+      t('analysis.pendUrlNum'),
+      t('analysis.suspectCounterfeitNum'),
+      t('analysis.pushDataNum'),
+      t('analysis.affirmCounterfeitNum'),
+      t('analysis.understatementNum'),
+      t('analysis.misinformationNum')
+    ],
+    bottom: 'bottom',
+    type: 'scroll',
+    itemWidth: 14
+  },
+  series: [
+    {
+      name: 'Funnel',
+      type: 'funnel',
+      left: '10%',
+      top: 40,
+      bottom: 60,
+      width: '80%',
+      height: '75%',
+      min: 0,
+      max: 100,
+      minSize: '40%',
+      maxSize: '100%',
+      sort: 'descending',
+      gap: 2,
+      label: {
+        show: true,
+        position: 'inside'
+      },
+      labelLine: {
+        length: 10,
+        lineStyle: {
+          width: 1,
+          type: 'solid'
+        }
+      },
+      itemStyle: {
+        borderColor: '#fff',
+        borderWidth: 1
+      },
+      emphasis: {
+        label: {
+          fontSize: 20
+        }
+      },
+      data: [
+        { value: 102400, name: t('analysis.accessTotalNum') },
+        { value: 81212, name: t('analysis.pendUrlNum') },
+        { value: 9280, name: t('analysis.suspectCounterfeitNum') },
+        { value: 13600, name: t('analysis.pushDataNum') },
+        { value: 1045, name: t('analysis.affirmCounterfeitNum') },
+        { value: 27, name: t('analysis.understatementNum') },
+        { value: 13, name: t('analysis.misinformationNum') }
+      ]
+    }
+  ]
+}
+
 export const lineOptions: EChartsOption = {
   title: {
     text: t('analysis.monthlySales'),
@@ -49,6 +127,7 @@ export const lineOptions: EChartsOption = {
   },
   legend: {
     data: [t('analysis.estimate'), t('analysis.actual')],
+    type: 'scroll',
     top: 50
   },
   series: [
@@ -82,8 +161,9 @@ export const pieOptions: EChartsOption = {
     formatter: '{a} <br/>{b} : {c} ({d}%)'
   },
   legend: {
-    orient: 'vertical',
-    left: 'left',
+    bottom: 'bottom',
+    type: 'scroll',
+    itemWidth: 14,
     data: [
       t('analysis.directAccess'),
       t('analysis.mailMarketing'),
@@ -96,8 +176,9 @@ export const pieOptions: EChartsOption = {
     {
       name: t('analysis.userAccessSource'),
       type: 'pie',
-      radius: '55%',
+      radius: ['40%', '70%'],
       center: ['50%', '60%'],
+      bottom: 30,
       data: [
         { value: 335, name: t('analysis.directAccess') },
         { value: 310, name: t('analysis.mailMarketing') },
@@ -111,7 +192,7 @@ export const pieOptions: EChartsOption = {
 
 export const barOptions: EChartsOption = {
   title: {
-    text: t('analysis.weeklyUserActivity'),
+    text: t('analysis.ArealDistribution'),
     left: 'center'
   },
   tooltip: {
@@ -151,7 +232,21 @@ export const barOptions: EChartsOption = {
     }
   ]
 }
-
+export const categoryOptions: EChartsOption = {
+  xAxis: {
+    type: 'category',
+    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  },
+  yAxis: {
+    type: 'value'
+  },
+  series: [
+    {
+      data: [150, 230, 224, 218, 135, 147, 260],
+      type: 'line'
+    }
+  ]
+}
 export const radarOption: EChartsOption = {
   legend: {
     data: [t('workplace.personal'), t('workplace.team')]

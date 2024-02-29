@@ -6,42 +6,49 @@ const timeout = 1000
 export default [
   // 分析页统计接口
   {
-    url: '/mock/analysis/total',
+    url: '/mock/dashboard/total',
     method: 'get',
     timeout,
     response: () => {
       return {
         code: SUCCESS_CODE,
         data: {
-          users: 102400,
-          messages: 81212,
-          moneys: 9280,
-          shoppings: 13600
+          accessTotalNum: 102400,
+          pendUrlNum: 81212,
+          suspectCounterfeitNum: 9280,
+          pushDataNum: 13600,
+          affirmCounterfeitNum: 1045,
+          understatementNum: 27,
+          misinformationNum: 13
         }
       }
     }
   },
   // 用户来源
   {
-    url: '/mock/analysis/userAccessSource',
+    url: '/mock/dashboard/userAccessSource',
     method: 'get',
     timeout,
     response: () => {
       return {
         code: SUCCESS_CODE,
         data: [
-          { value: 1000, name: 'analysis.directAccess' },
-          { value: 310, name: 'analysis.mailMarketing' },
-          { value: 234, name: 'analysis.allianceAdvertising' },
-          { value: 135, name: 'analysis.videoAdvertising' },
-          { value: 1548, name: 'analysis.searchEngines' }
+          { value: 1000, name: '政府' },
+          { value: 310, name: '公检法部门' },
+          { value: 234, name: '税务部门' },
+          { value: 135, name: '金融' },
+          { value: 1548, name: '证券' },
+          { value: 1200, name: '国企' },
+          { value: 1022, name: '高校' },
+          { value: 420, name: '电子商务' },
+          { value: 325, name: '虚假投资诈骗' }
         ]
       }
     }
   },
   // 每周用户活跃量
   {
-    url: '/mock/analysis/weeklyUserActivity',
+    url: '/mock/dashboard/weeklyUserActivity',
     method: 'get',
     timeout,
     response: () => {
@@ -61,7 +68,7 @@ export default [
   },
   // 每月销售额
   {
-    url: '/mock/analysis/monthlySales',
+    url: '/mock/dashboard/monthlySales',
     method: 'get',
     timeout,
     response: () => {

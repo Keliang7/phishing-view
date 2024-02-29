@@ -192,6 +192,14 @@ const adminList = [
         meta: {
           title: 'router.phishing_rule'
         }
+      },
+      {
+        path: 'phishing_recheck',
+        component: 'views/SystemManagement/PhishingRule/PhishingRecheck',
+        name: 'PhishingRecheck',
+        meta: {
+          title: 'router.phishing_recheck'
+        }
       }
     ]
   }

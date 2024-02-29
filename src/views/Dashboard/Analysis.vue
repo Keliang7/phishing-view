@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import PanelGroup from './components/PanelGroup.vue'
-import { ElRow, ElCol, ElCard, ElSkeleton } from 'element-plus'
+import { ElRow, ElCol, ElCard, ElSkeleton, ElTabs, ElTabPane } from 'element-plus'
 import { Echart } from '@/components/Echart'
-import { pieOptions, barOptions, lineOptions } from './echarts-data'
+import { pieOptions, barOptions, lineOptions, funnelOptions, categoryOptions } from './echarts-data'
 import { ref, reactive } from 'vue'
 import {
   getUserAccessSourceApi,
@@ -16,6 +16,9 @@ import { useI18n } from '@/hooks/web/useI18n'
 const { t } = useI18n()
 
 const loading = ref(true)
+
+// 数据转化统计-漏斗图
+const dataConversionOptions = reactive<EChartsOption>(funnelOptions) as EChartsOption
 
 const pieOptionsData = reactive<EChartsOption>(pieOptions) as EChartsOption
 
@@ -57,6 +60,7 @@ const getWeeklyUserActivity = async () => {
     ])
   }
 }
+const categoryOptionsData = reactive<EChartsOption>(categoryOptions) as EChartsOption
 
 const lineOptionsData = reactive<EChartsOption>(lineOptions) as EChartsOption
 
@@ -90,6 +94,38 @@ const getMonthlySales = async () => {
     ])
   }
 }
+// 定义表格切换器内容
+const tabColumns = [
+  {
+    label: t('analysis.accessTotalNum'),
+    name: 'accessTotalNum'
+  },
+  {
+    label: t('analysis.pendUrlNum'),
+    name: 'pendUrlNum'
+  },
+  {
+    label: t('analysis.suspectCounterfeitNum'),
+    name: 'suspectCounterfeitNum'
+  },
+  {
+    label: t('analysis.pushDataNum'),
+    name: 'pushDataNum'
+  },
+  {
+    label: t('analysis.affirmCounterfeitNum'),
+    name: 'affirmCounterfeitNum'
+  },
+  {
+    label: t('analysis.understatementNum'),
+    name: 'understatementNum'
+  },
+  {
+    label: t('analysis.misinformationNum'),
+    name: 'misinformationNum'
+  }
+]
+const activeName = ref(tabColumns[0].name)
 
 const getAllApi = async () => {
   await Promise.all([getUserAccessSource(), getWeeklyUserActivity(), getMonthlySales()])
@@ -102,17 +138,47 @@ getAllApi()
 <template>
   <PanelGroup />
   <ElRow :gutter="20" justify="space-between">
-    <ElCol :xl="10" :lg="10" :md="24" :sm="24" :xs="24">
+    <ElCol :xl="10" :lg="8" :md="24" :sm="24" :xs="24">
+      <ElCard shadow="hover" class="mb-20px">
+        <ElSkeleton :loading="loading" animated>
+          <Echart :options="dataConversionOptions" :height="300" />
+        </ElSkeleton>
+      </ElCard>
+    </ElCol>
+    <ElCol :xl="10" :lg="8" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated>
           <Echart :options="pieOptionsData" :height="300" />
         </ElSkeleton>
       </ElCard>
     </ElCol>
-    <ElCol :xl="14" :lg="14" :md="24" :sm="24" :xs="24">
+    <ElCol :xl="10" :lg="8" :md="24" :sm="24" :xs="24">
+      <ElCard shadow="hover" class="mb-20px">
+        <ElSkeleton :loading="loading" animated>
+          <Echart :options="pieOptionsData" :height="300" />
+        </ElSkeleton>
+      </ElCard>
+    </ElCol>
+    <ElCol :xl="14" :lg="12" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated>
           <Echart :options="barOptionsData" :height="300" />
+        </ElSkeleton>
+      </ElCard>
+    </ElCol>
+    <ElCol :xl="14" :lg="12" :md="24" :sm="24" :xs="24">
+      <ElCard shadow="hover" class="mb-20px">
+        <ElSkeleton :loading="loading" animated>
+          <ElTabs v-model="activeName" class="demo-tabs">
+            <ElTabPane
+              v-for="item in tabColumns"
+              :key="item.name"
+              :label="item.label"
+              :name="item.name"
+            >
+              <Echart :options="categoryOptionsData" :height="245" />
+            </ElTabPane>
+          </ElTabs>
         </ElSkeleton>
       </ElCard>
     </ElCol>
@@ -125,3 +191,11 @@ getAllApi()
     </ElCol>
   </ElRow>
 </template>
+<style lang="less" scoped>
+.demo-tabs > .el-tabs__content {
+  padding: 0px;
+  color: #6b778c;
+  font-size: 32px;
+  font-weight: 500;
+}
+</style>
