@@ -60,6 +60,7 @@ const tabColumns = [
     name: 'domainMonitor'
   },
   {
+    //
     label: t('tableDemo.urlLog'),
     name: 'urlLog'
   },
