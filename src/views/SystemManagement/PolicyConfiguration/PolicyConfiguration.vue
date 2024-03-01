@@ -2,11 +2,12 @@
 import { ref, reactive, unref, onMounted } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
+import { ElButton, ElCheckbox } from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
 import { getPolicyWhiteListApi } from '@/api/table'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
+import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
 import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 
@@ -33,31 +34,22 @@ const { tableRegister, tableMethods, tableState } = useTable({
 const systemConstants = useSystemConstantsWithOut()
 // 获取tableState中的数据和方法
 let { loading, total, dataList, currentPage, pageSize } = tableState
-const { setProps } = tableMethods
-// 定义表格切换器内容
-const tabColumns = [
-  {
-    label: t('tableDemo.whitelistManagement'),
+const { setProps, getList, getElTableExpose } = tableMethods
+// 页面主标题
+const title = ref('白名单管理')
 
-    name: 'whitelistManagement'
-  },
-  // {
-  //   label: t('tableDemo.extensiveRuleManagement'),
-
-  //   name: 'extensiveRuleManagement'
-  // },
-  {
-    label: t('tableDemo.policyConfiguration'),
-
-    name: 'policyConfiguration'
-  }
-]
 // 高级搜索的数据
 const searchData = ref({})
 const dataArray = ref(['ruleContent', 'addType', 'createdBy', 'createdTime', 'operate'])
 const optionArray = ref({ systemAddType: systemConstants.whiteListFrom })
 
-const activeName = ref(tabColumns[0].name)
+// 右侧弹窗信息
+const isDrawerInfo = ref(false)
+// 右侧弹窗信息-弹窗标题
+const titleDrawer = ref('')
+// 弹窗信息-弹窗内容
+const bodyInfo = ref([{}])
+
 // 定义分页器展示的内容
 const layout = 'prev, pager, next, sizes,jumper,->, total'
 // 定义columns变量，用于存储表格的列配置
@@ -113,55 +105,6 @@ const whiteColumns: TableColumn[] = [
     }
   }
 ]
-const policyColumns: TableColumn[] = [
-  {
-    field: 'selection',
-    type: 'selection'
-  },
-  {
-    field: 'dataSources',
-    label: t('tableDemo.dataSources'),
-    width: 240
-  },
-  {
-    field: 'trustRank',
-    label: t('tableDemo.trustRank'),
-    width: 240
-  },
-  {
-    field: 'createdBy',
-    label: t('tableDemo.createdBy'),
-    width: 240
-  },
-  {
-    field: 'createdTime',
-    label: t('tableDemo.createdTime'),
-    width: 300,
-    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
-  },
-  {
-    field: 'action',
-    label: t('tableDemo.action'),
-    fixed: 'right',
-    headerAlign: 'center',
-    align: 'center',
-    width: 320,
-    slots: {
-      default: (data) => {
-        return (
-          <div>
-            <ElButton type="text" size="small" onClick={() => viewFn(data)}>
-              {t('tableDemo.view')}
-            </ElButton>
-            <ElButton type="text" size="small" onClick={() => stopFn(data)}>
-              {t('tableDemo.stop')}
-            </ElButton>
-          </div>
-        )
-      }
-    }
-  }
-]
 // 在页面加载完成后，设置columns的值
 onMounted(() => {
   setTimeout(() => {
@@ -172,95 +115,116 @@ onMounted(() => {
   }, 0)
 })
 
-// 定义表格内操作函数，用于处理点击表格列时的操作
-const viewFn = (data: TableSlotDefault) => {
-  console.log(data)
-}
-const stopFn = (data: TableSlotDefault) => {
-  console.log(data)
-}
 const deleteFn = (data: TableSlotDefault) => {
   console.log(data)
 }
-const handleClick = async (tab) => {
-  loading.value = true
-  if (tab.props.name === 'whitelistManagement') {
-    dataArray.value = ['ruleContent', 'addType', 'createdBy', 'createdTime', 'operate']
-    setProps({
-      columns: whiteColumns
-    })
-    const res = await getPolicyWhiteListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize)
-    })
-    dataList.value = res.data.list
-    total.value = res.data.total
-  }
-  // else if (tab.props.name === 'extensiveRuleManagement') {
-  //   dataArray.value = ['ruleContent', 'addType', 'createdBy', 'createdTime', 'operate']
-  //   setProps({
-  //     columns: whiteColumns
-  //   })
-  // }
-  else if (tab.props.name === 'policyConfiguration') {
-    dataArray.value = ['dataSources', 'createdBy', 'createdTime', 'operate']
-    setProps({
-      columns: policyColumns
-    })
-  }
-  loading.value = false
-}
 const checkedAll = ref(false)
+const dataIDs = ref(new Set())
+const placeholderInfo = ref('')
+// 表格多选数据
+const selectedData = ref<TableColumn[]>([])
 // 定义canShowPagination变量，用于控制是否显示分页
 const canShowPagination = ref(true)
 // 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
 const searchTable = async (value) => {
   searchData.value = value
-  handleClick(activeName)
+  await getList()
+}
+const getRowKeys = (row): string => {
+  dataIDs.value.add(row)
+  return row.dataID
+}
+// 选择全部
+const toggleSelection = async () => {
+  console.log('选择全部')
+  const elTableRef = await getElTableExpose()
+  elTableRef?.toggleAllSelection()
+  const res = await getPolicyWhiteListApi({
+    ...searchData.value
+  })
+  console.log(res, 666)
+  selectedData.value = res.data.list.slice(unref(pageSize), res.data.total + 1)
+  console.log(selectedData.value, dataList.value, 123455)
+
+  if (checkedAll.value) {
+    if (selectedData.value) {
+      selectedData.value.forEach((item) => {
+        elTableRef?.toggleRowSelection(item, true)
+      })
+    }
+  } else {
+    elTableRef?.clearSelection()
+  }
+}
+const handleSelectionChange = async (val) => {
+  console.log('选项变化')
+  selectedData.value = val
+  console.log(selectedData.value, val, 'val')
+}
+// 导出多选数据
+const getSelections = async () => {
+  console.log('导出多选数据')
+  const elTableRef = await getElTableExpose()
+  const selections = elTableRef?.getSelectionRows()
+  console.log(selections, selectedData.value)
+}
+// 添加
+const addWhiteList = async () => {
+  console.log('添加')
+  isDrawerInfo.value = true
+  placeholderInfo.value =
+    '请输入确认非仿冒网站的域名，匹配成功将不会入库。\n一行一个域名，可输入多行，最多输入1000行。'
+  titleDrawer.value = '添加白名单'
+  bodyInfo.value = [
+    {
+      name: '输入规则内容'
+    }
+  ]
 }
 </script>
 <template>
   <AdvancedSearch :dataArray="dataArray" :optionArray="optionArray" @search-data="searchTable" />
-  <ContentWrap class="table-box">
+  <ContentWrap :title="title" class="table-box">
     <div class="table-btn">
-      <ElButton type="default">
+      <ElButton type="default" @click="toggleSelection()">
         <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />
       </ElButton>
       <ElButton type="default"> 批量删除 </ElButton>
-      <ElButton type="primary"> 添加 </ElButton>
+      <ElButton type="primary" @click="addWhiteList()"> 添加 </ElButton>
 
-      <ElButton type="primary" v-show="activeName !== 'policyConfiguration'"> 导入数据 </ElButton>
+      <ElButton type="primary"> 导入数据 </ElButton>
 
-      <ElButton type="primary" v-show="activeName !== 'policyConfiguration'">
+      <ElButton type="primary" @click="getSelections()">
         <Icon icon="tdesign:upload" /> 导出数据
       </ElButton>
     </div>
-    <ElTabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
-      <ElTabPane
-        v-for="item in tabColumns"
-        :key="item.name"
-        :label="item.label"
-        :name="item.name"
-      />
-      <Table
-        v-model:pageSize="pageSize"
-        v-model:currentPage="currentPage"
-        stripe
-        :columns="columns"
-        :data="dataList"
-        :loading="loading"
-        :pagination="
-          canShowPagination
-            ? {
-                total: total,
-                layout: layout
-              }
-            : undefined
-        "
-        @register="tableRegister"
-      />
-    </ElTabs>
+    <Table
+      v-model:pageSize="pageSize"
+      v-model:currentPage="currentPage"
+      stripe
+      :rowKey="getRowKeys"
+      :reserveSelection="true"
+      :columns="columns"
+      :data="dataList"
+      :loading="loading"
+      :pagination="
+        canShowPagination
+          ? {
+              total: total,
+              layout: layout
+            }
+          : undefined
+      "
+      @register="tableRegister"
+      @selection-change="handleSelectionChange"
+    />
   </ContentWrap>
+  <DrawerInfo
+    v-model:isDrawer="isDrawerInfo"
+    :title="titleDrawer"
+    :bodyInfo="bodyInfo"
+    :placeholder="placeholderInfo"
+  />
 </template>
 <style lang="less" scoped>
 .demo-tabs > .el-tabs__content {
