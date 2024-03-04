@@ -389,7 +389,8 @@ export default {
     lazyLoad: '懒加载',
     upload: '上传',
     userAvatar: '用户头像',
-    iconPicker: '图标选择器'
+    iconPicker: '图标选择器',
+    explorePort: '探测端口'
   },
   guideDemo: {
     guide: '引导页',

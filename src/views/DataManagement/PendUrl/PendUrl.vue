@@ -2,7 +2,15 @@
 import { ref, reactive, unref, onMounted } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
+import {
+  ElTabs,
+  ElTabPane,
+  ElButton,
+  ElCheckbox,
+  ElMessageBox,
+  ElMessage,
+  ElInput
+} from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
 import { getUrlBWListApi, getUrlBWwebInfoApi, getUrlDomainListApi } from '@/api/table'
 import { useTable } from '@/hooks/web/useTable'
@@ -11,6 +19,9 @@ import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
 import DrawerOperate from '@/components/DrawerOperate/DrawerOperate.vue'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
+import { FormSchema } from '@/components/Form'
+import { useValidator } from '@/hooks/web/useValidator'
+import { BaseButton } from '@/components/Button'
 
 // 使用useI18n钩子函数获取国际化相关数据和方法
 const { t } = useI18n()
@@ -470,10 +481,164 @@ onMounted(() => {
  * 定义表格中的一些操作函数
  */
 // 采集任务事件
+const drawerData = ref<FormSchema[]>()
+const { required } = useValidator()
+let exploreAimBody = ref('')
+let explorePlaceholder =
+  '请输入IP、IP段，可支持多行，最多支持10000个目标\n支持格式如下：\n192.168.10.0-100\n192.168.1.2\n192.168.1.0/32'
 const gatherFn = (data: TableSlotDefault) => {
   console.log('添加任务', data)
   titleDrawer.value = '添加任务'
   isDrawerOperate.value = true
+  drawerData.value = [
+    {
+      field: 'taskName',
+      label: `${t('formDemo.taskName')}：`,
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入任务名称'
+      },
+      formItemProps: {
+        rules: [required()]
+      }
+    },
+    {
+      field: 'exploreType',
+      label: `${t('formDemo.exploreType')}：`,
+      component: 'Select',
+      value: '1',
+      componentProps: {
+        options: [
+          {
+            label: '资产探测（可探测title、FID、IP等信息）',
+            value: '1'
+          },
+          {
+            label: '网站探测（可探测网站截图）',
+            value: '2'
+          },
+          {
+            label: '域名探测（可探测WHOIS、网站备案信息）',
+            value: '3'
+          }
+        ]
+      },
+      formItemProps: {
+        rules: [required()]
+      }
+    },
+    {
+      field: 'exploreContent',
+      label: `${t('formDemo.exploreContent')}：`,
+      component: 'CheckboxGroup',
+      componentProps: {
+        options: [
+          {
+            label: '完整资产探测',
+            value: '1',
+            checked: true
+          }
+        ]
+      },
+      formItemProps: {
+        rules: [required()]
+      }
+    },
+    {
+      field: 'exploreAim',
+      label: `${t('formDemo.exploreAim')}：`,
+      component: 'Upload',
+      componentProps: {
+        limit: 1,
+        // action: 'http://172.16.20.30:32080',
+        multiple: true,
+        onPreview: (uploadFile) => {
+          console.log(uploadFile)
+        },
+        onRemove: (file) => {
+          console.log(file)
+        },
+        beforeRemove: (uploadFile) => {
+          return ElMessageBox.confirm(`Cancel the transfer of ${uploadFile.name} ?`).then(
+            () => true,
+            () => false
+          )
+        },
+        onExceed: (files, uploadFiles) => {
+          ElMessage.warning(
+            `The limit is 1, you selected ${files.length} files this time, add up to ${
+              files.length + uploadFiles.length
+            } totally`
+          )
+        },
+        slots: {
+          trigger: () => <BaseButton type="primary">点击上传</BaseButton>,
+          default: () => (
+            <div class="el-upload__tip">
+              <p>
+                支持上传.xlsx、.xls、.txt、.xml、.json、.csv文件，最大上传文件为1M <a>下载模板</a>
+              </p>
+              <p class="attention">
+                注意：目标地址添加方式为文件上传时，系统调度策略默认按IP拆分。
+              </p>
+              <ElInput
+                v-model={exploreAimBody.value}
+                type="textarea"
+                autosize={{ minRows: 8, maxRows: 16 }}
+                resize="none"
+                placeholder={explorePlaceholder}
+              />
+            </div>
+          )
+        }
+      },
+      formItemProps: {
+        rules: [required()]
+      }
+    },
+    {
+      field: 'explorePort',
+      label: `${t('formDemo.explorePort')}：`,
+      component: 'Input',
+      componentProps: {
+        type: 'textarea',
+        placeholder: `请输入端口号\n支持输入多个端口进行探测“,”隔开\n最多输入300个端口`,
+        rows: 8
+      },
+      formItemProps: {
+        rules: [required()]
+      }
+    },
+    {
+      field: 'priority',
+      label: `${t('formDemo.priority')}：`,
+      component: 'Select',
+      value: '3',
+      componentProps: {
+        options: [
+          {
+            label: '紧急',
+            value: '1'
+          },
+          {
+            label: '高',
+            value: '2'
+          },
+          {
+            label: '中',
+            value: '3'
+          },
+          {
+            label: '低',
+            value: '4'
+          }
+        ]
+      },
+      formItemProps: {
+        rules: [required()]
+      }
+    }
+  ]
 }
 // 表格查看信息事件
 const openDrawerInfo = async (data: TableSlotDefault) => {
@@ -571,10 +736,13 @@ const searchTable = async (value) => {
   pageSize.value = 10
   await getTableData(activeName.value)
 }
+
 // 选择全部
 const toggleSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.toggleAllSelection()
+  console.log(elTableRef)
+  console.log(tableState.dataList)
 }
 // 导出多选数据
 const getSelections = async () => {
@@ -616,6 +784,7 @@ const getSelections = async () => {
       <Table
         v-model:pageSize="pageSize"
         v-model:currentPage="currentPage"
+        ref="multipleTableRef"
         stripe
         :columns="columns"
         :data="dataList"
@@ -633,7 +802,12 @@ const getSelections = async () => {
     </ElTabs>
   </ContentWrap>
   <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="titleDrawer" :bodyInfo="bodyInfo" />
-  <DrawerOperate v-model:isDrawer="isDrawerOperate" :title="titleDrawer" />
+  <DrawerOperate
+    v-if="true"
+    :drawerData="drawerData"
+    v-model:isDrawer="isDrawerOperate"
+    :title="titleDrawer"
+  />
 </template>
 <style lang="less" scoped>
 .demo-tabs > .el-tabs__content {
