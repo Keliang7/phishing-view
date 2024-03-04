@@ -846,6 +846,7 @@ const handleSelectionChange = async (val) => {
   />
   <!-- 添加v-if的原因是：为了确保每次打开弹窗都重新渲染了一遍，不受上次打开弹窗的影响 -->
   <DrawerOperate
+  
     v-if="isDrawerOperate"
     v-model:isDrawer="isDrawerOperate"
     :title="titleDrawer"
