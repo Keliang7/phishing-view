@@ -750,9 +750,9 @@ const getSelections = async () => {
   const selections = elTableRef?.getSelectionRows()
   console.log(selections)
 }
-// const getRowKeys = (row: any) => {
-//   return row.id
-// }
+const getRowKeys = (row: any) => {
+  return row.id
+}
 // const handleSelectionChange = (data) => {
 //   console.log(data)
 // }
@@ -786,6 +786,8 @@ const getSelections = async () => {
         v-model:currentPage="currentPage"
         ref="multipleTableRef"
         stripe
+        :keys="getRowKeys"
+        :reserve-selection="true"
         :columns="columns"
         :data="dataList"
         :loading="loading"

@@ -48,6 +48,9 @@ export const getInjuredPartyApi = (params: any) => {
 export const getPolicyWhiteListApi = (params: any) => {
   return request.get({ url: '/api/v1/policyConfiguration/whiteList/list', params })
 }
+export const postWhiteListApi = (params: any) => {
+  return request.post({ url: '/api/v1/policyConfiguration/whiteList/list', params })
+}
 // 获取仿冒检测规则列表接口
 export const getPhishingDetectionApi = (params: any) => {
   return request.get({ url: '/api/v1/phishingRule/phishingDetection/list', params })
