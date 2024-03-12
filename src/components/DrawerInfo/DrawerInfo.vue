@@ -14,6 +14,10 @@ defineProps({
   bodyInfo: {
     type: Object,
     default: null
+  },
+  placeholder: {
+    type: String,
+    default: '暂无内容'
   }
 })
 const emit = defineEmits(['update:isDrawer'])
@@ -41,7 +45,7 @@ const open = () => {
         :autosize="{ minRows: 11, maxRows: 16 }"
         :disabled="true"
         resize="none"
-        placeholder="暂无内容"
+        :placeholder="placeholder"
       />
     </div>
   </ElDrawer>

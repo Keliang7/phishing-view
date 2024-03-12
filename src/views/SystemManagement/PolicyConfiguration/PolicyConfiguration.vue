@@ -126,59 +126,7 @@ const canShowPagination = ref(true)
 // 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
 const searchTable = async (value) => {
   searchData.value = value
-  await getList()
-}
-const getRowKeys = (row): string => {
-  dataIDs.value.add(row)
-  return row.dataID
-}
-
-// 选择全部
-const toggleSelection = async () => {
-  const elTableRef = await getElTableExpose()
-  elTableRef?.toggleAllSelection()
-  const res = await getPolicyWhiteListApi({
-    ...searchData.value
-  })
-  selectedData.value = res.data.list.slice(unref(pageSize), res.data.total + 1)
-
-  if (checkedAll.value) {
-    // if (selectedData.value) {
-    //   selectedData.value.forEach((item) => {
-    //     elTableRef?.toggleRowSelection(item, true)
-    //   })
-    // }
-  } else {
-    elTableRef?.clearSelection()
-  }
-}
-
-const handleSelectionChange = async (val) => {
-  console.log('选项变化')
-  selectedData.value = val
-  console.log(selectedData.value, val, 'val')
-}
-
-// 导出多选数据
-const getSelections = async () => {
-  console.log('导出多选数据')
-  const elTableRef = await getElTableExpose()
-  const selections = elTableRef?.getSelectionRows()
-  console.log(selections, selectedData.value)
-}
-
-// 添加
-const addWhiteList = async () => {
-  console.log('添加')
-  isDrawerInfo.value = true
-  placeholderInfo.value =
-    '请输入确认非仿冒网站的域名，匹配成功将不会入库。\n一行一个域名，可输入多行，最多输入1000行。'
-  titleDrawer.value = '添加白名单'
-  bodyInfo.value = [
-    {
-      name: '输入规则内容'
-    }
-  ]
+  handleClick(activeName)
 }
 </script>
 <template>

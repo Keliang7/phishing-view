@@ -833,12 +833,7 @@ const handleSelectionChange = async (val) => {
       </ElTabs>
     </ElTabs>
   </ContentWrap>
-  <DrawerInfo
-    v-model:isDrawer="isDrawerInfo"
-    :title="titleDrawer"
-    :bodyInfo="bodyInfo"
-    :dataSourceInfo="dataSourceInfo"
-  />
+  <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="titleDrawer" :bodyInfo="bodyInfo" />
   <DrawerTimeLine
     v-model:isDrawer="isDrawerTimeLine"
     :title="titleDrawer"
