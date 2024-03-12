@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref, reactive, unref, onMounted } from 'vue'
+import { ref, reactive, unref, onMounted, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import {
@@ -49,8 +49,6 @@ const titleDrawer = ref('')
 const bodyInfo = ref([{}])
 // 高级搜索的数据
 const searchData = ref({})
-// 表格是否全选
-const checkedAll = ref(false)
 // 定义canShowPagination变量，用于控制是否显示分页
 const canShowPagination = ref(true)
 // 该字段用来区别不同页面之间的高级搜索需要展示的内容
@@ -89,8 +87,7 @@ let columns = reactive<TableColumn[]>([])
 const BWColumns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection',
-    reserveSelection: true
+    type: 'selection'
   },
   {
     field: 'dataID',
@@ -155,7 +152,7 @@ const BWColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton onClick={() => openDrawerInfo(data)} type="text" size="small">
+          <ElButton type="primary" onClick={() => openDrawerInfo(data)} size="small">
             查看
           </ElButton>
         )
@@ -184,7 +181,7 @@ const BWColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton type="text" size="small" onClick={() => gatherFn(data)}>
+          <ElButton size="small" type="primary" onClick={() => gatherFn(data)}>
             {t('tableDemo.gather')}
           </ElButton>
         )
@@ -738,24 +735,27 @@ const searchTable = async (value) => {
 }
 
 // 选择全部
+const isCheckedAll = ref(false)
+const selectedData = ref<TableColumn[]>([])
 const toggleSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.toggleAllSelection()
-  console.log(elTableRef)
-  console.log(tableState.dataList)
 }
+const handleSelectionChange = (selected: any[]) => {
+  selectedData.value = selected.map((i) => i.dataID)
+}
+watch(dataList, (newV) => {
+  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.dataID))) {
+    toggleSelection()
+  }
+})
+
 // 导出多选数据
 const getSelections = async () => {
   const elTableRef = await getElTableExpose()
   const selections = elTableRef?.getSelectionRows()
   console.log(selections)
 }
-// const getRowKeys = (row: any) => {
-//   return row.id
-// }
-// const handleSelectionChange = (data) => {
-//   console.log(data)
-// }
 </script>
 <template>
   <AdvancedSearch
@@ -767,7 +767,7 @@ const getSelections = async () => {
   <ContentWrap class="table-box" :title="t('tableDemo.pendUrl')">
     <div class="table-btn">
       <ElButton type="default" @click="toggleSelection()">
-        <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />
+        <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
       </ElButton>
       <ElButton type="default"> 批量采集 </ElButton>
       <ElButton type="primary" @click="getSelections()">
@@ -784,8 +784,8 @@ const getSelections = async () => {
       <Table
         v-model:pageSize="pageSize"
         v-model:currentPage="currentPage"
-        ref="multipleTableRef"
         stripe
+        row-key="dataID"
         :columns="columns"
         :data="dataList"
         :loading="loading"
@@ -798,6 +798,8 @@ const getSelections = async () => {
             : undefined
         "
         @register="tableRegister"
+        :reserve-selection="true"
+        @selection-change="handleSelectionChange"
       />
     </ElTabs>
   </ContentWrap>

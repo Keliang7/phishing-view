@@ -8,6 +8,9 @@ import { getCountApi } from '@/api/dashboard/analysis'
 
 const { t } = useI18n()
 
+const props = defineProps(['timeArray'])
+console.log(props.timeArray)
+
 const { getPrefixCls } = useDesign()
 
 const prefixCls = getPrefixCls('panel')
@@ -26,9 +29,7 @@ const getCount = async () => {
     value,
     label
   }))
-  console.log(totalState, 123)
 }
-
 getCount()
 </script>
 

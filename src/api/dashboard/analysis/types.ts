@@ -1,25 +1,25 @@
 export type TotalNumberTypes = {
-  accessTotalNum: number
-  pendUrlNum: number
-  suspectCounterfeitNum: number
-  pushDataNum: number
-  affirmCounterfeitNum: number
-  understatementNum: number
-  misinformationNum: number
+  name: string
+  value: any
+}
+export type DataTransformationTypes = {
+  name: string
+  value: any
+}
+export type CounterfeitingIndustryTypes = {
+  name: string
+  value: any
+}
+export type CounterfeitIntentTypes = {
+  name: string
+  value: any
 }
 
-export type UserAccessSource = {
-  value: number
+export type GeographicalDistributionTypes = {
   name: string
+  value: any
 }
-
-export type WeeklyUserActivity = {
-  value: number
+export type CategoryOptions = {
   name: string
-}
-
-export type MonthlySales = {
-  name: string
-  estimate: number
-  actual: number
+  value: any
 }

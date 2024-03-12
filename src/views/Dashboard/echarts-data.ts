@@ -3,6 +3,7 @@ import { useI18n } from '@/hooks/web/useI18n'
 
 const { t } = useI18n()
 
+//一 1
 export const funnelOptions: EChartsOption = {
   title: {
     text: t('analysis.dataConversion'),
@@ -69,18 +70,18 @@ export const funnelOptions: EChartsOption = {
         }
       },
       data: [
-        { value: 102400, name: t('analysis.accessTotalNum') },
-        { value: 81212, name: t('analysis.pendUrlNum') },
-        { value: 9280, name: t('analysis.suspectCounterfeitNum') },
-        { value: 13600, name: t('analysis.pushDataNum') },
-        { value: 1045, name: t('analysis.affirmCounterfeitNum') },
-        { value: 27, name: t('analysis.understatementNum') },
-        { value: 13, name: t('analysis.misinformationNum') }
+        { value: 110000, name: t('analysis.accessTotalNum') },
+        { value: 9000, name: t('analysis.pendUrlNum') },
+        { value: 8000, name: t('analysis.suspectCounterfeitNum') },
+        { value: 7000, name: t('analysis.pushDataNum') },
+        { value: 6000, name: t('analysis.affirmCounterfeitNum') },
+        { value: 5000, name: t('analysis.understatementNum') },
+        { value: 20, name: t('analysis.misinformationNum') }
       ]
     }
   ]
 }
-
+//最下面的一个
 export const lineOptions: EChartsOption = {
   title: {
     text: t('analysis.monthlySales'),
@@ -150,7 +151,7 @@ export const lineOptions: EChartsOption = {
     }
   ]
 }
-
+//
 export const pieOptions: EChartsOption = {
   title: {
     text: t('analysis.userAccessSource'),
@@ -232,6 +233,7 @@ export const barOptions: EChartsOption = {
     }
   ]
 }
+
 export const categoryOptions: EChartsOption = {
   xAxis: {
     type: 'category',
