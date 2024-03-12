@@ -4,7 +4,7 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getPhishingDetectionApi } from '@/api/table'
+import { getPhishingDetectionApi } from '@/api/systemManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
@@ -60,10 +60,6 @@ const tabColumns = [
     label: t('tableDemo.visualAnalysisManagement'),
 
     name: 'visualAnalysisManagement'
-  },
-  {
-    label: t('tableDemo.phishingMorphemeManagement'),
-    name: 'phishingMorphemeManagement'
   },
   {
     label: t('tableDemo.phishingSampleManagement'),
@@ -154,10 +150,10 @@ const DetectionColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="text" size="small" onClick={() => editFn(data)}>
+            <ElButton type="primary" size="small" onClick={() => editFn(data)}>
               {t('tableDemo.edit')}
             </ElButton>
-            <ElButton type="text" size="small" onClick={() => deleteFn(data)}>
+            <ElButton type="danger" size="small" onClick={() => deleteFn(data)}>
               {t('tableDemo.delete')}
             </ElButton>
           </div>
@@ -219,70 +215,10 @@ const VisualColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="text" size="small" onClick={() => editFn(data)}>
+            <ElButton type="primary" size="small" onClick={() => editFn(data)}>
               {t('tableDemo.edit')}
             </ElButton>
-            <ElButton type="text" size="small" onClick={() => deleteFn(data)}>
-              {t('tableDemo.delete')}
-            </ElButton>
-          </div>
-        )
-      }
-    }
-  }
-]
-// 仿冒词素库管理表格列表
-const MorphemeColumns: TableColumn[] = [
-  {
-    field: 'selection',
-    type: 'selection'
-  },
-  {
-    field: 'domain',
-    label: t('tableDemo.domain'),
-    width: 240
-  },
-  {
-    field: 'victim',
-    label: t('tableDemo.victim'),
-    width: 240
-  },
-  {
-    field: 'victimType',
-    label: t('tableDemo.victimType'),
-    width: 240
-  },
-  {
-    field: 'addType',
-    label: t('tableDemo.addType'),
-    width: 240
-  },
-  {
-    field: 'createdBy',
-    label: t('tableDemo.createdBy'),
-    width: 240
-  },
-  {
-    field: 'createdTime',
-    label: t('tableDemo.createdTime'),
-    width: 300,
-    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
-  },
-  {
-    field: 'action',
-    label: t('tableDemo.action'),
-    fixed: 'right',
-    headerAlign: 'center',
-    align: 'center',
-    width: 200,
-    slots: {
-      default: (data) => {
-        return (
-          <div>
-            <ElButton type="text" size="small" onClick={() => editFn(data)}>
-              {t('tableDemo.edit')}
-            </ElButton>
-            <ElButton type="text" size="small" onClick={() => deleteFn(data)}>
+            <ElButton type="danger" size="small" onClick={() => deleteFn(data)}>
               {t('tableDemo.delete')}
             </ElButton>
           </div>
@@ -407,17 +343,14 @@ const SignatureColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <div>
-            <ElButton type="text" size="small" onClick={() => editFn(data)}>
-              {t('tableDemo.picToBlacklist')}
+          <div class={'operate-box'}>
+            <ElButton type="primary" size="small" onClick={() => editFn(data)}>
+              放入视觉分析库
             </ElButton>
-            <ElButton type="text" size="small" onClick={() => editFn(data)}>
-              {t('tableDemo.iconToMorpheme')}
-            </ElButton>
-            <ElButton type="text" size="small" onClick={() => editFn(data)}>
+            <ElButton type="primary" size="small" onClick={() => editFn(data)}>
               {t('tableDemo.addDetectionRules')}
             </ElButton>
-            <ElButton type="text" size="small" onClick={() => deleteFn(data)}>
+            <ElButton type="danger" size="small" onClick={() => deleteFn(data)}>
               {t('tableDemo.delete')}
             </ElButton>
           </div>
@@ -471,19 +404,6 @@ const getTableData = async (params) => {
     dataArray.value = ['addType', 'victim', 'victimType', 'createdBy', 'createdTime', 'operate']
     setProps({
       columns: VisualColumns
-    })
-  } else if (params === 'phishingMorphemeManagement') {
-    dataArray.value = [
-      'domain',
-      'addType',
-      'victim',
-      'victimType',
-      'createdBy',
-      'createdTime',
-      'operate'
-    ]
-    setProps({
-      columns: MorphemeColumns
     })
   } else if (params === 'phishingSampleManagement') {
     dataArray.value = [
@@ -574,7 +494,16 @@ const searchTable = async (value) => {
     </ContentWrap>
   </ElTabs>
 </template>
-<style lang="less" scoped>
+<style lang="less">
+.operate-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.operate-box button {
+  width: fit-content;
+  margin: 2px;
+}
 .demo-tabs > .el-tabs__content {
   padding: 0px;
   color: #6b778c;

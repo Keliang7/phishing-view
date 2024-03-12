@@ -1,13 +1,15 @@
 <script setup lang="tsx">
-import { ref, reactive, unref, onMounted } from 'vue'
+import { ref, reactive, unref, onMounted, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElButton, ElCheckbox } from 'element-plus'
-import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getPolicyWhiteListApi } from '@/api/table'
+import { ElButton, ElCheckbox, ElMessageBox, ElMessage } from 'element-plus'
+import { Table, TableColumn } from '@/components/Table'
+import { getPolicyWhiteListApi, deleteWhiteListApi } from '@/api/systemManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
-import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
+import AddData from './PolicyComponent/AddData.vue'
+import GetData from './PolicyComponent/GetData.vue'
+import UploadFile from './PolicyComponent/UploadFile.vue'
 import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 
@@ -27,12 +29,16 @@ const { tableRegister, tableMethods, tableState } = useTable({
       list: res.data.list,
       total: res.data.total
     }
+  },
+  fetchDelApi: async () => {
+    const res = await deleteWhiteListApi(unref(ids))
+    return !!res
   }
 })
 const systemConstants = useSystemConstantsWithOut()
 // 获取tableState中的数据和方法
 let { loading, total, dataList, currentPage, pageSize } = tableState
-const { setProps, getList, getElTableExpose } = tableMethods
+const { setProps, getList, getElTableExpose, delList } = tableMethods
 // 页面主标题
 const title = ref('白名单管理')
 
@@ -41,17 +47,12 @@ const searchData = ref({})
 const dataArray = ref(['ruleContent', 'addType', 'createdBy', 'createdTime', 'operate'])
 const optionArray = ref({ systemAddType: systemConstants.whiteListFrom })
 
-// 右侧弹窗信息
-const isDrawerInfo = ref(false)
-// 右侧弹窗信息-弹窗标题
-const titleDrawer = ref('')
-// 弹窗信息-弹窗内容
-const bodyInfo = ref([{}])
-
 // 定义分页器展示的内容
 const layout = 'prev, pager, next, sizes,jumper,->, total'
 // 定义columns变量，用于存储表格的列配置
 let columns = reactive<TableColumn[]>([])
+//是否全选
+const isCheckedAll = ref(false)
 const whiteColumns: TableColumn[] = [
   {
     field: 'selection',
@@ -94,7 +95,7 @@ const whiteColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="text" size="small" onClick={() => deleteFn(data)}>
+            <ElButton type="danger" size="small" onClick={() => delData(data)}>
               {t('tableDemo.delete')}
             </ElButton>
           </div>
@@ -113,35 +114,118 @@ onMounted(() => {
   }, 0)
 })
 
-const deleteFn = (data: TableSlotDefault) => {
-  console.log(data)
+//删除
+const ids = ref<string[]>([])
+const delLoading = ref(false)
+const delData = async (data) => {
+  const elTableExpose = await getElTableExpose()
+  ids.value = data
+    ? [data.row.ruleContent]
+    : elTableExpose?.getSelectionRows().map((v) => v.ruleContent) || []
+  delLoading.value = true
+  await delList(unref(ids).length).finally(() => {
+    delLoading.value = false
+  })
 }
-const checkedAll = ref(false)
-const dataIDs = ref(new Set())
+//批量删除
+const deleteAllFn = async () => {
+  const temp = cancelData.value
+  if (isCheckedAll.value) {
+    ElMessageBox.confirm(t('common.delMessage'), t('common.delWarning'), {
+      confirmButtonText: t('common.delOk'),
+      cancelButtonText: t('common.delCancel'),
+      type: 'warning'
+    }).then(async () => {
+      const res = await deleteWhiteListApi({ isCheckedAll: true, temp })
+      if (res) {
+        ElMessage.success(t('common.delSuccess'))
+        isCheckedAll.value = false
+        toggleSelection()
+        getList()
+      }
+    })
+  } else {
+    delData(null)
+  }
+}
+
 const placeholderInfo = ref('')
-// 表格多选数据
+// 选择全部
 const selectedData = ref<TableColumn[]>([])
-// 定义canShowPagination变量，用于控制是否显示分页
-const canShowPagination = ref(true)
+const temp = ref<any[]>([])
+const cancelData = ref<any[]>([])
+const toggleSelection = async () => {
+  const elTableRef = await getElTableExpose()
+  elTableRef?.toggleAllSelection()
+}
+const handleSelectionChange = (selected: any[]) => {
+  selectedData.value = selected.map((i) => i.ruleContent)
+  if (temp.value.length > selectedData.value.length) {
+    cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
+    console.log(cancelData.value)
+  }
+}
+watch(dataList, (newV) => {
+  temp.value.push(...newV.map((i) => i.ruleContent))
+  temp.value = [...new Set(temp.value)]
+  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.ruleContent))) {
+    toggleSelection()
+  }
+})
+
 // 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
 const searchTable = async (value) => {
   searchData.value = value
-  handleClick(activeName)
+  await getList()
 }
+// 添加
+
+const titleDrawer = ref('')
+const isDrawerAddData = ref(false)
+const isDrawerGetData = ref(false)
+const isDrawerUploadFile = ref(false)
+const addWhiteList = async () => {
+  titleDrawer.value = '添加白名单'
+  isDrawerAddData.value = true
+  placeholderInfo.value =
+    '请输入确认非仿冒网站的域名，匹配成功将不会入库。\n一行一个域名，可输入多行，最多输入1000行。'
+}
+//导出数据
+const initData = ref({})
+const getSelections = () => {
+  if (isCheckedAll.value) {
+    initData.value = {
+      isCheckedAll: isCheckedAll.value,
+      total,
+      cancelData: cancelData.value.length
+    }
+  } else {
+    initData.value = { pickCount: selectedData.value.length }
+  }
+  titleDrawer.value = '导出数据'
+  isDrawerGetData.value = true
+}
+//上传文件
+const uploadFile = () => {
+  titleDrawer.value = '上传文件'
+  isDrawerUploadFile.value = true
+}
+// 定义canShowPagination变量，用于控制是否显示分页
+const canShowPagination = ref(true)
 </script>
 <template>
   <AdvancedSearch :dataArray="dataArray" :optionArray="optionArray" @search-data="searchTable" />
   <ContentWrap :title="title" class="table-box">
     <div class="table-btn">
-      <ElButton type="default" @click="toggleSelection()">
-        <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />
+      <ElButton type="default">
+        <ElCheckbox @click="toggleSelection" v-model="isCheckedAll" label="选择全部" size="large" />
       </ElButton>
-      <ElButton type="default"> 批量删除 </ElButton>
-      <ElButton type="primary" @click="addWhiteList()"> 添加 </ElButton>
+      <ElButton type="default" @click="deleteAllFn"> 批量删除 </ElButton>
+      <ElButton type="primary" @click="addWhiteList"> 添加 </ElButton>
 
-      <ElButton type="primary"> 导入数据 </ElButton>
+      <ElButton type="primary" @click="uploadFile"> 导入数据 </ElButton>
 
-      <ElButton type="primary" @click="getSelections()">
+      <ElButton type="primary" @click="getSelections">
         <Icon icon="tdesign:upload" /> 导出数据
       </ElButton>
     </div>
@@ -149,8 +233,8 @@ const searchTable = async (value) => {
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"
       stripe
-      :rowKey="getRowKeys"
-      :reserveSelection="true"
+      row-key="ruleContent"
+      :reserve-selection="true"
       :columns="columns"
       :data="dataList"
       :loading="loading"
@@ -166,14 +250,16 @@ const searchTable = async (value) => {
       @selection-change="handleSelectionChange"
     />
   </ContentWrap>
-  <DrawerInfo
-    v-model:isDrawer="isDrawerInfo"
+  <AddData
+    v-model:isDrawer="isDrawerAddData"
     :title="titleDrawer"
-    :bodyInfo="bodyInfo"
-    :placeholder="placeholderInfo"
+    :placeholder="`请输入确认非仿冒网站的域名，匹配成功将不会入库。
+一行一个域名，可输入多行，最多输入1000行。`"
   />
+  <GetData v-model:isDrawer="isDrawerGetData" :title="titleDrawer" :data="initData" />
+  <UploadFile v-model:isDrawer="isDrawerUploadFile" :title="'上传'" />
 </template>
-<style lang="less" scoped>
+<style scoped>
 .demo-tabs > .el-tabs__content {
   padding: 0px;
   color: #6b778c;
