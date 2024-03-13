@@ -172,6 +172,17 @@ watch(dataList, (newV) => {
     toggleSelection()
   }
 })
+const clearSelection = async () => {
+  const elTableRef = await getElTableExpose()
+  elTableRef?.clearSelection()
+}
+watch(isCheckedAll, () => {
+  if (isCheckedAll.value) {
+    toggleSelection()
+  } else {
+    clearSelection()
+  }
+})
 
 // 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
 const searchTable = async (value) => {
@@ -218,7 +229,7 @@ const canShowPagination = ref(true)
   <ContentWrap :title="title" class="table-box">
     <div class="table-btn">
       <ElButton type="default">
-        <ElCheckbox @click="toggleSelection" v-model="isCheckedAll" label="选择全部" size="large" />
+        <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
       </ElButton>
       <ElButton type="default" @click="deleteAllFn"> 批量删除 </ElButton>
       <ElButton type="primary" @click="addWhiteList"> 添加 </ElButton>

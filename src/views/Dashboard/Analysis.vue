@@ -124,6 +124,7 @@ const funnelOptions: EChartsOption = {
 }
 const getDataTransformation = async () => {
   const res = await getDataTransformationApi(timeObj)
+  console.log(res)
   ;(funnelOptions.legend = {
     data: res.data.map((item) => {
       return item.name
@@ -376,7 +377,6 @@ const extensionData = ref<any>({})
 const getExtensionData = async () => {
   let res = await getExtensionApi(timeObj)
   extensionData.value = res.data
-  console.log(res)
 }
 //仿冒检测特征统计
 const tabColumns3 = [
