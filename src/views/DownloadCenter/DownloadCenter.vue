@@ -33,12 +33,10 @@ const columns = reactive<TableColumn[]>([
     field: 'fileName',
     label: '文件名称'
   },
-
   {
     field: 'fileSource',
     label: '文件来源'
   },
-
   {
     field: 'status',
     label: '状态',
@@ -73,7 +71,6 @@ const columns = reactive<TableColumn[]>([
     }
   }
 ])
-
 const actionFn = async (data: TableSlotDefault) => {
   let res = await getDownloadCenterFileApi({ key: data.row.fileName })
   const blob = new Blob([res.data], { type: 'text/xlsx' })
@@ -87,7 +84,6 @@ const actionFn = async (data: TableSlotDefault) => {
   document.body.removeChild(a)
 }
 </script>
-
 <template>
   <ContentWrap title="下载中心">
     <template #header>
