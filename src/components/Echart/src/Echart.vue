@@ -4,7 +4,17 @@ import echarts from '@/plugins/echarts'
 import { debounce } from 'lodash-es'
 import 'echarts-wordcloud'
 import { propTypes } from '@/utils/propTypes'
-import { computed, PropType, ref, unref, watch, onMounted, onBeforeUnmount, onActivated } from 'vue'
+import {
+  computed,
+  PropType,
+  ref,
+  unref,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  onActivated
+  // defineExpose
+} from 'vue'
 import { useAppStore } from '@/store/modules/app'
 import { isString } from '@/utils/is'
 import { useDesign } from '@/hooks/web/useDesign'
@@ -106,6 +116,10 @@ onActivated(() => {
     echartRef.resize()
   }
 })
+// defineExpose({
+//   initChart,
+//   resizeHandler
+// })
 </script>
 
 <template>

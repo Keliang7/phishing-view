@@ -63,6 +63,14 @@ export const constantRouterMap: AppRouteRecordRaw[] = [
       title: '404',
       noTagsView: true
     }
+  },
+  {
+    path: '/downloadCenter',
+    component: () => import('@/views/DownloadCenter/DownloadCenter.vue'),
+    name: 'DownloadCenter',
+    meta: {
+      hidden: true
+    }
   }
 ]
 

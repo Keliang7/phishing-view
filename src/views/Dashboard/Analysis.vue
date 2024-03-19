@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { watch } from 'vue'
+// import echarts from '@/plugins/echarts'
+import * as echarts from 'echarts'
 import { CountTo } from '@/components/CountTo'
 import { useDesign } from '@/hooks/web/useDesign'
 import {
@@ -30,9 +32,10 @@ import {
   getExtensionApi,
   getCharacteristicApi
 } from '@/api/dashboard/analysis'
-import { set } from 'lodash-es'
 import { EChartsOption } from 'echarts'
 import { useI18n } from '@/hooks/web/useI18n'
+import { onMounted } from 'vue'
+import { set } from 'lodash-es'
 
 const { t } = useI18n()
 const loading = ref(true)
@@ -40,7 +43,7 @@ const loading = ref(true)
 //选择日期
 const today = new Date()
 const sevenDaysAgo = new Date()
-sevenDaysAgo.setDate(today.getDate() - 7)
+sevenDaysAgo.setDate(today.getDate() - 1900)
 const timeArray: any = ref([sevenDaysAgo.getTime(), today.getTime()])
 const timeObj = { startTime: timeArray.value[0], endTime: timeArray.value[1] }
 
@@ -49,91 +52,83 @@ const { getPrefixCls } = useDesign()
 const prefixCls = getPrefixCls('panel')
 const totalState = ref<any[]>([])
 const getCount = async () => {
-  const res = await getCountApi(timeArray)
+  const res = await getCountApi(timeObj)
   totalState.value = res.data
 }
 // 数据转化统计
 const funnelOptions: EChartsOption = {
   title: {
-    text: t('analysis.dataConversion'),
-    left: 'center'
+    text: '数据转化统计'
   },
   tooltip: {
-    trigger: 'item',
-    formatter: '{a} <br/>{b} : {c}'
-  },
-  toolbox: {
-    feature: {
-      dataView: { readOnly: false },
-      restore: {},
-      saveAsImage: {}
-    }
-  },
-  legend: {
-    data: [
-      t('analysis.accessTotalNum'),
-      t('analysis.pendUrlNum'),
-      t('analysis.suspectCounterfeitNum'),
-      t('analysis.pushDataNum'),
-      t('analysis.affirmCounterfeitNum'),
-      t('analysis.understatementNum'),
-      t('analysis.misinformationNum')
-    ],
-    bottom: 'bottom',
-    type: 'scroll',
-    itemWidth: 14
+    trigger: 'item'
   },
   series: [
     {
-      name: 'Funnel',
+      tooltip: {
+        trigger: 'item',
+        formatter: '{b}'
+      },
       type: 'funnel',
-      left: '10%',
-      top: 40,
-      bottom: 60,
-      width: '80%',
-      height: '75%',
-      min: 0,
-      max: 100,
-      minSize: '40%',
-      maxSize: '100%',
-      sort: 'descending',
-      gap: 2,
+      left: '75%',
+      top: '25%',
+      width: '0%',
+      height: '50%',
       label: {
-        show: true,
-        position: 'inside'
+        formatter: '{b}'
       },
       labelLine: {
-        length: 10,
-        lineStyle: {
-          width: 1,
-          type: 'solid'
-        }
+        show: true
+      },
+      itemStyle: {
+        opacity: 0.7
+      },
+      data: [
+        { value: 5, name: '转化量100%' },
+        { value: 4, name: '转化量50%' },
+        { value: 3, name: '转化量30%' },
+        { value: 2, name: '转化量20%' },
+        { value: 1, name: '误报率10%' }
+      ]
+    },
+    {
+      type: 'funnel',
+      left: '5%',
+      width: '70%',
+      maxSize: '100%',
+      minSize: '40%',
+      label: {
+        position: 'inside',
+        formatter: '{b}:{c}',
+        color: '#fff'
       },
       itemStyle: {
         borderColor: '#fff',
-        borderWidth: 1
+        borderWidth: 2
       },
       emphasis: {
         label: {
-          fontSize: 20
+          position: 'inside',
+          formatter: '{c}'
         }
       },
-      data: []
+      data: [
+        { value: 100000, name: '待处理URL集合数据总量' },
+        { value: 50000, name: '仿冒数据总量' },
+        { value: 20000, name: '推送数据总量' },
+        { value: 10000, name: '确认仿冒数据总量' },
+        { value: 9000, name: '漏报数据总量' },
+        { value: 1000, name: '误报数据总量' }
+      ],
+      z: 100
     }
   ]
 }
+
 const getDataTransformation = async () => {
   const res = await getDataTransformationApi(timeObj)
-  console.log(res)
-  ;(funnelOptions.legend = {
-    data: res.data.map((item) => {
-      return item.name
-    }),
-    bottom: 'bottom',
-    type: 'scroll',
-    itemWidth: 14
-  }),
-    (funnelOptions.series![0].data = res.data)
+  set(funnelOptions, 'series[0].data', res.data.Trans)
+  set(funnelOptions, 'series[1].data', res.data.Total)
 }
 // 仿冒行业数据统计
 const pieOptions: EChartsOption = {
@@ -174,15 +169,13 @@ const pieOptions: EChartsOption = {
 }
 const getCounterfeitingIndustry = async () => {
   const res = await getCounterfeitingIndustryApi(timeObj)
-  ;(pieOptions.legend = {
-    bottom: 'bottom',
-    type: 'scroll',
-    itemWidth: 14,
-    data: res.data.map((item) => {
-      return item.name
-    })
-  }),
-    (pieOptions.series![0].data = res.data)
+  set(
+    pieOptions,
+    'legend.data',
+    res.data.map((item) => item.name)
+  )
+  set(pieOptions, 'series[0].data', res.data)
+  console.log(pieOptions)
 }
 //仿冒意图统计
 const pieOptions2: EChartsOption = {
@@ -266,7 +259,7 @@ const getGeographicalDistribution = async () => {
   })
 }
 // 数据统计category
-const tabColumns = [
+const tabColumns: any = [
   {
     label: '数据统计',
     name: 'dataCount'
@@ -297,19 +290,6 @@ const tabColumns = [
   }
 ]
 const activeName = ref(tabColumns[0].name)
-const categoryOptions: EChartsOption = {
-  xAxis: {
-    type: 'category'
-  },
-  yAxis: {
-    type: 'value'
-  },
-  series: [
-    {
-      type: 'line'
-    }
-  ]
-}
 const tableData = ref<any[]>([])
 const getTableDataCount = async () => {
   const res = await getTableDataCountApi(timeObj)
@@ -317,20 +297,31 @@ const getTableDataCount = async () => {
 }
 const getCategoryOptions = async (type) => {
   const res = await getcategoryOptionsApi({ type, ...timeObj })
-  set(
-    categoryOptions,
-    'xAxis.data',
-    res.data.map((v) => {
-      return v.name
-    })
-  )
-  set(
-    categoryOptions,
-    'series[0].data',
-    res.data.map((item) => {
-      return item.value
-    })
-  )
+  console.log(res.data)
+  if (res) {
+    const categoryOptions: EChartsOption = {
+      xAxis: {
+        type: 'category',
+        data: res.data.map((v) => {
+          return v.name
+        })
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          type: 'line',
+          data: res.data.map((item) => {
+            return item.value
+          })
+        }
+      ]
+    }
+    let dom = document.getElementById(`${type}Div`)
+    let echartRef = echarts.init(dom)
+    echartRef?.setOption(categoryOptions)
+  }
 }
 const handleClick = async (tab) => {
   if (tab === 'dataCount') {
@@ -356,10 +347,11 @@ const tableData2 = ref()
 const getTableData2 = async () => {
   let result
   if (activeName2.value == 'dataSourceContribution') {
-    result = await getDSContributionApi()
+    result = await getDSContributionApi(timeObj)
+    console.log('结果', result)
   }
   if (activeName2.value == 'dataSourceReport') {
-    result = await getDSReportApi()
+    result = await getDSReportApi(timeObj)
   }
   tableData2.value = result.data
 }
@@ -370,7 +362,6 @@ const handleClick2 = async () => {
 const taskMessageData = ref<any>({})
 const getTaskMessageData = async () => {
   let res = await getTaskMessageApi(timeObj)
-  console.log('test1', res)
   taskMessageData.value = res.data
 }
 const extensionData = ref<any>({})
@@ -393,7 +384,6 @@ const activeName3 = ref(tabColumns3[1].name)
 const tableData3 = ref()
 const getCharacteristicData = async () => {
   let res = await getCharacteristicApi({ type: activeName3.value, ...timeObj })
-  console.log('last', res)
   tableData3.value = res.data
 }
 const handleClick3 = (tab) => {
@@ -420,7 +410,9 @@ const init = async () => {
 watch(timeArray, () => {
   init()
 })
-init()
+onMounted(() => {
+  init()
+})
 </script>
 <template>
   <div>
@@ -431,9 +423,10 @@ init()
       start-placeholder="开始时间"
       end-placeholder="结束时间"
       :size="'default'"
+      class="mb-2 ml-2"
     />
     <ElAlert
-      style="width: fit-content; display: inline"
+      style="margin: 2px; width: fit-content; display: inline"
       type="success"
       :description="'温馨提示：自定义时间范围仅对总览页面统计生效，时间跨度越大，需统计数据量越大，统计响应时间越慢，最多可查询5年。'"
       :closable="false"
@@ -491,6 +484,8 @@ init()
         </ElSkeleton>
       </ElCard>
     </ElCol>
+  </ElRow>
+  <ElRow :gutter="20" justify="space-between">
     <ElCol :xl="12" :lg="12" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated>
@@ -502,20 +497,13 @@ init()
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated>
           <ElTabs v-model="activeName" class="demo-tabs" @tab-change="handleClick">
-            <ElTabPane
-              v-for="item in tabColumns"
-              :key="item.name"
-              :label="item.label"
-              :name="item.name"
-            >
-              <el-table
-                v-if="activeName === 'dataCount'"
-                :data="tableData"
-                border
-                style="width: 100%"
-                height="245"
-              >
-                <el-table-column width="120" prop="date" label="日期" />
+            <ElTabPane :key="'dataCount'" :label="'数据统计'" :name="'dataCount'">
+              <el-table :data="tableData" border style="width: 100%" height="245">
+                <el-table-column width="120" prop="data" label="时间戳">
+                  <template v-slot="{ row }">
+                    {{ new Date(row.date).toLocaleDateString() }}
+                  </template>
+                </el-table-column>
                 <el-table-column width="130" prop="access" label="接入数据源总量" />
                 <el-table-column width="130" prop="pending" label="待处理数据总量" />
                 <el-table-column width="140" prop="suspect" label="疑似仿冒数据总量" />
@@ -525,12 +513,21 @@ init()
                 <el-table-column width="130" prop="pandingReview" label="待复核规则数量" />
                 <el-table-column width="120" prop="compositeRule" label="复核规则数量" />
               </el-table>
-              <Echart v-if="activeName !== 'dataCount'" :options="categoryOptions" :height="245" />
+            </ElTabPane>
+            <ElTabPane
+              v-for="item in tabColumns.filter((item) => item.name !== 'dataCount')"
+              :key="item.name"
+              :label="item.label"
+              :name="item.name"
+            >
+              <div :id="item.name + 'Div'" style="height: 245px"></div>
             </ElTabPane>
           </ElTabs>
         </ElSkeleton>
       </ElCard>
     </ElCol>
+  </ElRow>
+  <ElRow :gutter="20" justify="space-between">
     <ElCol :xl="12" :lg="12" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
         <div class="flex justify-between mb-20px">
@@ -574,12 +571,12 @@ init()
           <p>最近一个人工采集完成任务：{{ taskMessageData.lastTime }}</p>
           <p class="text-blue">去添加任务</p>
         </div>
-        <el-table :data="[taskMessageData]" border style="width: 100%">
+        <el-table show-overflow-tooltip :data="[taskMessageData]" border style="width: 100%">
           <el-table-column prop="taskName" label="任务名称" />
           <el-table-column prop="taskType" label="探测类型" />
           <el-table-column prop="traceResult" label="探测内容" />
           <el-table-column prop="issuanceMethod" label="下发方式" />
-          <el-table-column label="操作">
+          <el-table-column width="90" label="操作">
             <div class="text-blue">查看数据</div>
           </el-table-column>
         </el-table>
@@ -639,17 +636,19 @@ init()
           <p>最近一个人工采集完成任务：{{ extensionData.lastTime }}</p>
           <p class="text-blue">去添加任务</p>
         </div>
-        <el-table :data="[taskMessageData]" border style="width: 100%">
+        <el-table show-overflow-tooltip :data="[taskMessageData]" border style="width: 100%">
           <el-table-column prop="taskName" label="任务名称" />
           <el-table-column prop="taskType" label="探测类型" />
           <el-table-column prop="traceResult" label="探测内容" />
           <el-table-column prop="issuanceMethod" label="下发方式" />
-          <el-table-column label="操作">
+          <el-table-column width="90" label="操作">
             <div class="text-blue">查看数据</div>
           </el-table-column>
         </el-table>
       </ElCard>
     </ElCol>
+  </ElRow>
+  <ElRow :gutter="20" justify="space-between">
     <ElCol :xl="24" :lg="24" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated>
@@ -703,6 +702,8 @@ init()
         </ElSkeleton>
       </ElCard>
     </ElCol>
+  </ElRow>
+  <ElRow :gutter="20" justify="space-between">
     <ElCol :xl="24" :lg="24" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated>

@@ -269,13 +269,11 @@ const dataArray = ref([
   'url',
   'domain',
   'ip',
-  'expandStatus',
-  'collectionStatus',
-  'updateStatus',
+  'status',
   'discoveryTime',
   'victim',
-  'omissionReason',
-  'operate'
+  'victimType',
+  'misReason'
 ])
 const tipTitle = ref('系统默认展示当天接入数据，最多可查看5年内数据，超出5年数据不会留存。')
 const optionArray = ref({

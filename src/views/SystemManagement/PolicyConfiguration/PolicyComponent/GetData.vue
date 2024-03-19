@@ -1,38 +1,50 @@
 <script setup lang="tsx">
 import { ElDrawer, ElAlert } from 'element-plus'
-import { FormSchema } from '@/components/Form'
-import { Form } from '@/components/Form'
+import { useForm } from '@/hooks/web/useForm'
+import { Form, FormSchema } from '@/components/Form'
 import { reactive } from 'vue'
-defineProps({
+import { getDataApi } from '@/api/systemManagement/index'
+import { formatToDateTimeSimple } from '@/utils/dateUtil'
+const props = defineProps({
   title: {
     type: String,
     default: ''
+  },
+  data: {
+    type: Object,
+    default: null
   },
   isDrawer: {
     type: Boolean,
     default: false
   },
-  data: {
+  exportAll: {
+    type: Boolean,
+    default: false
+  },
+  arrayNot: {
     type: Object,
     default: null
   }
 })
+const { formRegister, formMethods } = useForm()
+const { getFormData } = formMethods
 const schema = reactive<FormSchema[]>([
   {
-    field: 'field1',
+    field: 'fileName',
     label: '导出文件的名称',
     component: 'Input',
-    value: `白名单_${new Date().toLocaleString()}`
+    value: `白名单_${formatToDateTimeSimple(Date.now())}`
   },
   {
-    field: 'field2',
+    field: 'type',
     label: '导出文件的格式',
     component: 'Select',
-    value: 'Excel',
+    value: 'excel',
     componentProps: {
       options: [
         {
-          label: 'Excel',
+          label: 'excel',
           value: '1'
         },
         {
@@ -43,6 +55,7 @@ const schema = reactive<FormSchema[]>([
     }
   }
 ])
+
 const emit = defineEmits(['update:isDrawer'])
 const close = () => {
   console.log('关闭弹窗')
@@ -51,9 +64,17 @@ const close = () => {
 const open = () => {
   console.log('打开弹窗')
 }
-const confirmClick = () => {
-  console.log('获取数据')
-  close()
+const confirmClick = async () => {
+  let formData = await getFormData()
+  let res = await getDataApi({
+    ruleContents: props.data.ruleContents,
+    exportAll: props.exportAll,
+    arrayNot: props.arrayNot,
+    ...formData
+  })
+  if (res.code == 0) {
+    close()
+  }
 }
 </script>
 <template>
@@ -72,9 +93,10 @@ const confirmClick = () => {
       :closable="false"
     />
     <p style="font-size: 12px; color: gray"
-      >已选中 {{ data.isCheckedAll ? data.total - data.cancelData : data.pickCount }} 数据</p
+      >已选中
+      {{ data.isCheckedAll ? data.total - data.cancelData : data.ruleContents.length }} 数据</p
     >
-    <Form :schema="schema" label-width="fitcontent" :isCol="false" />
+    <Form :schema="schema" label-width="fitcontent" :isCol="false" @register="formRegister" />
     <template #footer>
       <div style="margin-right: 20px">
         <BaseButton type="default" @click="close">取 消</BaseButton>

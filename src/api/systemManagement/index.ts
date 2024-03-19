@@ -10,8 +10,9 @@ export const deleteWhiteListApi = (params: any) => {
   console.log(params)
   return request.delete({ url: '/api/v1/whiteList/list', data: params })
 }
-export const downLoadDataApi = (params: any) => {
-  return request.get({ url: '/api/v1/policyConfiguration/whiteList/list', params })
+export const getDataApi = (params: any) => {
+  console.log(params)
+  return request.post({ url: '/api/v1/policyConfiguration/whiteList/export', data: params })
 }
 export const upLoadFileApi = (params: any) => {
   return request.get({ url: '/api/v1/policyConfiguration/whiteList/anycn_import_file', params })

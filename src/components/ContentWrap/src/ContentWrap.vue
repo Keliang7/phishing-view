@@ -24,7 +24,7 @@ defineProps({
           </template>
           <Icon class="ml-5px" icon="bi:question-circle-fill" :size="14" />
         </ElTooltip>
-        <div class="flex pl-20px flex-grow">
+        <div class="flex pl-20px flex-grow position-relative">
           <slot name="header"></slot>
         </div>
       </div>

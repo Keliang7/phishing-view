@@ -27,49 +27,47 @@ const close = () => {
   emit('update:isDrawer', false)
 }
 const fileList = ref<UploadUserFile[]>([])
-const handleChange: UploadProps['onChange'] = (uploadFile) => {
-  fileList.value.push(uploadFile)
-  console.log('已选中的文件列表', fileList.value)
-}
 const handleExceed: UploadProps['onExceed'] = () => {
   ElMessage.warning('最多选择五个文件上传')
 }
 const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
-  if (rawFile.type !== 'xlsx') {
-    ElMessage.error('只支持xlsx文件!')
-    return false
-  } else if (rawFile.size / 1024 / 1024 > 1) {
-    ElMessage.error('文件的大小超过 1MB!')
+  if (rawFile.size / 1024 / 1024 > 1) {
+    ElMessage.error(`${rawFile.name}文件的大小超过 1MB!`)
     return false
   }
   return true
 }
+const onSuccess: UploadProps['onSuccess'] = (response: any) => {
+  console.log(response)
+}
+const uploadRef = ref<UploadInstance>()
 const submitUpload = () => {
-  const uploadRef = ref<UploadInstance>()
-  uploadRef.value!.submit()
+  uploadRef.value?.submit()
 }
 </script>
 <template>
   <ElDrawer :title="title" :modelValue="isDrawer" :before-close="close" custom-class="drawerWidth">
     <ElUpload
+      ref="uploadRef"
       class="upload-demo"
+      action="http://0.0.0.0:3000/goodsInfo/add"
       drag
       multiple
       :auto-upload="false"
       :limit="5"
+      accept=".xls,.xlsx"
       show-file-list
       v-model:file-list="fileList"
-      :on-change="handleChange"
-      :before-upload="beforeUpload"
       :on-exceed="handleExceed"
+      :before-upload="beforeUpload"
+      :on-success="onSuccess"
     >
       <div class="el-upload__text"> 拖放文件或 <em>点击上传</em> </div>
       <template #tip>
         <div class="el-upload__tip">
           只能上传xlsx文件,不能超过1MB,最多上传5个文件；文件模版
-          <a href="#">下载</a>
+          <a href="">下载</a>
         </div>
-        已选中 {{ fileList.length }}个
       </template>
     </ElUpload>
     <template #footer>

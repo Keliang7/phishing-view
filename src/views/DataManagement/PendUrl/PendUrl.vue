@@ -12,7 +12,7 @@ import {
   ElInput
 } from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getUrlBWListApi, getUrlBWwebInfoApi, getUrlDomainListApi } from '@/api/table'
+import { getUrlBWListApi, getUrlBWwebInfoApi } from '@/api/table'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
@@ -52,7 +52,7 @@ const searchData = ref({})
 // 定义canShowPagination变量，用于控制是否显示分页
 const canShowPagination = ref(true)
 // 该字段用来区别不同页面之间的高级搜索需要展示的内容
-const dataArray = ref(['url', 'domain', 'ip', 'collectionStatus', 'discoveryTime', 'operate'])
+const dataArray = ref(['url', 'domain', 'ip', 'status', 'discoveryTime'])
 const optionArray = ref({ collectionStatus: systemConstants.collectionStatus })
 const tipTitle = ref('系统默认展示当天接入数据，最多可查看7天内数据，超出7天数据不会留存。')
 // 操作任务弹窗
@@ -698,13 +698,13 @@ const getTableData = async (params) => {
     setProps({
       columns: DomainColumns
     })
-    const res = await getUrlDomainListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize),
-      ...searchData.value
-    })
-    dataList.value = res.data.list
-    total.value = res.data.total
+    // const res = await getUrlDomainListApi({
+    //   pageIndex: unref(currentPage),
+    //   pageSize: unref(pageSize),
+    //   ...searchData.value
+    // })
+    // dataList.value = res.data.list
+    // total.value = res.data.total
   } else if (params === 'urlLog') {
     setProps({
       columns: URLColumns

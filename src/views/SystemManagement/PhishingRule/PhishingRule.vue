@@ -7,9 +7,9 @@ import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
 import { getPhishingDetectionApi, deletePhishingDetectionApi } from '@/api/systemManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
-import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import AddData from './PhishingRuleComponent/AddData.vue'
+import EditData from './PhishingRuleComponent/EditData.vue'
 import GetData from './PhishingRuleComponent/GetData.vue'
 import UploadFile from './PhishingRuleComponent/UploadFile.vue'
 // import { useIcon } from '@/hooks/web/useIcon'
@@ -31,27 +31,20 @@ const { tableRegister, tableMethods, tableState } = useTable({
     return !!res
   }
 })
-const systemConstants = useSystemConstantsWithOut()
 // 高级搜索的数据
 const searchData = ref({})
 // 定义canShowPagination变量，用于控制是否显示分页
 const canShowPagination = ref(true)
 const dataArray = ref([
+  'checkStatus',
   'featureContent',
   'addType',
+  'createBy',
+  'createTime',
   'featureID',
   'victim',
-  'victimType',
-  'createdBy',
-  'createdTime',
-  'ruleCheck',
-  'operate'
+  'victimType'
 ])
-const optionArray = ref({
-  systemAddType: systemConstants.whiteListFrom,
-  ruleCheck: systemConstants.ruleCheck,
-  victimType: systemConstants.victimType
-})
 // 获取tableState中的数据和方法
 let { loading, total, dataList, currentPage, pageSize } = tableState
 const { getList, setProps, getElTableExpose, delList } = tableMethods
@@ -59,12 +52,10 @@ const { getList, setProps, getElTableExpose, delList } = tableMethods
 const tabColumns = [
   {
     label: t('tableDemo.phishingDetectionFeature'),
-
     name: 'phishingDetectionFeature'
   },
   {
     label: t('tableDemo.visualAnalysisManagement'),
-
     name: 'visualAnalysisManagement'
   },
   {
@@ -367,16 +358,15 @@ const SignatureColumns: TableColumn[] = [
 ]
 // 在页面加载完成后，设置columns的值
 onMounted(() => {
-  setTimeout(() => {
-    // 设置columns的值为一个包含列配置的数组
-    setProps({
-      columns: DetectionColumns
-    })
-  }, 0)
+  // 设置columns的值为一个包含列配置的数组
+  setProps({
+    columns: DetectionColumns
+  })
 })
 
 // 定义表格内操作函数，用于处理点击表格列时的操作
 const editFn = (data: TableSlotDefault) => {
+  isEditDataDrawer.value = true
   console.log(data)
 }
 const deleteFn = (data: TableSlotDefault) => {
@@ -388,13 +378,12 @@ const getTableData = async (params) => {
     dataArray.value = [
       'featureContent',
       'addType',
+      'createdBy',
+      'createdTime',
       'featureID',
       'victim',
       'victimType',
-      'createdBy',
-      'createdTime',
-      'ruleCheck',
-      'operate'
+      'checkStatus'
     ]
     setProps({
       columns: DetectionColumns
@@ -407,19 +396,22 @@ const getTableData = async (params) => {
     dataList.value = res.data.list
     total.value = res.data.total
   } else if (params === 'visualAnalysisManagement') {
-    dataArray.value = ['addType', 'victim', 'victimType', 'createdBy', 'createdTime', 'operate']
+    dataArray.value = ['websiteName', 'addType', 'victim', 'victimType', 'createdBy', 'createdTime']
     setProps({
       columns: VisualColumns
     })
   } else if (params === 'phishingSampleManagement') {
     dataArray.value = [
       'domain',
-      'addType',
+      'ip',
       'victim',
       'victimType',
+      'addType',
+      'title',
+      'FID',
+      'ICON_hash',
       'createdBy',
-      'createdTime',
-      'operate'
+      'createdTime'
     ]
     setProps({
       columns: SignatureColumns
@@ -518,6 +510,8 @@ const deleteAllFn = async () => {
 
 //添加
 const isAddDataDrawer = ref(false)
+//编辑
+const isEditDataDrawer = ref(false)
 //导出
 const isGetDataDrawer = ref(false)
 const initData = ref({})
@@ -539,12 +533,7 @@ const isUploadFileDrawer = ref(false)
 <template>
   <ElTabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
     <ElTabPane v-for="item in tabColumns" :key="item.name" :label="item.label" :name="item.name" />
-    <AdvancedSearch
-      :dataArray="dataArray"
-      :optionArray="optionArray"
-      :isTip="false"
-      @search-data="searchTable"
-    />
+    <AdvancedSearch :dataArray="dataArray" :isTip="false" @search-data="searchTable" />
     <ContentWrap>
       <div class="table-btn">
         <ElButton type="default">
@@ -594,6 +583,7 @@ const isUploadFileDrawer = ref(false)
     </ContentWrap>
   </ElTabs>
   <AddData :title="'添加检测规则'" v-model:isDrawer="isAddDataDrawer" />
+  <EditData :title="'编辑检测规则'" v-model:isDrawer="isEditDataDrawer" />
   <GetData v-model:isDrawer="isGetDataDrawer" :title="'导出数据'" :data="initData" />
   <UploadFile v-model:isDrawer="isUploadFileDrawer" :title="'上传数据'" />
 </template>

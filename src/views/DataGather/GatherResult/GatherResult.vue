@@ -7,9 +7,9 @@ import { Table, TableColumn } from '@/components/Table'
 import { getPolicyWhiteListApi, deleteWhiteListApi } from '@/api/systemManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
-import AddData from './PolicyComponent/AddData.vue'
-import GetData from './PolicyComponent/GetData.vue'
-import UploadFile from './PolicyComponent/UploadFile.vue'
+// import AddData from './PolicyComponent/AddData.vue'
+// import GetData from './PolicyComponent/GetData.vue'
+// import UploadFile from './PolicyComponent/UploadFile.vue'
 import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 
@@ -39,71 +39,161 @@ const systemConstants = useSystemConstantsWithOut()
 // 获取tableState中的数据和方法
 let { loading, total, dataList, currentPage, pageSize } = tableState
 const { setProps, getList, getElTableExpose, delList } = tableMethods
-// 页面主标题
-const title = ref('白名单管理')
-
 // 高级搜索的数据
 const searchData = ref({})
-const dataArray = ref(['ruleContent', 'addType', 'createdBy', 'createdTime'])
+const searchTable = async (value) => {
+  searchData.value = value
+  await getList()
+}
+const dataArray = ref([
+  'taskID',
+  'taskName',
+  'createdBy',
+  'title',
+  'discoveryTime',
+  'domain',
+  'IP',
+  'FID',
+  'netStatusCode',
+  'icon'
+])
 const optionArray = ref({ systemAddType: systemConstants.whiteListFrom })
 
 // 定义分页器展示的内容
 const layout = 'prev, pager, next, sizes,jumper,->, total'
 // 定义columns变量，用于存储表格的列配置
 let columns = reactive<TableColumn[]>([])
-//是否全选
-const isCheckedAll = ref(false)
+
 const whiteColumns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection'
   },
   {
-    field: 'ruleContent',
-    label: t('tableDemo.ruleContent'),
-    width: 250
+    field: 'dataID',
+    label: '数据ID'
   },
   {
-    field: 'matchNum',
-    label: t('tableDemo.matchNum'),
-    width: 250
+    field: 'domain',
+    label: '域名'
   },
   {
-    field: 'addType',
-    label: t('tableDemo.addType'),
-    width: 250
+    field: 'IP',
+    label: 'IP'
   },
   {
-    field: 'createdBy',
-    label: t('tableDemo.createdBy'),
-    width: 250
+    field: 'website',
+    label: '网站地址'
   },
   {
-    field: 'createdTime',
-    label: t('tableDemo.createdTime'),
-    width: 300,
-    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
+    field: 'screenshot',
+    label: '网站截图'
   },
   {
-    field: 'action',
-    label: t('tableDemo.action'),
-    fixed: 'right',
-    headerAlign: 'center',
-    align: 'center',
-    width: 150,
-    slots: {
-      default: (data) => {
-        return (
-          <div>
-            <ElButton type="danger" size="small" onClick={() => delData(data)}>
-              {t('tableDemo.delete')}
-            </ElButton>
-          </div>
-        )
-      }
-    }
+    field: 'protocol',
+    label: '协议'
+  },
+  {
+    field: 'port',
+    label: '端口'
+  },
+  {
+    field: 'title',
+    label: '端口'
+  },
+  {
+    field: 'info',
+    label: '网页信息'
+  },
+  {
+    field: 'FID',
+    label: 'FID'
+  },
+  {
+    field: 'ICON',
+    label: 'ICON'
+  },
+  {
+    field: 'SDK',
+    label: 'SDK'
+  },
+  {
+    field: 'netStatusCode',
+    label: '网页状态码'
+  },
+  {
+    field: 'domainHolder',
+    label: '域名所有者'
+  },
+  {
+    field: 'email',
+    label: '注册邮箱'
+  },
+  {
+    field: 'ICP',
+    label: 'ICP备案'
+  },
+  {
+    field: 'registerMan',
+    label: '注册商'
+  },
+  {
+    field: 'tel',
+    label: '电话'
+  },
+  {
+    field: 'registerTime',
+    label: '注册时间'
+  },
+  {
+    field: 'domainServerMan',
+    label: '域名服务商'
+  },
+  {
+    field: 'address',
+    label: '地址'
+  },
+  {
+    field: 'expirationTime',
+    label: '到期时间'
+  },
+  {
+    field: 'domainServer',
+    label: '域名服务器'
+  },
+  {
+    field: 'organizer',
+    label: '主办单位'
+  },
+  {
+    field: 'taskID',
+    label: '任务ID'
+  },
+  {
+    field: 'tackName',
+    label: '任务名称'
+  },
+  {
+    field: 'updateTime',
+    label: '更新时间',
+    formatter: (data) => formatTime(data.taskStartTime, 'yyyy-MM-dd HH:mm:ss')
+  },
+  {
+    field: 'createBy',
+    label: '任务创建人'
+  },
+
+  {
+    field: 'createBy',
+    label: '创建人'
+  },
+  {
+    field: 'createTime',
+    label: '创建时间'
   }
 ]
+//操作
+
 // 在页面加载完成后，设置columns的值
 onMounted(() => {
   setTimeout(() => {
@@ -113,7 +203,40 @@ onMounted(() => {
     })
   }, 0)
 })
-
+//是否全选
+const isCheckedAll = ref(false)
+const selectedData = ref<TableColumn[]>([])
+const temp = ref<any[]>([])
+const cancelData = ref<any[]>([])
+const toggleSelection = async () => {
+  const elTableRef = await getElTableExpose()
+  elTableRef?.toggleAllSelection()
+}
+const handleSelectionChange = (selected: any[]) => {
+  selectedData.value = selected.map((i) => i.taskID)
+  if (temp.value.length > selectedData.value.length) {
+    cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
+    console.log(cancelData.value)
+  }
+}
+watch(dataList, (newV) => {
+  temp.value.push(...newV.map((i) => i.taskID))
+  temp.value = [...new Set(temp.value)]
+  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.taskID))) {
+    toggleSelection()
+  }
+})
+const clearSelection = async () => {
+  const elTableRef = await getElTableExpose()
+  elTableRef?.clearSelection()
+}
+watch(isCheckedAll, () => {
+  if (isCheckedAll.value) {
+    toggleSelection()
+  } else {
+    clearSelection()
+  }
+})
 //删除
 const ids = ref<string[]>([])
 const delLoading = ref(false)
@@ -149,48 +272,8 @@ const deleteAllFn = async () => {
   }
 }
 
-const placeholderInfo = ref('')
-// 选择全部
-const selectedData = ref<TableColumn[]>([])
-const temp = ref<any[]>([])
-const cancelData = ref<any[]>([])
-const toggleSelection = async () => {
-  const elTableRef = await getElTableExpose()
-  elTableRef?.toggleAllSelection()
-}
-const handleSelectionChange = (selected: any[]) => {
-  selectedData.value = selected.map((i) => i.ruleContent)
-  if (temp.value.length > selectedData.value.length) {
-    cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
-    console.log(cancelData.value)
-  }
-}
-watch(dataList, (newV) => {
-  temp.value.push(...newV.map((i) => i.ruleContent))
-  temp.value = [...new Set(temp.value)]
-  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.ruleContent))) {
-    toggleSelection()
-  }
-})
-const clearSelection = async () => {
-  const elTableRef = await getElTableExpose()
-  elTableRef?.clearSelection()
-}
-watch(isCheckedAll, () => {
-  if (isCheckedAll.value) {
-    toggleSelection()
-  } else {
-    clearSelection()
-  }
-})
-
-// 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
-const searchTable = async (value) => {
-  searchData.value = value
-  await getList()
-}
 // 添加
-
+const placeholderInfo = ref('')
 const titleDrawer = ref('')
 const isDrawerAddData = ref(false)
 const isDrawerGetData = ref(false)
@@ -211,7 +294,7 @@ const getSelections = () => {
       cancelData: cancelData.value.length
     }
   } else {
-    initData.value = { ruleContents: selectedData.value }
+    initData.value = { pickCount: selectedData.value.length }
   }
   titleDrawer.value = '导出数据'
   isDrawerGetData.value = true
@@ -225,8 +308,13 @@ const uploadFile = () => {
 const canShowPagination = ref(true)
 </script>
 <template>
-  <AdvancedSearch :dataArray="dataArray" :optionArray="optionArray" @search-data="searchTable" />
-  <ContentWrap :title="title" class="table-box">
+  <AdvancedSearch
+    :tipTitle="'系统默认展示当天拓线数据，最多可查看30天内数据，超出30天数据不会留存。'"
+    :dataArray="dataArray"
+    :optionArray="optionArray"
+    @search-data="searchTable"
+  />
+  <ContentWrap :title="`采集结果查看(${total})`" class="table-box">
     <div class="table-btn">
       <ElButton type="default">
         <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
@@ -244,7 +332,7 @@ const canShowPagination = ref(true)
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"
       stripe
-      row-key="ruleContent"
+      row-key="taskID"
       :reserve-selection="true"
       :columns="columns"
       :data="dataList"
@@ -267,13 +355,7 @@ const canShowPagination = ref(true)
     :placeholder="`请输入确认非仿冒网站的域名，匹配成功将不会入库。
 一行一个域名，可输入多行，最多输入1000行。`"
   />
-  <GetData
-    v-model:isDrawer="isDrawerGetData"
-    :title="titleDrawer"
-    :data="initData"
-    :exportAll="isCheckedAll"
-    :arrayNot="cancelData"
-  />
+  <GetData v-model:isDrawer="isDrawerGetData" :title="titleDrawer" :data="initData" />
   <UploadFile v-model:isDrawer="isDrawerUploadFile" :title="'上传'" />
 </template>
 <style scoped>

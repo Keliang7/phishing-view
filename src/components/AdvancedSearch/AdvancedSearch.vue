@@ -13,10 +13,6 @@ const props = defineProps({
     type: Array,
     default: null
   },
-  optionArray: {
-    type: Object,
-    default: null
-  },
   tipTitle: {
     type: String,
     default: ''
@@ -27,13 +23,11 @@ const { t } = useI18n()
 const { formRegister, formMethods } = useForm()
 const { getElFormExpose, getFormData } = formMethods
 const emit = defineEmits(['search-data'])
-// 用来调整表单的布局样式
-let operateClass = ref('')
-
 // 查询到的表格数据
 let searchData = reactive({})
 
 let schema = ref<FormSchema[]>([
+  //数据管理
   {
     field: 'url',
     label: `${t('formDemo.url')}：`,
@@ -59,12 +53,24 @@ let schema = ref<FormSchema[]>([
     }
   },
   {
-    field: 'dataSource',
-    label: `${t('formDemo.dataSource')}：`,
+    field: 'status',
+    label: '状态',
     component: 'Select',
     componentProps: {
-      options: props.optionArray?.dataSource,
-      placeholder: '请选择数据来源'
+      options: [
+        {
+          value: 'notSeleted',
+          label: '未采集到'
+        },
+        {
+          value: 'seleting',
+          label: '采集中'
+        },
+        {
+          value: 'selected',
+          label: '采集完成'
+        }
+      ]
     }
   },
   {
@@ -74,48 +80,6 @@ let schema = ref<FormSchema[]>([
     componentProps: {
       type: 'date',
       placeholder: formatTime(new Date(), 'yyyy-MM-dd')
-    }
-  },
-  {
-    field: 'ruleContent',
-    label: `${t('formDemo.ruleContent')}：`,
-    component: 'Input',
-    componentProps: {
-      placeholder: '请输入规则内容'
-    }
-  },
-  {
-    field: 'ruleID',
-    label: `${t('formDemo.ruleID')}：`,
-    component: 'Input',
-    componentProps: {
-      placeholder: '请输入规则ID'
-    }
-  },
-  {
-    field: 'featureContent',
-    label: `${t('formDemo.featureContent')}：`,
-    component: 'Input',
-    componentProps: {
-      placeholder: '请输入特征内容'
-    }
-  },
-  {
-    field: 'featureID',
-    label: `${t('formDemo.featureID')}：`,
-    component: 'Input',
-    componentProps: {
-      placeholder: '请输入特征ID'
-    }
-  },
-  // 添加方式用key值
-  {
-    field: 'addType',
-    label: `${t('formDemo.addType')}：`,
-    component: 'Select',
-    componentProps: {
-      options: props.optionArray?.systemAddType,
-      placeholder: '请选择添加方式'
     }
   },
   {
@@ -131,38 +95,106 @@ let schema = ref<FormSchema[]>([
     label: `${t('formDemo.victimType')}：`,
     component: 'Select',
     componentProps: {
-      options: props.optionArray?.victimType,
+      options: [
+        {
+          value: '政府',
+          label: '政府'
+        },
+        {
+          value: '公检法部门',
+          label: '公检法部门'
+        },
+        {
+          value: '税务部门',
+          label: '税务部门'
+        },
+        {
+          value: '金融',
+          label: '金融'
+        },
+        {
+          value: '证券',
+          label: '证券'
+        },
+        {
+          value: '国企',
+          label: '国企'
+        },
+        {
+          value: '高校',
+          label: '高校'
+        },
+        {
+          value: '电子商务',
+          label: '电子商务'
+        }
+      ],
       placeholder: '请选择受害方类型'
     }
   },
   {
-    field: 'dataSources',
-    label: `${t('formDemo.dataSources')}：`,
+    field: 'misReason',
+    label: `${t('formDemo.omissionReason')}：`,
     component: 'Select',
     componentProps: {
       options: [
         {
-          label: '全部',
-          value: '1'
+          label: '推送策略过滤，数据未推送',
+          value: 1
         },
         {
-          label: 'BW监测系统',
-          value: '2'
+          label: '仿冒特征规则匹配失败，判定为非仿冒数据',
+          value: 2
         },
         {
-          label: '域名监测系统',
-          value: '3'
+          label: '白名单过滤成功，数据未入库',
+          value: 3
         },
         {
-          label: '日志系统',
-          value: '2'
+          label: '粗放规则过滤失败，未入库',
+          value: 4
         },
         {
-          label: 'TLS系统',
-          value: '3'
+          label: '数据源未推送数据，系统未获取到数据',
+          value: 5
         }
       ],
-      placeholder: '请选择数据源'
+      placeholder: '请选择漏报原因'
+    }
+  },
+  //数据拓线管理
+  {
+    field: 'taskID',
+    label: '任务ID：',
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入任务ID'
+    }
+  },
+  {
+    field: 'taskName',
+    label: '任务名称：',
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入任务名称'
+    }
+  },
+  {
+    field: 'taskType',
+    label: '任务类型',
+    component: 'Input',
+    componentProps: {
+      placeholder: '请选择任务类型',
+      option: [
+        {
+          lable: '系统自动拓线',
+          value: 'bySystem'
+        },
+        {
+          lable: '人工触发',
+          value: 'byHuman'
+        }
+      ]
     }
   },
   {
@@ -183,84 +215,251 @@ let schema = ref<FormSchema[]>([
     }
   },
   {
-    field: 'collectionStatus',
-    label: `${t('formDemo.collectionStatus')}：`,
-    component: 'Select',
+    field: 'finishTime',
+    component: 'DatePicker',
+    label: `完成时间：`,
     componentProps: {
-      options: props.optionArray?.collectionStatus,
-      placeholder: '请选择状态'
+      type: 'date',
+      placeholder: formatTime(new Date(), 'yyyy-MM-dd')
     }
   },
   {
-    field: 'phishingStatus',
-    label: `${t('formDemo.phishingStatus')}：`,
-    component: 'Select',
+    field: 'title',
+    label: `title`,
+    component: 'Input',
     componentProps: {
-      options: props.optionArray?.phishingStatus,
-      placeholder: '请选择状态'
+      placeholder: '请输入title'
     }
   },
   {
-    field: 'expandStatus',
-    label: `${t('formDemo.expandStatus')}：`,
-    component: 'Select',
+    field: 'FID',
+    label: `FID`,
+    component: 'Input',
     componentProps: {
-      options: props.optionArray?.expandStatus,
-      placeholder: '请选择状态'
+      placeholder: '请输入FID'
     }
   },
   {
-    field: 'pusherStatus',
-    label: `${t('formDemo.pusherStatus')}：`,
+    field: 'netStatusCode',
+    label: `网络状态码`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入网络状态码'
+    }
+  },
+  //数据采集管理
+  {
+    field: 'distributeType',
+    label: '下发方式：',
     component: 'Select',
     componentProps: {
-      options: props.optionArray?.pusherStatus,
-      placeholder: '请选择状态'
+      option: [
+        {
+          lable: '系统自动拓线',
+          value: 'byAuto'
+        },
+        {
+          lable: '人工触发',
+          value: 'byHuman'
+        }
+      ]
     }
   },
   {
-    field: 'ruleCheck',
-    label: `${t('formDemo.ruleCheck')}：`,
+    field: 'probeType',
+    label: '探测类型：',
     component: 'Select',
     componentProps: {
-      options: props.optionArray?.ruleCheck,
-      placeholder: '请选择状态'
+      option: [
+        {
+          lable: '网站探测任务',
+          value: 'website'
+        },
+        {
+          lable: '域名探测任务',
+          value: 'domain'
+        },
+        {
+          lable: '资产探测任务',
+          value: 'property'
+        }
+      ]
     }
   },
   {
-    field: 'updateStatus',
-    label: `${t('formDemo.updateStatus')}：`,
+    field: 'taskStatus',
+    label: '任务状态：',
     component: 'Select',
     componentProps: {
-      options: props.optionArray?.updateStatus,
-      placeholder: '请选择状态'
+      option: [
+        {
+          lable: '已下发',
+          value: 'distributed'
+        },
+        {
+          lable: '扫描中',
+          value: 'scanning'
+        },
+        {
+          lable: '扫描完成',
+          value: 'scanned'
+        },
+        {
+          lable: '扫描失败',
+          value: 'scanFailed'
+        },
+        {
+          lable: '停止中',
+          value: 'stopping'
+        },
+        {
+          lable: '停止完成',
+          value: 'stopping'
+        }
+      ]
+    }
+  },
+  //icon我们用插槽
+  //用户管理
+  {
+    field: 'loginName',
+    label: `登录名`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入登录名'
     }
   },
   {
-    field: 'omissionReason',
-    label: `${t('formDemo.omissionReason')}：`,
-    component: 'Select',
+    field: 'email',
+    label: `邮箱`,
+    component: 'Input',
     componentProps: {
-      options: props.optionArray?.omissionReason,
-      placeholder: '请选择漏报原因'
+      placeholder: '请输入邮箱'
     }
   },
   {
-    field: 'operate',
-    component: 'RadioButton',
+    field: 'telephone',
+    label: `手机号`,
+    component: 'Input',
     componentProps: {
-      slots: {
-        default: () => (
-          <div class={operateClass.value}>
-            <BaseButton type="default" onClick={verifyReset}>
-              重置
-            </BaseButton>
-            <BaseButton type="primary" onClick={searchFn}>
-              查询
-            </BaseButton>
-          </div>
-        )
-      }
+      placeholder: '请输入手机号'
+    }
+  },
+  {
+    field: 'roleName',
+    label: `角色名称：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入角色名称'
+    }
+  },
+  //日志管理
+  {
+    field: 'loginIP',
+    label: `登录IP：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入登录IP'
+    }
+  },
+  //系统管理
+  {
+    field: 'ruleContent',
+    label: `${t('formDemo.ruleContent')}：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入规则内容'
+    }
+  },
+  {
+    field: 'addType',
+    label: `${t('formDemo.addType')}：`,
+    component: 'Select',
+    componentProps: {
+      options: [
+        {
+          lable: '系统预置',
+          value: 'system'
+        },
+        {
+          lable: '自定义',
+          value: 'custom'
+        }
+      ]
+    }
+  },
+  {
+    field: 'featureContent',
+    label: `${t('formDemo.featureContent')}：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入特征内容'
+    }
+  },
+  {
+    field: 'featureID',
+    label: `${t('formDemo.featureID')}：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入特征ID'
+    }
+  },
+  {
+    field: 'checkStatus',
+    label: '复核状态',
+    component: 'Select',
+    componentProps: {
+      options: [
+        {
+          value: 'notCheck',
+          label: '未复核'
+        },
+        {
+          value: 'submitCheck',
+          label: '提交复核'
+        },
+        {
+          value: 'checked',
+          label: '复核通过'
+        }
+      ]
+    }
+  },
+  {
+    field: 'operationType',
+    label: '操作类型',
+    component: 'Select',
+    componentProps: {
+      options: [
+        {
+          value: 'add',
+          label: '新增'
+        },
+        {
+          value: 'edit',
+          label: '编辑'
+        },
+        {
+          value: 'delete',
+          label: '删除'
+        }
+      ]
+    }
+  },
+  {
+    field: 'websiteName',
+    label: '网站名称',
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入网站名称'
+    }
+  },
+  {
+    field: 'ICON_hash',
+    label: 'ICON_hash',
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入ICON_hash'
     }
   }
 ])
@@ -268,24 +467,16 @@ let schema = ref<FormSchema[]>([
 let schemaCopy = ref<FormSchema[]>([])
 const tipCont = ref('')
 onMounted(async () => {
-  // await getSystemConstant()
   await getShowData()
 })
 const getShowData = () => {
   tipCont.value = props.tipTitle
-  operateClass.value = props.dataArray.length % 2 === 1 ? 'advance-btn' : 'search-btn'
-  schemaCopy.value = schema.value.filter((field) => props.dataArray.includes(field.field))
+  let temp = schema.value.filter((field) => props.dataArray.includes(field.field))
+  console.log(temp)
+  schemaCopy.value = temp
 }
-
 // 当同一个页面，不同的高级搜索组件进行切换时，需要用watch来监听变化。
-watch(
-  () => props.dataArray,
-  () => {
-    tipCont.value = props.tipTitle
-    operateClass.value = props.dataArray.length % 2 === 1 ? 'advance-btn' : 'search-btn'
-    schemaCopy.value = schema.value.filter((field) => props.dataArray.includes(field.field))
-  }
-)
+watch(() => props.dataArray, getShowData)
 
 // 重置
 const verifyReset = async () => {
@@ -304,51 +495,27 @@ const searchFn = async () => {
 <template>
   <ContentWrap class="advance-search" style="margin-bottom: 20px">
     <ElAlert
+      class="el-alert-custom"
+      style="width: fit-content"
       v-show="tipTitle"
-      title="温馨提示："
-      type="success"
       :description="tipCont"
-      :closable="false" />
-    <Form :autoSetPlaceholder="false" :schema="schemaCopy" @register="formRegister"
-  /></ContentWrap>
+    />
+    <Form :autoSetPlaceholder="false" :schema="schemaCopy" @register="formRegister" />
+    <div class="height-32px float-right p-10px">
+      <BaseButton type="default" @click="verifyReset"> 重置 </BaseButton>
+      <BaseButton type="primary" @click="searchFn"> 查询 </BaseButton>
+    </div>
+  </ContentWrap>
 </template>
-<style lang="less">
-.advance-search {
-  max-height: 250px;
-  overflow-y: auto;
+<style lang="less" scoped>
+.el-alert-custom {
+  background-color: #e9f6fe; /* Change background color */
+  border: 1px solid #a0d3fb;
+  margin-bottom: 12px;
 }
-.advance-search::-webkit-scrollbar {
-  height: 25px;
-  width: 5px;
-  cursor: pointer;
-}
-.advance-search::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  background: var(--el-color-info-light-7);
-}
-.search-btn {
-  position: absolute;
-  right: 0;
-  top: 20px;
-}
-.advance-btn {
-  position: relative;
-  right: -183%;
-  top: 0px;
-}
-.el-alert.el-alert--success.is-light {
-  width: 540px;
-  background: #e6f7ff;
-  border: 1px solid #91d5ff;
-  margin-bottom: 15px;
-  color: #000;
-}
-.el-alert__title {
-  line-height: 24px;
-}
-.el-alert--success.is-light .el-alert__description {
-  display: inline;
-  line-height: 18px;
-  color: #999999;
+</style>
+<style>
+.el-alert p.el-alert__description {
+  margin: 0;
 }
 </style>
