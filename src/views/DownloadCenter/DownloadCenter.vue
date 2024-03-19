@@ -54,7 +54,10 @@ const columns = reactive<TableColumn[]>([
   },
   {
     field: 'createdAt',
-    label: '日期'
+    label: '日期',
+    formatter: (_: Recordable, __: TableColumn, cellValue: number) => {
+      return <div>{new Date(cellValue).toLocaleString()}</div>
+    }
   },
   {
     field: 'action',
