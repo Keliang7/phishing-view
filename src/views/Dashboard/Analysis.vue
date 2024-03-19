@@ -158,7 +158,7 @@ const pieOptions: EChartsOption = {
   },
   series: [
     {
-      name: t('analysis.userAccessSource'),
+      name: t('仿冒行业'),
       type: 'pie',
       radius: ['40%', '70%'],
       center: ['50%', '60%'],
@@ -195,7 +195,7 @@ const pieOptions2: EChartsOption = {
   },
   series: [
     {
-      name: t('analysis.userAccessSource'),
+      name: t('仿冒意图'),
       type: 'pie',
       radius: ['40%', '70%'],
       center: ['50%', '60%'],
@@ -297,13 +297,12 @@ const getTableDataCount = async () => {
 }
 const getCategoryOptions = async (type) => {
   const res = await getcategoryOptionsApi({ type, ...timeObj })
-  console.log(res.data)
   if (res) {
     const categoryOptions: EChartsOption = {
       xAxis: {
         type: 'category',
         data: res.data.map((v) => {
-          return v.name
+          return new Date(Number(v.name)).toLocaleDateString()
         })
       },
       yAxis: {
@@ -415,6 +414,7 @@ onMounted(() => {
 })
 </script>
 <template>
+  {{ new Date(1710720000000).toLocaleDateString() }}
   <div>
     <ElDatePicker
       v-model="timeArray"
@@ -507,11 +507,12 @@ onMounted(() => {
                 <el-table-column width="130" prop="access" label="接入数据源总量" />
                 <el-table-column width="130" prop="pending" label="待处理数据总量" />
                 <el-table-column width="140" prop="suspect" label="疑似仿冒数据总量" />
+                <el-table-column width="140" prop="pushed" label="推送数据总量" />
                 <el-table-column width="140" prop="confirm" label="确认仿冒数据总量" />
                 <el-table-column width="120" prop="underreporting" label="漏报数据总量" />
                 <el-table-column width="120" prop="misreport" label="误报数据总量" />
-                <el-table-column width="130" prop="pandingReview" label="待复核规则数量" />
-                <el-table-column width="120" prop="compositeRule" label="复核规则数量" />
+                <!-- <el-table-column width="130" prop="pandingReview" label="待复核规则数量" /> -->
+                <!-- <el-table-column width="120" prop="compositeRule" label="复核规则数量" /> -->
               </el-table>
             </ElTabPane>
             <ElTabPane
