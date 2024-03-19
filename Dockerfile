@@ -8,7 +8,7 @@ RUN npm config set registry http://registry.npm.taobao.org/
 RUN npm install vite -g
 RUN npm install pnpm -g
 COPY . .
-RUN pnpm install
+RUN npm install
 RUN npm run build:pro
 
 

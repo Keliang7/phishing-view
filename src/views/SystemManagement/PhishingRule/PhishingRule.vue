@@ -584,7 +584,13 @@ const isUploadFileDrawer = ref(false)
   </ElTabs>
   <AddData :title="'添加检测规则'" v-model:isDrawer="isAddDataDrawer" />
   <EditData :title="'编辑检测规则'" v-model:isDrawer="isEditDataDrawer" />
-  <GetData v-model:isDrawer="isGetDataDrawer" :title="'导出数据'" :data="initData" />
+  <GetData
+    v-model:isDrawer="isGetDataDrawer"
+    :title="'仿冒检测规则导出'"
+    :data="initData"
+    :exportAll="isCheckedAll"
+    :arrayNot="cancelData"
+  />
   <UploadFile v-model:isDrawer="isUploadFileDrawer" :title="'上传数据'" />
 </template>
 <style lang="less">
