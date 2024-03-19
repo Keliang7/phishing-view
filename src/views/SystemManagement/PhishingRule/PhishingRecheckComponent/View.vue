@@ -1,10 +1,9 @@
 <script setup lang="tsx">
-import { ElDrawer, ElMessage } from 'element-plus'
+import { ElDrawer } from 'element-plus'
 import { Form, FormSchema } from '@/components/Form'
 import { reactive, ref } from 'vue'
 import { useForm } from '@/hooks/web/useForm'
 import { useValidator } from '@/hooks/web/useValidator'
-import { addDateApi } from '@/api/systemManagement/index'
 const { required } = useValidator()
 defineProps({
   title: {
@@ -25,11 +24,10 @@ defineProps({
   }
 })
 
-const emit = defineEmits(['update:isDrawer', 'get-data'])
+const emit = defineEmits(['update:isDrawer'])
 const close = () => {
   console.log('关闭弹窗')
   emit('update:isDrawer', false)
-  emit('get-data')
 }
 const open = () => {
   console.log('打开弹窗')
@@ -42,7 +40,7 @@ const resetClick = async () => {
 }
 const schema = reactive<FormSchema[]>([
   {
-    field: 'name',
+    field: 'field1',
     label: '特征名称',
     component: 'Input',
     formItemProps: {
@@ -53,7 +51,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'company',
+    field: 'field2',
     label: '受害方',
     component: 'Input',
     formItemProps: {
@@ -64,7 +62,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'category',
+    field: 'field3',
     label: '受害方分类',
     component: 'Select',
     formItemProps: {
@@ -108,7 +106,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'rule',
+    field: 'field4',
     label: '特征内容',
     component: 'Input',
     formItemProps: {
@@ -123,44 +121,31 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'reviewer',
-    label: '复核人员',
-    component: 'Select',
+    field: 'field5',
+    label: '操作类型',
+    component: 'Input',
     formItemProps: {
       rules: [required()]
-    },
-    componentProps: {
-      options: [
-        {
-          value: '张',
-          label: '张'
-        },
-        {
-          value: '王',
-          label: '王'
-        }
-      ]
     }
   }
 ])
 const isValid = ref(false)
 const confirmClick = async () => {
   const elFormExpose = await getElFormExpose()
-  await elFormExpose?.validate((v) => {
+  elFormExpose?.validate((v) => {
     isValid.value = v
   })
   if (isValid.value) {
     //获取form数据
     let formData = await getFormData()
     console.log(formData)
-    let res = await addDateApi({ ...formData, from: 'user', createBy: 'user' })
-    console.log(res)
     //发起post请求
-    if (res.code == 0) {
-      isValid.value = false
-      close()
-      ElMessage.success('添加成功')
-    }
+    // if (res.message == '添加成功') {
+
+    // }
+
+    isValid.value = false
+    close()
   }
 }
 </script>

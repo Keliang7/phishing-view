@@ -4,9 +4,9 @@ import { Form, FormSchema } from '@/components/Form'
 import { reactive, ref } from 'vue'
 import { useForm } from '@/hooks/web/useForm'
 import { useValidator } from '@/hooks/web/useValidator'
-import { addDateApi } from '@/api/systemManagement/index'
+import { editDateApi } from '@/api/systemManagement/index'
 const { required } = useValidator()
-defineProps({
+const props = defineProps({
   title: {
     type: String,
     default: ''
@@ -14,6 +14,10 @@ defineProps({
   isDrawer: {
     type: Boolean,
     default: false
+  },
+  data: {
+    type: Object,
+    default: null
   },
   bodyInfo: {
     type: Object,
@@ -25,17 +29,8 @@ defineProps({
   }
 })
 
-const emit = defineEmits(['update:isDrawer', 'get-data'])
-const close = () => {
-  console.log('关闭弹窗')
-  emit('update:isDrawer', false)
-  emit('get-data')
-}
-const open = () => {
-  console.log('打开弹窗')
-}
 const { formMethods, formRegister } = useForm()
-const { getElFormExpose, getFormData } = formMethods
+const { getElFormExpose, getFormData, setValues } = formMethods
 const resetClick = async () => {
   const elFormExpose = await getElFormExpose()
   elFormExpose?.resetFields()
@@ -64,7 +59,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'category',
+    field: 'categoty',
     label: '受害方分类',
     component: 'Select',
     formItemProps: {
@@ -108,8 +103,20 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'rule',
+    field: 'content',
     label: '特征内容',
+    component: 'Input',
+    componentProps: {
+      type: 'textarea',
+      autosize: { minRows: 11, maxRows: 16 },
+      resize: 'none',
+      value: '...',
+      disable: true
+    }
+  },
+  {
+    field: 'rule',
+    label: '编辑特征内容',
     component: 'Input',
     formItemProps: {
       rules: [required()]
@@ -143,8 +150,23 @@ const schema = reactive<FormSchema[]>([
     }
   }
 ])
+
+const emit = defineEmits(['update:isDrawer', 'get-data'])
+const close = () => {
+  console.log('关闭弹窗')
+  emit('update:isDrawer', false)
+  emit('get-data')
+}
+const open = () => {
+  console.log('打印在这里', props.data)
+  setValues({
+    content: `${props.data.featureContent}`
+  })
+  console.log('打开弹窗')
+}
 const isValid = ref(false)
 const confirmClick = async () => {
+  console.log(123)
   const elFormExpose = await getElFormExpose()
   await elFormExpose?.validate((v) => {
     isValid.value = v
@@ -152,14 +174,18 @@ const confirmClick = async () => {
   if (isValid.value) {
     //获取form数据
     let formData = await getFormData()
-    console.log(formData)
-    let res = await addDateApi({ ...formData, from: 'user', createBy: 'user' })
-    console.log(res)
+    let temp = props.data.featureID
+    let res = await editDateApi({
+      ...formData,
+      from: 'user',
+      createBy: 'user',
+      id: Number(temp)
+    })
     //发起post请求
     if (res.code == 0) {
       isValid.value = false
       close()
-      ElMessage.success('添加成功')
+      ElMessage.success('修改成功')
     }
   }
 }

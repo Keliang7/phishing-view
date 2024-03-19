@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { ref } from 'vue'
-import { ElDrawer, ElInput } from 'element-plus'
+import { ElDrawer, ElInput, ElMessage } from 'element-plus'
 import { useForm } from '@/hooks/web/useForm'
 import { postWhiteListApi } from '@/api/systemManagement'
 import { useUserStore } from '@/store/modules/user'
@@ -24,7 +24,7 @@ defineProps({
 })
 const { formMethods } = useForm()
 const { getElFormExpose } = formMethods
-const emit = defineEmits(['update:isDrawer'])
+const emit = defineEmits(['update:isDrawer', 'get-data'])
 const close = () => {
   console.log('关闭弹窗')
   emit('update:isDrawer', false)
@@ -38,12 +38,17 @@ const resetClick = async () => {
   elFormExpose?.resetFields()
 }
 const confirmClick = async () => {
-  const username = useUserStore().getUserInfo?.username
+  const createdBy = useUserStore().getUserInfo?.username
 
-  let res = await postWhiteListApi({ username, addType: '自定义', data: AddDataValue.value })
-  console.log(res)
+  let res = await postWhiteListApi({
+    createdBy,
+    addType: 'user',
+    ruleContents: AddDataValue.value
+  })
   if (res.message == '插入成功') {
     close()
+    ElMessage.success('添加数据成功')
+    emit('get-data')
   }
 }
 </script>

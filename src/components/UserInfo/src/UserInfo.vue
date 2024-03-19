@@ -53,6 +53,9 @@ const toDocument = () => {
         <ElDropdownItem>
           <div @click="toDocument">{{ t('common.document') }}</div>
         </ElDropdownItem>
+        <ElDropdownItem>
+          <router-link :to="{ path: '/downloadCenter' }">下载中心</router-link>
+        </ElDropdownItem>
         <ElDropdownItem divided>
           <div @click="lockScreen">{{ t('lock.lockScreen') }}</div>
         </ElDropdownItem>
@@ -87,5 +90,9 @@ const toDocument = () => {
 .fade-bottom-leave-to {
   opacity: 0;
   transform: translateY(10%);
+}
+a {
+  color: rgb(96, 98, 102);
+  text-decoration: none;
 }
 </style>

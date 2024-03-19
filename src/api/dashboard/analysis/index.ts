@@ -12,9 +12,7 @@ export const getCountApi = (params: any): Promise<IResponse<TotalNumberTypes[]>>
   return request.get({ url: '/api/v1/dashboard/total', params })
 }
 
-export const getDataTransformationApi = (
-  params: any
-): Promise<IResponse<DataTransformationTypes[]>> => {
+export const getDataTransformationApi = (params: any): Promise<IResponse<any>> => {
   return request.get({ url: '/api/v1/dashboard/dataTransformation', params })
 }
 export const getCounterfeitingIndustryApi = (
@@ -49,15 +47,14 @@ export const getExtensionApi = (params: any): Promise<IResponse<CategoryOptions[
 
 //任务统计
 export const getStatisticsApi = (params: any): Promise<IResponse<CategoryOptions[]>> => {
-  console.log(params)
   return request.get({ url: '/api/v1/dashboard/statistics', params })
 }
 //下面选项卡的两个个tab
-export const getDSContributionApi = (): Promise<IResponse<CategoryOptions[]>> => {
-  return request.get({ url: '/api/v1/dashboard/dataSourceContribution' })
+export const getDSContributionApi = (params): Promise<IResponse<CategoryOptions[]>> => {
+  return request.get({ url: '/api/v1/dashboard/dataSourceReport', params })
 }
-export const getDSReportApi = (): Promise<IResponse<CategoryOptions[]>> => {
-  return request.get({ url: '/api/v1/dashboard/dataSourceReport' })
+export const getDSReportApi = (params): Promise<IResponse<CategoryOptions[]>> => {
+  return request.get({ url: '/api/v1/dashboard/dataSourceContribution', params })
 }
 
 //最后一张表
