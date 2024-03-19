@@ -31,7 +31,7 @@ const { tableRegister, tableMethods, tableState } = useTable({
     }
   },
   fetchDelApi: async () => {
-    const res = await deleteWhiteListApi(unref(ids))
+    const res = await deleteWhiteListApi({ ids: [1021] })
     return !!res
   }
 })

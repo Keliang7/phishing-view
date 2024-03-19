@@ -8,7 +8,7 @@ export const postWhiteListApi = (params: any) => {
 }
 export const deleteWhiteListApi = (params: any) => {
   console.log(params)
-  return request.delete({ url: '/api/v1/whiteList/list', data: params })
+  return request.delete({ url: '/api/v2/white_list', data: params })
 }
 export const getDataApi = (params: any) => {
   console.log(params)
