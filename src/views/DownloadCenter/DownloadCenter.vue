@@ -76,19 +76,15 @@ const columns = reactive<TableColumn[]>([
 
 const actionFn = async (data: TableSlotDefault) => {
   let res = await getDownloadCenterFileApi({ key: data.row.fileName })
-  console.log(res)
-
-  // const today = this.getToday();
-  // const blob = new Blob([data], { type: 'text/csv' });
-  // const url = window.URL.createObjectURL(blob);
-  // const url = `http://172.16.20.30:32080/api/v1/downloadCenter/download?key=${data.row.fileName}`
-  // const a = document.createElement('a')
-  // a.href = url
-  // a.download = `${data.row.fileName}.xlsx`
-  // document.body.appendChild(a)
-  // a.click()
-  // window.URL.revokeObjectURL(url)
-  // document.body.removeChild(a)
+  const blob = new Blob([res.data], { type: 'text/xlsx' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${data.row.fileName}.xlsx`
+  document.body.appendChild(a)
+  a.click()
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
 }
 </script>
 

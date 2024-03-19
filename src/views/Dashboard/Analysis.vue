@@ -346,12 +346,12 @@ const tableData2 = ref()
 const getTableData2 = async () => {
   let result
   if (activeName2.value == 'dataSourceContribution') {
-    result = await getDSContributionApi(timeObj)
-    console.log('结果', result)
-  }
-  if (activeName2.value == 'dataSourceReport') {
     result = await getDSReportApi(timeObj)
   }
+  if (activeName2.value == 'dataSourceReport') {
+    result = await getDSContributionApi(timeObj)
+  }
+  console.log('xianzai na de ', result)
   tableData2.value = result.data
 }
 const handleClick2 = async () => {
@@ -414,7 +414,6 @@ onMounted(() => {
 })
 </script>
 <template>
-  {{ new Date(1710720000000).toLocaleDateString() }}
   <div>
     <ElDatePicker
       v-model="timeArray"
@@ -668,23 +667,23 @@ onMounted(() => {
 
                 <ElTableColumn
                   v-if="activeName2 == 'dataSourceContribution'"
-                  prop="found"
+                  prop="access"
                   label="仿冒系统接入数据总量"
                 />
                 <ElTableColumn
                   v-if="activeName2 == 'dataSourceContribution'"
-                  prop="access"
+                  prop="found"
                   label="发现疑似仿冒数据总量"
                 />
                 <ElTableColumn
                   v-if="activeName2 == 'dataSourceContribution'"
-                  prop="contribution"
+                  prop="accuracy"
                   label="数据源贡献值百分比"
                 />
                 <!-- 第二组 -->
                 <ElTableColumn
                   v-if="activeName2 == 'dataSourceReport'"
-                  prop="report"
+                  prop="ensure"
                   label="经分析处置平台确认通报为仿冒数据"
                 />
                 <ElTableColumn
@@ -694,7 +693,7 @@ onMounted(() => {
                 />
                 <ElTableColumn
                   v-if="activeName2 == 'dataSourceReport'"
-                  prop="accuracy"
+                  prop="contribution"
                   label="数据源通报贡献百分比"
                 />
               </ElTable>

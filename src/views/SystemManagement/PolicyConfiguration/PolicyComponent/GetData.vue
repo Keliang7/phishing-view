@@ -40,11 +40,11 @@ const schema = reactive<FormSchema[]>([
     field: 'type',
     label: '导出文件的格式',
     component: 'Select',
-    value: 'excel',
+    value: 'Excel',
     componentProps: {
       options: [
         {
-          label: 'excel',
+          label: 'Excel',
           value: '1'
         },
         {

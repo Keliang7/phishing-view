@@ -50,5 +50,5 @@ export const getDownloadCenterListApi = (params: any) => {
 }
 export const getDownloadCenterFileApi = (params: any) => {
   console.log(params)
-  return request.get({ url: '/api/v1/downloadCenter/download', params })
+  return request.get({ url: '/api/v1/downloadCenter/download', params, responseType: 'blob' })
 }
