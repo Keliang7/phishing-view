@@ -5,6 +5,7 @@ RUN npm config set registry http://registry.npm.taobao.org/
 
 # # 这是自建的npm镜像仓库
 # # RUN npm config set registry http://172.16.20.30:4873
+RUN npm cache clean --force
 RUN npm install vite -g
 RUN npm install pnpm -g
 COPY . .
