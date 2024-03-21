@@ -1,9 +1,10 @@
 <script setup lang="tsx">
-import { ElDrawer } from 'element-plus'
+import { ElDrawer, ElMessage } from 'element-plus'
 import { Form, FormSchema } from '@/components/Form'
 import { reactive, ref } from 'vue'
 import { useForm } from '@/hooks/web/useForm'
 import { useValidator } from '@/hooks/web/useValidator'
+import { addDateApi } from '@/api/systemManagement/index'
 const { required } = useValidator()
 defineProps({
   title: {
@@ -40,7 +41,7 @@ const resetClick = async () => {
 }
 const schema = reactive<FormSchema[]>([
   {
-    field: 'field1',
+    field: 'name',
     label: '特征名称',
     component: 'Input',
     formItemProps: {
@@ -51,7 +52,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'field2',
+    field: 'company',
     label: '受害方',
     component: 'Input',
     formItemProps: {
@@ -62,7 +63,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'field3',
+    field: 'category',
     label: '受害方分类',
     component: 'Select',
     formItemProps: {
@@ -106,7 +107,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'field4',
+    field: 'rule',
     label: '特征内容',
     component: 'Input',
     formItemProps: {
@@ -121,7 +122,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'field5',
+    field: 'reviewer',
     label: '复核人员',
     component: 'Select',
     formItemProps: {
@@ -151,13 +152,14 @@ const confirmClick = async () => {
     //获取form数据
     let formData = await getFormData()
     console.log(formData)
+    let res = await addDateApi({ ...formData, from: 'user', createBy: 'user' })
+    console.log(res)
     //发起post请求
-    // if (res.message == '添加成功') {
-
-    // }
-
-    isValid.value = false
-    close()
+    if (res.code == 0) {
+      isValid.value = false
+      close()
+      ElMessage.success('添加成功')
+    }
   }
 }
 </script>

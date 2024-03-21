@@ -4,7 +4,7 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElTabs, ElTabPane, ElButton, ElCheckbox, ElMessageBox, ElMessage } from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getPhishingDetectionApi, deletePhishingDetectionApi } from '@/api/systemManagement'
+import { getPhishingDetectionApi, deleteDateApi } from '@/api/systemManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
@@ -27,7 +27,7 @@ const { tableRegister, tableMethods, tableState } = useTable({
     }
   },
   fetchDelApi: async () => {
-    const res = await deletePhishingDetectionApi(unref(ids))
+    const res = await deleteDateApi({ ids: [Number(unref(ids))] })
     return !!res
   }
 })
@@ -364,9 +364,12 @@ onMounted(() => {
   })
 })
 
-// 定义表格内操作函数，用于处理点击表格列时的操作
+//编辑
+const isEditDataDrawer = ref(false)
+const editDate = ref()
 const editFn = (data: TableSlotDefault) => {
   isEditDataDrawer.value = true
+  editDate.value = data.row
   console.log(data)
 }
 const deleteFn = (data: TableSlotDefault) => {
@@ -479,8 +482,8 @@ const delLoading = ref(false)
 const delData = async (data) => {
   const elTableExpose = await getElTableExpose()
   ids.value = data
-    ? [data.row.ruleContent]
-    : elTableExpose?.getSelectionRows().map((v) => v.ruleContent) || []
+    ? [data.row.featureID]
+    : elTableExpose?.getSelectionRows().map((v) => Number(v.featureID)) || []
   delLoading.value = true
   await delList(unref(ids).length).finally(() => {
     delLoading.value = false
@@ -495,8 +498,8 @@ const deleteAllFn = async () => {
       cancelButtonText: t('common.delCancel'),
       type: 'warning'
     }).then(async () => {
-      const res = await deletePhishingDetectionApi({ isCheckedAll: true, temp })
-      if (res) {
+      const res = await deleteDateApi({ isCheckedAll: true, temp })
+      if (res.code == 0) {
         ElMessage.success(t('common.delSuccess'))
         isCheckedAll.value = false
         toggleSelection()
@@ -510,8 +513,6 @@ const deleteAllFn = async () => {
 
 //添加
 const isAddDataDrawer = ref(false)
-//编辑
-const isEditDataDrawer = ref(false)
 //导出
 const isDrawerExportFile = ref(false)
 const initExportDate = ref({})
@@ -591,7 +592,7 @@ const isUploadFileDrawer = ref(false)
     </ContentWrap>
   </ElTabs>
   <AddData :title="'添加检测规则'" v-model:isDrawer="isAddDataDrawer" />
-  <EditData :title="'编辑检测规则'" v-model:isDrawer="isEditDataDrawer" />
+  <EditData :title="'编辑检测规则'" v-model:isDrawer="isEditDataDrawer" :data="editDate" />
   <UploadFile v-model:isDrawer="isUploadFileDrawer" :title="'上传数据'" />
   <ExportFile
     v-model:isDrawer="isDrawerExportFile"

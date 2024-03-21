@@ -30,9 +30,9 @@ const fileList = ref<UploadUserFile[]>([])
 const handleExceed: UploadProps['onExceed'] = () => {
   ElMessage.warning('最多选择五个文件上传')
 }
-const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
-  if (rawFile.size / 1024 / 1024 > 1) {
-    ElMessage.error(`${rawFile.name}文件的大小超过 1MB!`)
+const beforeUpload: UploadProps['beforeUpload'] = (file) => {
+  if (file.size / 1024 / 1024 > 1) {
+    ElMessage.error(`${file.name}文件的大小超过 1MB!`)
     return false
   }
   return true
@@ -52,11 +52,9 @@ const submitUpload = () => {
     <ElUpload
       ref="uploadRef"
       class="upload-demo"
-      action="http://172.16.20.30:32080/api/v2/white_list/async_impot_file"
+      action="/api/v2/white_list/async_import_file"
       drag
-      multiple
       :auto-upload="false"
-      :limit="5"
       accept=".xls,.xlsx"
       show-file-list
       v-model:file-list="fileList"
