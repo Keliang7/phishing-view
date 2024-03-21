@@ -1,9 +1,9 @@
 <script setup lang="tsx">
-import { ElDrawer, ElAlert } from 'element-plus'
+import { ElDrawer, ElAlert, ElMessage } from 'element-plus'
 import { useForm } from '@/hooks/web/useForm'
 import { Form, FormSchema } from '@/components/Form'
 import { reactive } from 'vue'
-import { getDataApi } from '@/api/systemManagement/index'
+import { getPhishingDataApi } from '@/api/systemManagement/index'
 import { formatToDateTimeSimple } from '@/utils/dateUtil'
 const props = defineProps({
   title: {
@@ -66,13 +66,15 @@ const open = () => {
 }
 const confirmClick = async () => {
   let formData = await getFormData()
-  let res = await getDataApi({
+  let res = await getPhishingDataApi({
     ruleContents: props.data.ruleContents,
     exportAll: props.exportAll,
     arrayNot: props.arrayNot,
     ...formData
   })
+
   if (res.code == 0) {
+    ElMessage.success('导出数据成功，请前往下载中心')
     close()
   }
 }

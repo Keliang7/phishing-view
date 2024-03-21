@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { watch } from 'vue'
-// import echarts from '@/plugins/echarts'
 import * as echarts from 'echarts'
 import { CountTo } from '@/components/CountTo'
 import { useDesign } from '@/hooks/web/useDesign'
@@ -14,7 +13,8 @@ import {
   ElDatePicker,
   ElAlert,
   ElTableColumn,
-  ElTable
+  ElTable,
+  ElPopover
 } from 'element-plus'
 import { Echart } from '@/components/Echart'
 import { ref } from 'vue'
@@ -43,10 +43,12 @@ const loading = ref(true)
 //选择日期
 const today = new Date()
 const sevenDaysAgo = new Date()
-sevenDaysAgo.setDate(today.getDate() - 1900)
+sevenDaysAgo.setDate(today.getDate() - 7)
 const timeArray: any = ref([sevenDaysAgo.getTime(), today.getTime()])
-const timeObj = { startTime: timeArray.value[0], endTime: timeArray.value[1] }
-
+let timeObj = { startTime: timeArray.value[0], endTime: timeArray.value[1] }
+watch(timeArray, () => {
+  timeObj = { startTime: timeArray.value[0].getTime(), endTime: timeArray.value[1].getTime() }
+})
 //头部三个
 const { getPrefixCls } = useDesign()
 const prefixCls = getPrefixCls('panel')
@@ -124,7 +126,6 @@ const funnelOptions: EChartsOption = {
     }
   ]
 }
-
 const getDataTransformation = async () => {
   const res = await getDataTransformationApi(timeObj)
   set(funnelOptions, 'series[0].data', res.data.Trans)
@@ -175,7 +176,6 @@ const getCounterfeitingIndustry = async () => {
     res.data.map((item) => item.name)
   )
   set(pieOptions, 'series[0].data', res.data)
-  console.log(pieOptions)
 }
 //仿冒意图统计
 const pieOptions2: EChartsOption = {
@@ -331,7 +331,7 @@ const handleClick = async (tab) => {
 }
 
 //业务贡献量
-const tabColumns2 = [
+const contributionTab = [
   {
     label: '数据源贡献值',
     name: 'dataSourceContribution'
@@ -341,21 +341,23 @@ const tabColumns2 = [
     name: 'dataSourceReport'
   }
 ]
-const activeName2 = ref(tabColumns2[0].name)
-const tableData2 = ref()
-const getTableData2 = async () => {
+const loading_contribution = ref()
+const activeName_contribution = ref(contributionTab[0].name)
+const tableData_contribution = ref()
+const getTableData_contribution = async () => {
   let result
-  if (activeName2.value == 'dataSourceContribution') {
-    result = await getDSReportApi(timeObj)
-  }
-  if (activeName2.value == 'dataSourceReport') {
+  loading_contribution.value = true
+  if (activeName_contribution.value == 'dataSourceContribution') {
     result = await getDSContributionApi(timeObj)
   }
-  console.log('xianzai na de ', result)
-  tableData2.value = result.data
+  if (activeName_contribution.value == 'dataSourceReport') {
+    result = await getDSReportApi(timeObj)
+  }
+  loading_contribution.value = false
+  tableData_contribution.value = result.data
 }
 const handleClick2 = async () => {
-  getTableData2()
+  getTableData_contribution()
 }
 //任务统计
 const taskMessageData = ref<any>({})
@@ -379,7 +381,7 @@ const tabColumns3 = [
     name: 'vision'
   }
 ]
-const activeName3 = ref(tabColumns3[1].name)
+const activeName3 = ref(tabColumns3[0].name)
 const tableData3 = ref()
 const getCharacteristicData = async () => {
   let res = await getCharacteristicApi({ type: activeName3.value, ...timeObj })
@@ -391,6 +393,7 @@ const handleClick3 = (tab) => {
 }
 //初识化
 const init = async () => {
+  loading.value = true
   await Promise.all([
     getCount(),
     getDataTransformation(),
@@ -398,7 +401,7 @@ const init = async () => {
     getCounterfeitIntent(),
     getGeographicalDistribution(),
     getTableDataCount(),
-    getTableData2(),
+    getTableData_contribution(),
     getTaskMessageData(),
     getExtensionData(),
     getCharacteristicData()
@@ -407,6 +410,7 @@ const init = async () => {
   })
 }
 watch(timeArray, () => {
+  console.log('timeArray: ' + timeArray.value)
   init()
 })
 onMounted(() => {
@@ -414,21 +418,20 @@ onMounted(() => {
 })
 </script>
 <template>
-  <div>
+  {{ timeObj }}
+  <div class="flex">
     <ElDatePicker
+      style="max-width: 500px"
       v-model="timeArray"
       type="daterange"
       range-separator="-"
       start-placeholder="开始时间"
       end-placeholder="结束时间"
       :size="'default'"
-      class="mb-2 ml-2"
     />
     <ElAlert
-      style="margin: 2px; width: fit-content; display: inline"
-      type="success"
+      class="el-alert-custom"
       :description="'温馨提示：自定义时间范围仅对总览页面统计生效，时间跨度越大，需统计数据量越大，统计响应时间越慢，最多可查询5年。'"
-      :closable="false"
     />
   </div>
   <ElRow :gutter="10" justify="start" :class="prefixCls">
@@ -499,7 +502,7 @@ onMounted(() => {
             <ElTabPane :key="'dataCount'" :label="'数据统计'" :name="'dataCount'">
               <el-table :data="tableData" border style="width: 100%" height="245">
                 <el-table-column width="120" prop="data" label="时间戳">
-                  <template v-slot="{ row }">
+                  <template #default="{ row }">
                     {{ new Date(row.date).toLocaleDateString() }}
                   </template>
                 </el-table-column>
@@ -571,10 +574,26 @@ onMounted(() => {
           <p>最近一个人工采集完成任务：{{ taskMessageData.lastTime }}</p>
           <p class="text-blue">去添加任务</p>
         </div>
-        <el-table show-overflow-tooltip :data="[taskMessageData]" border style="width: 100%">
+        <el-table :data="[taskMessageData]" border style="width: 100%">
           <el-table-column prop="taskName" label="任务名称" />
           <el-table-column prop="taskType" label="探测类型" />
-          <el-table-column prop="traceResult" label="探测内容" />
+          <el-table-column prop="traceResult" label="探测内容">
+            <template #default="{ row }">
+              <el-popover
+                placement="top-start"
+                title="探测内容"
+                :width="200"
+                trigger="hover"
+                :content="row.traceResult"
+              >
+                <template #reference>
+                  <div class="overflow">
+                    {{ row.traceResult }}
+                  </div>
+                </template>
+              </el-popover>
+            </template>
+          </el-table-column>
           <el-table-column prop="issuanceMethod" label="下发方式" />
           <el-table-column width="90" label="操作">
             <div class="text-blue">查看数据</div>
@@ -636,10 +655,26 @@ onMounted(() => {
           <p>最近一个人工采集完成任务：{{ extensionData.lastTime }}</p>
           <p class="text-blue">去添加任务</p>
         </div>
-        <el-table show-overflow-tooltip :data="[taskMessageData]" border style="width: 100%">
+        <el-table :data="[taskMessageData]" border style="width: 100%">
           <el-table-column prop="taskName" label="任务名称" />
           <el-table-column prop="taskType" label="探测类型" />
-          <el-table-column prop="traceResult" label="探测内容" />
+          <el-table-column prop="traceResult" label="探测内容">
+            <template #default="{ row }">
+              <el-popover
+                placement="top-start"
+                title="探测内容"
+                :width="200"
+                trigger="hover"
+                :content="row.traceResult"
+              >
+                <template #reference>
+                  <div class="overflow">
+                    {{ row.traceResult }}
+                  </div>
+                </template>
+              </el-popover>
+            </template>
+          </el-table-column>
           <el-table-column prop="issuanceMethod" label="下发方式" />
           <el-table-column width="90" label="操作">
             <div class="text-blue">查看数据</div>
@@ -653,47 +688,60 @@ onMounted(() => {
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated>
           业务贡献量
-          <ElTabs v-model="activeName2" class="demo-tabs" @tab-change="handleClick2">
+          <ElTabs v-model="activeName_contribution" class="demo-tabs" @tab-change="handleClick2">
             <ElTabPane
-              v-for="item in tabColumns2"
+              v-for="item in contributionTab"
               :key="item.name"
               :label="item.label"
               :name="item.name"
             >
-              <ElTable :data="tableData2" border style="width: 100%">
+              <ElTable
+                v-loading="loading_contribution"
+                :data="tableData_contribution"
+                border
+                style="width: 100%"
+              >
                 <ElTableColumn type="index" label="排名" />
-                <ElTableColumn prop="dataSource" label="数据源" />
                 <!-- 第一组 -->
-
                 <ElTableColumn
-                  v-if="activeName2 == 'dataSourceContribution'"
-                  prop="access"
+                  v-if="activeName_contribution == 'dataSourceContribution'"
+                  prop="ds_name"
+                  label="数据源"
+                />
+                <ElTableColumn
+                  v-if="activeName_contribution == 'dataSourceContribution'"
+                  prop="ds_access"
                   label="仿冒系统接入数据总量"
                 />
                 <ElTableColumn
-                  v-if="activeName2 == 'dataSourceContribution'"
-                  prop="found"
+                  v-if="activeName_contribution == 'dataSourceContribution'"
+                  prop="ds_found"
                   label="发现疑似仿冒数据总量"
                 />
                 <ElTableColumn
-                  v-if="activeName2 == 'dataSourceContribution'"
-                  prop="accuracy"
+                  v-if="activeName_contribution == 'dataSourceContribution'"
+                  prop="ds_percent"
                   label="数据源贡献值百分比"
                 />
                 <!-- 第二组 -->
                 <ElTableColumn
-                  v-if="activeName2 == 'dataSourceReport'"
-                  prop="ensure"
+                  v-if="activeName_contribution == 'dataSourceReport'"
+                  prop="dr_name"
+                  label="数据源"
+                />
+                <ElTableColumn
+                  v-if="activeName_contribution == 'dataSourceReport'"
+                  prop="dr_access"
                   label="经分析处置平台确认通报为仿冒数据"
                 />
                 <ElTableColumn
-                  v-if="activeName2 == 'dataSourceReport'"
-                  prop="found"
+                  v-if="activeName_contribution == 'dataSourceReport'"
+                  prop="dr_found"
                   label="发现疑似仿冒数据总量"
                 />
                 <ElTableColumn
-                  v-if="activeName2 == 'dataSourceReport'"
-                  prop="contribution"
+                  v-if="activeName_contribution == 'dataSourceReport'"
+                  prop="dr_percent"
                   label="数据源通报贡献百分比"
                 />
               </ElTable>
@@ -742,5 +790,22 @@ onMounted(() => {
   color: #6b778c;
   font-size: 32px;
   font-weight: 500;
+}
+.el-alert-custom {
+  background-color: #e9f6fe; /* Change background color */
+  border: 1px solid #a0d3fb;
+  padding: 6px 12px;
+  margin-left: 2px;
+  width: fit-content;
+}
+.overflow {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
+<style>
+.el-alert .el-alert__content p.el-alert__description {
+  margin-top: 0;
 }
 </style>

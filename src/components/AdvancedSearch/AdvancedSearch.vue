@@ -7,7 +7,6 @@ import { Form, FormSchema } from '@/components/Form'
 import { ElAlert } from 'element-plus'
 import { formatTime, Timestamp } from '@/utils'
 import { BaseButton } from '@/components/Button'
-
 const props = defineProps({
   dataArray: {
     type: Array,
@@ -18,7 +17,6 @@ const props = defineProps({
     default: ''
   }
 })
-
 const { t } = useI18n()
 const { formRegister, formMethods } = useForm()
 const { getElFormExpose, getFormData } = formMethods
@@ -383,7 +381,7 @@ let schema = ref<FormSchema[]>([
         },
         {
           lable: '自定义',
-          value: 'custom'
+          value: 'user'
         }
       ]
     }
@@ -471,8 +469,8 @@ onMounted(async () => {
 })
 const getShowData = () => {
   tipCont.value = props.tipTitle
-  let temp = schema.value.filter((field) => props.dataArray.includes(field.field))
-  console.log(temp)
+  let temp = schema.value.filter((i) => props.dataArray.includes(i.field))
+  temp.sort((a, b) => props.dataArray.indexOf(a.field) - props.dataArray.indexOf(b.field))
   schemaCopy.value = temp
 }
 // 当同一个页面，不同的高级搜索组件进行切换时，需要用watch来监听变化。
@@ -515,7 +513,7 @@ const searchFn = async () => {
 }
 </style>
 <style>
-.el-alert p.el-alert__description {
-  margin: 0;
+.el-alert .el-alert__content p.el-alert__description {
+  margin-top: 0;
 }
 </style>

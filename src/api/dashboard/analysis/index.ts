@@ -47,15 +47,14 @@ export const getExtensionApi = (params: any): Promise<IResponse<CategoryOptions[
 
 //任务统计
 export const getStatisticsApi = (params: any): Promise<IResponse<CategoryOptions[]>> => {
-  console.log(params)
   return request.get({ url: '/api/v1/dashboard/statistics', params })
 }
 //下面选项卡的两个个tab
 export const getDSContributionApi = (params): Promise<IResponse<CategoryOptions[]>> => {
-  return request.get({ url: '/api/v1/dashboard/dataSourceContribution', params })
+  return request.get({ url: '/api/v1/dashboard/dataSourceReport', params })
 }
 export const getDSReportApi = (params): Promise<IResponse<CategoryOptions[]>> => {
-  return request.get({ url: '/api/v1/dashboard/dataSourceReport', params })
+  return request.get({ url: '/api/v1/dashboard/dataSourceContribution', params })
 }
 
 //最后一张表

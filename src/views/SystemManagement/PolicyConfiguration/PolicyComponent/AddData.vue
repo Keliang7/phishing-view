@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { ref } from 'vue'
-import { ElDrawer, ElInput } from 'element-plus'
+import { ElDrawer, ElInput, ElMessage } from 'element-plus'
 import { useForm } from '@/hooks/web/useForm'
 import { postWhiteListApi } from '@/api/systemManagement'
 import { useUserStore } from '@/store/modules/user'
@@ -38,11 +38,16 @@ const resetClick = async () => {
   elFormExpose?.resetFields()
 }
 const confirmClick = async () => {
-  const username = useUserStore().getUserInfo?.username
+  const createdBy = useUserStore().getUserInfo?.username
 
-  let res = await postWhiteListApi({ username, addType: '自定义', data: AddDataValue.value })
-  console.log(res)
+  let res = await postWhiteListApi({
+    createdBy,
+    addType: 'user',
+    ruleContents: AddDataValue.value
+  })
+  console.log('反馈', res)
   if (res.message == '插入成功') {
+    ElMessage.success('添加数据成功')
     close()
   }
 }

@@ -4,37 +4,33 @@ import { useForm } from '@/hooks/web/useForm'
 import { Form, FormSchema } from '@/components/Form'
 import { reactive } from 'vue'
 import { formatToDateTimeSimple } from '@/utils/dateUtil'
-import { getDataApi } from '@/api/systemManagement/index'
+
+const { formRegister, formMethods } = useForm()
+const { getFormData, setValues } = formMethods
+
 const props = defineProps({
+  isDrawer: {
+    type: Boolean,
+    default: false
+  },
   title: {
     type: String,
-    default: ''
+    default: '未命名'
   },
   data: {
     type: Object,
     default: null
   },
-  isDrawer: {
-    type: Boolean,
-    default: false
-  },
-  exportAll: {
-    type: Boolean,
-    default: false
-  },
-  arrayNot: {
-    type: Object,
-    default: null
+  axiosFn: {
+    type: Function
   }
 })
-const { formRegister, formMethods } = useForm()
-const { getFormData, setValues } = formMethods
 const schema = reactive<FormSchema[]>([
   {
     field: 'fileName',
     label: '导出文件的名称',
     component: 'Input',
-    value: `白名单_${formatToDateTimeSimple(Date.now())}`
+    value: `${props.title}_${formatToDateTimeSimple(Date.now())}`
   },
   {
     field: 'type',
@@ -55,67 +51,56 @@ const schema = reactive<FormSchema[]>([
     }
   }
 ])
-
 const emit = defineEmits(['update:isDrawer'])
 const close = () => {
   console.log('关闭弹窗')
   emit('update:isDrawer', false)
 }
+
 const open = () => {
   setValues({
-    fileName: `白名单_${formatToDateTimeSimple(Date.now())}`
+    fileName: `${props.title}_${formatToDateTimeSimple(Date.now())}`
   })
   console.log('打开弹窗')
 }
+//确认
 const confirmClick = async () => {
   let formData = await getFormData()
-  let res = await getDataApi({
-    ruleContents: props.data.ruleContents,
-    exportAll: props.exportAll,
-    arrayNot: props.arrayNot,
-    ...formData
-  })
-  if (res.code == 0) {
-    close()
-    ElMessage.success('导出数据成功，请前往下载中心')
+  let temp = props.data.exportDate
+  if (props.axiosFn) {
+    let res = await props.axiosFn({ ...formData, ...temp })
+    console.log('res', res)
+    if (res.code == 0) {
+      close()
+      ElMessage.success('导出数据成功，请前往下载中心')
+    }
   }
 }
+//取消
 </script>
 <template>
-  <ElDrawer
-    :title="title"
-    :modelValue="isDrawer"
-    :before-close="close"
-    custom-class="drawerWidth"
-    @open="open"
-  >
+  <ElDrawer :title="title" :model-value="isDrawer" @open="open" :before-close="close">
     <ElAlert
-      style="width: fit-content"
-      title="温馨提示："
-      type="success"
+      class="el-alert-custom"
       :description="'导出数据，一次最多导出5万条数据，多余数据不会导出。导出成功后请前往系统设置—下载中心，下载文件。 如需导出大批量数据，请您使用API导出结果。'"
       :closable="false"
     />
-    <p style="font-size: 12px; color: gray"
-      >已选中
-      {{ data.isCheckedAll ? data.total - data.cancelData : data.ruleContents.length }} 数据</p
-    >
+    <p style="font-size: 12px; color: gray">已选中数据：{{ data.count }}条</p>
     <Form :schema="schema" label-width="fitcontent" :isCol="false" @register="formRegister" />
     <template #footer>
       <div style="margin-right: 20px">
-        <BaseButton type="default" @click="close">取 消</BaseButton>
+        <BaseButton type="default" @click="confirmClick">取 消</BaseButton>
         <BaseButton type="primary" @click="confirmClick">确 定</BaseButton>
       </div>
     </template>
   </ElDrawer>
 </template>
-<style lang="less" scope>
-.el-drawer__title {
-  font-size: 18px;
-}
-.el-drawer__header {
-  margin-bottom: 0px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #ebeef5;
+<style scoped>
+.el-alert-custom {
+  background-color: #e9f6fe; /* Change background color */
+  border: 1px solid #a0d3fb;
+  padding: 6px 12px;
+  margin-left: 2px;
+  width: fit-content;
 }
 </style>

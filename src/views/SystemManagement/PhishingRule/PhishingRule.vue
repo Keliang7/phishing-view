@@ -10,9 +10,9 @@ import { formatTime } from '@/utils/index'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import AddData from './PhishingRuleComponent/AddData.vue'
 import EditData from './PhishingRuleComponent/EditData.vue'
-import GetData from './PhishingRuleComponent/GetData.vue'
 import UploadFile from './PhishingRuleComponent/UploadFile.vue'
-// import { useIcon } from '@/hooks/web/useIcon'
+import ExportFile from '@/components/ExportFile/ExportFile.vue'
+import { getPhishingDataApi } from '@/api/systemManagement/index'
 // 使用useI18n钩子函数获取国际化相关数据和方法
 const { t } = useI18n()
 // 使用useTable钩子函数获取table相关数据和方法
@@ -513,19 +513,27 @@ const isAddDataDrawer = ref(false)
 //编辑
 const isEditDataDrawer = ref(false)
 //导出
-const isGetDataDrawer = ref(false)
-const initData = ref({})
+const isDrawerExportFile = ref(false)
+const initExportDate = ref({})
 const getSelections = () => {
   if (isCheckedAll.value) {
-    initData.value = {
-      isCheckedAll: isCheckedAll.value,
-      total,
-      cancelData: cancelData.value.length
+    initExportDate.value = {
+      count: unref(total) - cancelData.value.length,
+      exportDate: {
+        exportAll: isCheckedAll.value,
+        arrayNot: cancelData.value.map((i) => Number(i))
+      }
     }
   } else {
-    initData.value = { pickCount: selectedData.value.length }
+    initExportDate.value = {
+      count: selectedData.value.length,
+      exportDate: {
+        exportAll: isCheckedAll.value,
+        ruleContents: selectedData.value.map((i) => Number(i))
+      }
+    }
   }
-  isGetDataDrawer.value = true
+  isDrawerExportFile.value = true
 }
 //导入
 const isUploadFileDrawer = ref(false)
@@ -584,14 +592,13 @@ const isUploadFileDrawer = ref(false)
   </ElTabs>
   <AddData :title="'添加检测规则'" v-model:isDrawer="isAddDataDrawer" />
   <EditData :title="'编辑检测规则'" v-model:isDrawer="isEditDataDrawer" />
-  <GetData
-    v-model:isDrawer="isGetDataDrawer"
-    :title="'仿冒检测规则导出'"
-    :data="initData"
-    :exportAll="isCheckedAll"
-    :arrayNot="cancelData"
-  />
   <UploadFile v-model:isDrawer="isUploadFileDrawer" :title="'上传数据'" />
+  <ExportFile
+    v-model:isDrawer="isDrawerExportFile"
+    title="仿冒规则检查"
+    :data="initExportDate"
+    :axiosFn="getPhishingDataApi"
+  />
 </template>
 <style lang="less">
 .operate-box {

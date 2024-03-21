@@ -46,11 +46,13 @@ const submitUpload = () => {
 }
 </script>
 <template>
+  <!-- action="http://172.16.20.30:32080/api/v2/white_list/async_impot_file" -->
+  <!-- action="http://0.0.0.0:3000/goodsInfo/add" -->
   <ElDrawer :title="title" :modelValue="isDrawer" :before-close="close" custom-class="drawerWidth">
     <ElUpload
       ref="uploadRef"
       class="upload-demo"
-      action="http://0.0.0.0:3000/goodsInfo/add"
+      action="http://172.16.20.30:32080/api/v2/white_list/async_impot_file"
       drag
       multiple
       :auto-upload="false"

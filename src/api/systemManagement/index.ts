@@ -4,10 +4,11 @@ export const getPolicyWhiteListApi = (params: any) => {
   return request.get({ url: '/api/v1/policyConfiguration/whiteList/list', params })
 }
 export const postWhiteListApi = (params: any) => {
-  return request.post({ url: '/api/v1/policyConfiguration/whiteList/list', data: params })
+  console.log('添加的参数', params)
+  return request.post({ url: '/api/v2/white_list', data: params })
 }
 export const deleteWhiteListApi = (params: any) => {
-  console.log(params)
+  console.log('删除的参数', params)
   return request.delete({ url: '/api/v2/white_list', data: params })
 }
 export const getDataApi = (params: any) => {
@@ -26,4 +27,8 @@ export const deletePhishingDetectionApi = (params: any) => {
 }
 export const getUrlDomainListApi = (params: any) => {
   return request.get({ url: '/mock/example/getUrlDomainList', params })
+}
+export const getPhishingDataApi = (params: any) => {
+  console.log('你的params', params)
+  return request.post({ url: '/api/v1/phishingRule/phishingDetection/export', data: params })
 }

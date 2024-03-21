@@ -4,14 +4,14 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElButton, ElCheckbox, ElMessageBox, ElMessage } from 'element-plus'
 import { Table, TableColumn } from '@/components/Table'
-import { getPolicyWhiteListApi, deleteWhiteListApi } from '@/api/systemManagement'
+import { getPolicyWhiteListApi, deleteWhiteListApi, getDataApi } from '@/api/systemManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import AddData from './PolicyComponent/AddData.vue'
-import GetData from './PolicyComponent/GetData.vue'
 import UploadFile from './PolicyComponent/UploadFile.vue'
 import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
+import ExportFile from '@/components/ExportFile/ExportFile.vue'
 
 // 使用useI18n钩子函数获取国际化相关数据和方法
 const { t } = useI18n()
@@ -31,7 +31,7 @@ const { tableRegister, tableMethods, tableState } = useTable({
     }
   },
   fetchDelApi: async () => {
-    const res = await deleteWhiteListApi({ ids: [1021] })
+    const res = await deleteWhiteListApi({ rules: unref(ids) })
     return !!res
   }
 })
@@ -47,8 +47,6 @@ const searchData = ref({})
 const dataArray = ref(['ruleContent', 'addType', 'createdBy', 'createdTime'])
 const optionArray = ref({ systemAddType: systemConstants.whiteListFrom })
 
-// 定义分页器展示的内容
-const layout = 'prev, pager, next, sizes,jumper,->, total'
 // 定义columns变量，用于存储表格的列配置
 let columns = reactive<TableColumn[]>([])
 //是否全选
@@ -60,28 +58,23 @@ const whiteColumns: TableColumn[] = [
   },
   {
     field: 'ruleContent',
-    label: t('tableDemo.ruleContent'),
-    width: 250
+    label: t('tableDemo.ruleContent')
   },
   {
     field: 'matchNum',
-    label: t('tableDemo.matchNum'),
-    width: 250
+    label: t('tableDemo.matchNum')
   },
   {
     field: 'addType',
-    label: t('tableDemo.addType'),
-    width: 250
+    label: t('tableDemo.addType')
   },
   {
     field: 'createdBy',
-    label: t('tableDemo.createdBy'),
-    width: 250
+    label: t('tableDemo.createdBy')
   },
   {
     field: 'createdTime',
     label: t('tableDemo.createdTime'),
-    width: 300,
     formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
@@ -90,7 +83,6 @@ const whiteColumns: TableColumn[] = [
     fixed: 'right',
     headerAlign: 'center',
     align: 'center',
-    width: 150,
     slots: {
       default: (data) => {
         return (
@@ -106,12 +98,10 @@ const whiteColumns: TableColumn[] = [
 ]
 // 在页面加载完成后，设置columns的值
 onMounted(() => {
-  setTimeout(() => {
-    // 设置columns的值为一个包含列配置的数组
-    setProps({
-      columns: whiteColumns
-    })
-  }, 0)
+  // 设置columns的值为一个包含列配置的数组
+  setProps({
+    columns: whiteColumns
+  })
 })
 
 //删除
@@ -193,7 +183,7 @@ const searchTable = async (value) => {
 
 const titleDrawer = ref('')
 const isDrawerAddData = ref(false)
-const isDrawerGetData = ref(false)
+// const isDrawerGetData = ref(false)
 const isDrawerUploadFile = ref(false)
 const addWhiteList = async () => {
   titleDrawer.value = '添加白名单'
@@ -202,19 +192,27 @@ const addWhiteList = async () => {
     '请输入确认非仿冒网站的域名，匹配成功将不会入库。\n一行一个域名，可输入多行，最多输入1000行。'
 }
 //导出数据
-const initData = ref({})
+const initExportDate = ref({})
 const getSelections = () => {
   if (isCheckedAll.value) {
-    initData.value = {
-      isCheckedAll: isCheckedAll.value,
-      total,
-      cancelData: cancelData.value.length
+    initExportDate.value = {
+      count: unref(total) - cancelData.value.length,
+      exportDate: {
+        exportAll: isCheckedAll.value,
+        arrayNot: cancelData.value
+      }
     }
   } else {
-    initData.value = { ruleContents: selectedData.value }
+    initExportDate.value = {
+      count: selectedData.value.length,
+      exportDate: {
+        exportAll: isCheckedAll.value,
+        ruleContents: selectedData.value
+      }
+    }
   }
   titleDrawer.value = '导出数据'
-  isDrawerGetData.value = true
+  isDrawerExportFile.value = true
 }
 //上传文件
 const uploadFile = () => {
@@ -223,6 +221,8 @@ const uploadFile = () => {
 }
 // 定义canShowPagination变量，用于控制是否显示分页
 const canShowPagination = ref(true)
+
+const isDrawerExportFile = ref(false)
 </script>
 <template>
   <AdvancedSearch :dataArray="dataArray" :optionArray="optionArray" @search-data="searchTable" />
@@ -252,8 +252,7 @@ const canShowPagination = ref(true)
       :pagination="
         canShowPagination
           ? {
-              total: total,
-              layout: layout
+              total: total
             }
           : undefined
       "
@@ -267,14 +266,13 @@ const canShowPagination = ref(true)
     :placeholder="`请输入确认非仿冒网站的域名，匹配成功将不会入库。
 一行一个域名，可输入多行，最多输入1000行。`"
   />
-  <GetData
-    v-model:isDrawer="isDrawerGetData"
-    :title="titleDrawer"
-    :data="initData"
-    :exportAll="isCheckedAll"
-    :arrayNot="cancelData"
-  />
   <UploadFile v-model:isDrawer="isDrawerUploadFile" :title="'上传'" />
+  <ExportFile
+    v-model:isDrawer="isDrawerExportFile"
+    title="白名单管理"
+    :data="initExportDate"
+    :axiosFn="getDataApi"
+  />
 </template>
 <style scoped>
 .demo-tabs > .el-tabs__content {
