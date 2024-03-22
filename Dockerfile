@@ -10,6 +10,7 @@ RUN npm install vite -g
 RUN npm install pnpm -g
 COPY . .
 RUN npm install
+RUN sed -i '8312i\MockXMLHttpRequest.prototype.upload = xhr.upload;' node_modules/mockjs/dist/mock.js
 RUN npm run build:pro
 
 
