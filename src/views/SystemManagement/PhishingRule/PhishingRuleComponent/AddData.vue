@@ -25,10 +25,11 @@ defineProps({
   }
 })
 
-const emit = defineEmits(['update:isDrawer'])
+const emit = defineEmits(['update:isDrawer', 'get-data'])
 const close = () => {
   console.log('关闭弹窗')
   emit('update:isDrawer', false)
+  emit('get-data')
 }
 const open = () => {
   console.log('打开弹窗')
@@ -145,7 +146,7 @@ const schema = reactive<FormSchema[]>([
 const isValid = ref(false)
 const confirmClick = async () => {
   const elFormExpose = await getElFormExpose()
-  elFormExpose?.validate((v) => {
+  await elFormExpose?.validate((v) => {
     isValid.value = v
   })
   if (isValid.value) {

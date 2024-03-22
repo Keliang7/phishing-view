@@ -151,10 +151,11 @@ const schema = reactive<FormSchema[]>([
   }
 ])
 
-const emit = defineEmits(['update:isDrawer'])
+const emit = defineEmits(['update:isDrawer', 'get-data'])
 const close = () => {
   console.log('关闭弹窗')
   emit('update:isDrawer', false)
+  emit('get-data')
 }
 const open = () => {
   console.log('打印在这里', props.data)
@@ -165,18 +166,23 @@ const open = () => {
 }
 const isValid = ref(false)
 const confirmClick = async () => {
+  console.log(123)
   const elFormExpose = await getElFormExpose()
-  elFormExpose?.validate((v) => {
+  await elFormExpose?.validate((v) => {
     isValid.value = v
   })
   if (isValid.value) {
     //获取form数据
     let formData = await getFormData()
-    console.log('formData', formData)
     let temp = props.data.featureID
-    let res = await editDateApi({ ...formData, from: 'user', createBy: 'user', featureID: temp })
+    let res = await editDateApi({
+      ...formData,
+      from: 'user',
+      createBy: 'user',
+      id: Number(temp)
+    })
     //发起post请求
-    if (res.data == 0) {
+    if (res.code == 0) {
       isValid.value = false
       close()
       ElMessage.success('修改成功')

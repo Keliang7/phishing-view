@@ -65,6 +65,11 @@ const funnelOptions: EChartsOption = {
   tooltip: {
     trigger: 'item'
   },
+  legend: {
+    bottom: 'bottom',
+    type: 'scroll',
+    itemWidth: 14
+  },
   series: [
     {
       tooltip: {
@@ -130,6 +135,11 @@ const getDataTransformation = async () => {
   const res = await getDataTransformationApi(timeObj)
   set(funnelOptions, 'series[0].data', res.data.Trans)
   set(funnelOptions, 'series[1].data', res.data.Total)
+  set(
+    funnelOptions,
+    'legend.data',
+    res.data.Total.map((i) => i.name)
+  )
 }
 // 仿冒行业数据统计
 const pieOptions: EChartsOption = {
@@ -141,21 +151,13 @@ const pieOptions: EChartsOption = {
     trigger: 'item',
     formatter: '{a} <br/>{b} : {c} ({d}%)'
   },
+  label: {
+    formatter: '{b}：{d}%'
+  },
   legend: {
     bottom: 'bottom',
     type: 'scroll',
-    itemWidth: 14,
-    data: [
-      '政府',
-      '公检法部门',
-      '税务部门',
-      '金融',
-      '证券',
-      '国企',
-      '高校',
-      '电子商务',
-      '虚假投资诈骗'
-    ]
+    itemWidth: 14
   },
   series: [
     {
@@ -163,8 +165,7 @@ const pieOptions: EChartsOption = {
       type: 'pie',
       radius: ['40%', '70%'],
       center: ['50%', '60%'],
-      bottom: 30,
-      data: []
+      bottom: 30
     }
   ]
 }
@@ -187,11 +188,13 @@ const pieOptions2: EChartsOption = {
     trigger: 'item',
     formatter: '{a} <br/>{b} : {c} ({d}%)'
   },
+  label: {
+    formatter: '{b}：{d}%'
+  },
   legend: {
     bottom: 'bottom',
     type: 'scroll',
-    itemWidth: 14,
-    data: ['APT', '黑产', '诈骗', '博彩']
+    itemWidth: 14
   },
   series: [
     {
@@ -206,7 +209,13 @@ const pieOptions2: EChartsOption = {
 }
 const getCounterfeitIntent = async () => {
   const res = await getCounterfeitIntentApi(timeObj)
-  pieOptions2.series![0].data = res.data
+  console.log('zhelide ', res)
+  set(
+    pieOptions2,
+    'legend.data',
+    res.data.map((i) => i.name)
+  )
+  set(pieOptions2, 'series[0].data', res.data)
 }
 // 仿冒资产地域分布TOP10
 const barOptions: EChartsOption = {
@@ -221,13 +230,49 @@ const barOptions: EChartsOption = {
     }
   },
   grid: {
-    left: 50,
-    right: 20,
-    bottom: 20
+    left: '1%',
+    right: '2%',
+    bottom: '0%',
+    containLabel: true
   },
   xAxis: {
     type: 'category',
     data: [],
+    axisLabel: {
+      interval: 0, // 坐标轴刻度标签的显示间隔
+      formatter: function (params) {
+        var newParamsName = '' // 最终拼接成的字符串
+        var paramsNameNumber = params.length // 实际标签的个数
+        var provideNumber = 4 // 每行能显示的字的个数
+        var rowNumber = Math.ceil(paramsNameNumber / provideNumber) // 换行的话，需要显示几行，向上取整
+        /**
+         * 判断标签的个数是否大于规定的个数， 如果大于，则进行换行处理 如果不大于，即等于或小于，就返回原标签
+         */
+        // 条件等同于rowNumber>1
+        if (paramsNameNumber > provideNumber) {
+          /** 循环每一行,p表示行 */
+          for (var p = 0; p < rowNumber; p++) {
+            var tempStr = '' // 表示每一次截取的字符串
+            var start = p * provideNumber // 开始截取的位置
+            var end = start + provideNumber // 结束截取的位置
+            // 此处特殊处理最后一行的索引值
+            if (p == rowNumber - 1) {
+              // 最后一次不换行
+              tempStr = params.substring(start, paramsNameNumber)
+            } else {
+              // 每一次拼接字符串并换行
+              tempStr = params.substring(start, end) + '\n'
+            }
+            newParamsName += tempStr // 最终拼成的字符串
+          }
+        } else {
+          // 将旧标签的值赋给新标签
+          newParamsName = params
+        }
+        //将最终的字符串返回
+        return newParamsName
+      }
+    },
     axisTick: {
       alignWithLabel: true
     }
@@ -245,18 +290,20 @@ const barOptions: EChartsOption = {
 }
 const getGeographicalDistribution = async () => {
   const res = await getGeographicalDistributionApi(timeObj)
-  barOptions.xAxis = {
-    type: 'category',
-    data: res.data.map((item) => {
+  set(
+    barOptions,
+    'xAxis.data',
+    res.data.map((item) => {
       return item.name
-    }),
-    axisTick: {
-      alignWithLabel: true
-    }
-  }
-  barOptions.series![0].data = res.data.map((item) => {
-    return item.value
-  })
+    })
+  )
+  set(
+    barOptions,
+    'series[0].data',
+    res.data.map((item) => {
+      return item.value
+    })
+  )
 }
 // 数据统计category
 const tabColumns: any = [
@@ -299,6 +346,13 @@ const getCategoryOptions = async (type) => {
   const res = await getcategoryOptionsApi({ type, ...timeObj })
   if (res) {
     const categoryOptions: EChartsOption = {
+      grid: {
+        top: '2%',
+        left: '2%',
+        right: '2%',
+        bottom: '2%',
+        containLabel: true
+      },
       xAxis: {
         type: 'category',
         data: res.data.map((v) => {
@@ -418,7 +472,6 @@ onMounted(() => {
 })
 </script>
 <template>
-  <!-- {{ timeObj }} -->
   <div class="flex">
     <ElDatePicker
       style="max-width: 500px"
@@ -792,7 +845,7 @@ onMounted(() => {
   font-weight: 500;
 }
 .el-alert-custom {
-  background-color: #e9f6fe; /* Change background color */
+  background-color: #e9f6fe;
   border: 1px solid #a0d3fb;
   padding: 6px 12px;
   margin-left: 2px;
@@ -802,10 +855,5 @@ onMounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-</style>
-<style>
-.el-alert .el-alert__content p.el-alert__description {
-  margin-top: 0;
 }
 </style>

@@ -41,27 +41,26 @@ const schema = reactive<FormSchema[]>([
       options: [
         {
           label: 'Excel',
-          value: '1'
+          value: 'Excel'
         },
         {
           label: 'CSV',
-          value: '2'
+          value: 'CSV'
         }
       ]
     }
   }
 ])
-const emit = defineEmits(['update:isDrawer'])
+const emit = defineEmits(['update:isDrawer', 'clear-selection'])
 const close = () => {
-  console.log('关闭弹窗')
   emit('update:isDrawer', false)
+  emit('clear-selection')
 }
 
 const open = () => {
   setValues({
     fileName: `${props.title}_${formatToDateTimeSimple(Date.now())}`
   })
-  console.log('打开弹窗')
 }
 //确认
 const confirmClick = async () => {
@@ -69,7 +68,6 @@ const confirmClick = async () => {
   let temp = props.data.exportDate
   if (props.axiosFn) {
     let res = await props.axiosFn({ ...formData, ...temp })
-    console.log('res', res)
     if (res.code == 0) {
       close()
       ElMessage.success('导出数据成功，请前往下载中心')

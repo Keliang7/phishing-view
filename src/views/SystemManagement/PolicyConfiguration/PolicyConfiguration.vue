@@ -7,9 +7,9 @@ import { Table, TableColumn } from '@/components/Table'
 import { getPolicyWhiteListApi, deleteWhiteListApi, getDataApi } from '@/api/systemManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
+import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 import AddData from './PolicyComponent/AddData.vue'
 import UploadFile from './PolicyComponent/UploadFile.vue'
-import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 
@@ -132,10 +132,12 @@ const deleteAllFn = async () => {
         isCheckedAll.value = false
         toggleSelection()
         getList()
+        clearSelection()
       }
     })
   } else {
     delData(null)
+    clearSelection()
   }
 }
 
@@ -183,7 +185,6 @@ const searchTable = async (value) => {
 
 const titleDrawer = ref('')
 const isDrawerAddData = ref(false)
-// const isDrawerGetData = ref(false)
 const isDrawerUploadFile = ref(false)
 const addWhiteList = async () => {
   titleDrawer.value = '添加白名单'
@@ -265,13 +266,15 @@ const isDrawerExportFile = ref(false)
     :title="titleDrawer"
     :placeholder="`请输入确认非仿冒网站的域名，匹配成功将不会入库。
 一行一个域名，可输入多行，最多输入1000行。`"
+    @get-data="getList"
   />
-  <UploadFile v-model:isDrawer="isDrawerUploadFile" :title="'上传'" />
+  <UploadFile v-model:isDrawer="isDrawerUploadFile" :title="'上传'" @get-data="getList" />
   <ExportFile
     v-model:isDrawer="isDrawerExportFile"
     title="白名单管理"
     :data="initExportDate"
     :axiosFn="getDataApi"
+    @clear-selection="clearSelection"
   />
 </template>
 <style scoped>

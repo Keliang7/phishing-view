@@ -24,7 +24,7 @@ defineProps({
 })
 const { formMethods } = useForm()
 const { getElFormExpose } = formMethods
-const emit = defineEmits(['update:isDrawer'])
+const emit = defineEmits(['update:isDrawer', 'get-data'])
 const close = () => {
   console.log('关闭弹窗')
   emit('update:isDrawer', false)
@@ -45,10 +45,10 @@ const confirmClick = async () => {
     addType: 'user',
     ruleContents: AddDataValue.value
   })
-  console.log('反馈', res)
   if (res.message == '插入成功') {
-    ElMessage.success('添加数据成功')
     close()
+    ElMessage.success('添加数据成功')
+    emit('get-data')
   }
 }
 </script>

@@ -27,7 +27,7 @@ const { tableRegister, tableMethods, tableState } = useTable({
     }
   },
   fetchDelApi: async () => {
-    const res = await deleteDateApi({ ids: [Number(unref(ids))] })
+    const res = await deleteDateApi({ ids: ids.value.map((i) => Number(i)) })
     return !!res
   }
 })
@@ -77,12 +77,12 @@ const DetectionColumns: TableColumn[] = [
   {
     field: 'featureID',
     label: t('tableDemo.featureID'),
-    width: 140
+    width: 90
   },
   {
     field: 'matchPhishingNum',
     label: '疑似仿冒数据量',
-    width: 240
+    width: 120
   },
   {
     field: 'featureName',
@@ -107,17 +107,17 @@ const DetectionColumns: TableColumn[] = [
   {
     field: 'addType',
     label: t('tableDemo.addType'),
-    width: 240
+    width: 100
   },
   {
     field: 'state',
     label: t('tableDemo.state'),
-    width: 240
+    width: 100
   },
   {
     field: 'createdBy',
     label: t('tableDemo.createdBy'),
-    width: 240
+    width: 100
   },
   {
     field: 'createdTime',
@@ -128,7 +128,7 @@ const DetectionColumns: TableColumn[] = [
   {
     field: 'reviewer',
     label: t('tableDemo.reviewer'),
-    width: 240
+    width: 100
   },
   {
     field: 'reviewTime',
@@ -504,10 +504,12 @@ const deleteAllFn = async () => {
         isCheckedAll.value = false
         toggleSelection()
         getList()
+        clearSelection()
       }
     })
   } else {
     delData(null)
+    clearSelection()
   }
 }
 
@@ -591,14 +593,20 @@ const isUploadFileDrawer = ref(false)
       />
     </ContentWrap>
   </ElTabs>
-  <AddData :title="'添加检测规则'" v-model:isDrawer="isAddDataDrawer" />
-  <EditData :title="'编辑检测规则'" v-model:isDrawer="isEditDataDrawer" :data="editDate" />
-  <UploadFile v-model:isDrawer="isUploadFileDrawer" :title="'上传数据'" />
+  <AddData :title="'添加检测规则'" v-model:isDrawer="isAddDataDrawer" @get-data="getList" />
+  <EditData
+    :title="'编辑检测规则'"
+    v-model:isDrawer="isEditDataDrawer"
+    :data="editDate"
+    @get-data="getList"
+  />
+  <UploadFile v-model:isDrawer="isUploadFileDrawer" :title="'上传数据'" @get-data="getList" />
   <ExportFile
     v-model:isDrawer="isDrawerExportFile"
     title="仿冒规则检查"
     :data="initExportDate"
     :axiosFn="getPhishingDataApi"
+    @clear-selection="clearSelection"
   />
 </template>
 <style lang="less">
