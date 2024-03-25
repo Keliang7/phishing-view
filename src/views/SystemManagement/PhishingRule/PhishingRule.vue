@@ -370,7 +370,6 @@ const editDate = ref()
 const editFn = (data: TableSlotDefault) => {
   isEditDataDrawer.value = true
   editDate.value = data.row
-  console.log(data)
 }
 const deleteFn = (data: TableSlotDefault) => {
   console.log(data)

@@ -128,6 +128,14 @@ const adminList = [
     },
     children: [
       {
+        path: 'userInfo_management',
+        component: 'views/UserManagement/UserInfoManagement/UserInfoManagement',
+        name: 'UserInfoManagement',
+        meta: {
+          title: 'router.role_management'
+        }
+      },
+      {
         path: 'role_management',
         component: 'views/UserManagement/RoleManagement/RoleManagement',
         name: 'RoleManagement',

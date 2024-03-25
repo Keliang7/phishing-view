@@ -8,7 +8,7 @@ import { getTaskApi, deleteTaskApi } from '@/api/dataExtension'
 import { formatTime } from '@/utils/index'
 import { ElButton } from 'element-plus'
 const { t } = useI18n()
-const dataArray = ref(['roleName'])
+const dataArray = ref(['loginName', 'email', 'telephone'])
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
@@ -35,22 +35,29 @@ const columns: TableColumn[] = [
     type: 'selection'
   },
   {
+    field: 'loginName',
+    label: '登录名'
+  },
+  {
+    field: 'telephone',
+    label: '手机号'
+  },
+  {
+    field: 'email',
+    label: '邮箱'
+  },
+  {
+    field: 'operateBy',
+    label: '操作人'
+  },
+  {
     field: 'role',
     label: '角色'
   },
   {
-    field: 'oprateBy',
-    label: '操作人'
-  },
-
-  {
     field: 'createdTime',
     label: t('tableDemo.createdTime'),
     formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
-  },
-  {
-    field: 'info',
-    label: '说明'
   },
   {
     field: 'action',
@@ -64,6 +71,9 @@ const columns: TableColumn[] = [
           <div>
             <ElButton type="danger" size="small" onClick={() => editData(data)}>
               编辑
+            </ElButton>
+            <ElButton type="danger" size="small" onClick={() => resetPassword(data)}>
+              重置密码
             </ElButton>
             <ElButton type="danger" size="small" onClick={() => delData(data)}>
               删除
@@ -80,6 +90,9 @@ const ids = ref<string[]>([])
 const delData = (data) => {
   console.log(data)
 }
+const resetPassword = (data) => {
+  console.log(data)
+}
 //编辑
 const editData = (data) => {
   console.log(data)
@@ -87,7 +100,7 @@ const editData = (data) => {
 </script>
 <template>
   <AdvancedSearch :dataArray="dataArray" />
-  角色管理
+  用户信息管理
   <Table
     v-model:pageSize="pageSize"
     v-model:currentPage="currentPage"

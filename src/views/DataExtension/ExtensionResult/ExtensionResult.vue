@@ -4,15 +4,25 @@ import { ref, unref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
-import { getTaskApi, deleteTaskApi } from '@/api/dataExtension'
+import { getResultApi, deleteResultApi } from '@/api/dataExtension'
 import { formatTime } from '@/utils/index'
-import { ElButton } from 'element-plus'
 const { t } = useI18n()
-const dataArray = ref(['roleName'])
+const dataArray = ref([
+  'taskID',
+  'taskName',
+  'createdBy',
+  'title',
+  'discoveryTime',
+  'domain',
+  'ip',
+  'FID',
+  'netStatus',
+  'netStatusCode'
+])
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
-    const res = await getTaskApi({
+    const res = await getResultApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
       ...searchData.value
@@ -23,7 +33,7 @@ const { tableRegister, tableMethods, tableState } = useTable({
     }
   },
   fetchDelApi: async () => {
-    const res = await deleteTaskApi({ rules: unref(ids) })
+    const res = await deleteResultApi({ rules: unref(ids) })
     return !!res
   }
 })
@@ -35,59 +45,57 @@ const columns: TableColumn[] = [
     type: 'selection'
   },
   {
-    field: 'role',
-    label: '角色'
+    field: 'taskID',
+    label: '任务ID'
   },
   {
-    field: 'oprateBy',
-    label: '操作人'
+    field: 'taskName',
+    label: '任务名称'
   },
-
+  {
+    field: 'taskType',
+    label: '任务类型'
+  },
+  {
+    field: 'taskStatus',
+    label: '任务状态'
+  },
+  {
+    field: 'extendsionResult',
+    label: '拓线结果'
+  },
+  {
+    field: 'useTime',
+    label: '任务耗时'
+  },
+  {
+    field: 'createBy',
+    label: '创建人'
+  },
   {
     field: 'createdTime',
     label: t('tableDemo.createdTime'),
     formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
-    field: 'info',
-    label: '说明'
+    field: 'startTime',
+    label: t('tableDemo.createdTime'),
+    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
-    field: 'action',
-    label: t('tableDemo.action'),
-    fixed: 'right',
-    headerAlign: 'center',
-    align: 'center',
-    slots: {
-      default: (data) => {
-        return (
-          <div>
-            <ElButton type="danger" size="small" onClick={() => editData(data)}>
-              编辑
-            </ElButton>
-            <ElButton type="danger" size="small" onClick={() => delData(data)}>
-              删除
-            </ElButton>
-          </div>
-        )
-      }
-    }
+    field: 'endTime',
+    label: t('tableDemo.createdTime'),
+    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   }
 ]
 const searchData = ref({})
+
 //删除
 const ids = ref<string[]>([])
-const delData = (data) => {
-  console.log(data)
-}
-//编辑
-const editData = (data) => {
-  console.log(data)
-}
 </script>
 <template>
   <AdvancedSearch :dataArray="dataArray" />
-  角色管理
+  拓线任务
   <Table
     v-model:pageSize="pageSize"
     v-model:currentPage="currentPage"

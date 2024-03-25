@@ -36,6 +36,7 @@ import { EChartsOption } from 'echarts'
 import { useI18n } from '@/hooks/web/useI18n'
 import { onMounted } from 'vue'
 import { set } from 'lodash-es'
+import { useRouter } from 'vue-router'
 
 const { t } = useI18n()
 const loading = ref(true)
@@ -414,6 +415,10 @@ const handleClick2 = async () => {
   getTableData_contribution()
 }
 //任务统计
+const router = useRouter()
+// const goToPage = () = {
+//   router.
+// }
 const taskMessageData = ref<any>({})
 const getTaskMessageData = async () => {
   let res = await getTaskMessageApi(timeObj)
@@ -625,7 +630,11 @@ onMounted(() => {
         </ElCard>
         <div class="flex justify-between mb-20px">
           <p>最近一个人工采集完成任务：{{ taskMessageData.lastTime }}</p>
-          <p class="text-blue">去添加任务</p>
+          <p
+            class="text-blue select-none cursor-pointer"
+            @click="router.push({ name: 'GatherTask' })"
+            >去添加任务</p
+          >
         </div>
         <el-table :data="[taskMessageData]" border style="width: 100%">
           <el-table-column prop="taskName" label="任务名称" />
@@ -649,7 +658,11 @@ onMounted(() => {
           </el-table-column>
           <el-table-column prop="issuanceMethod" label="下发方式" />
           <el-table-column width="90" label="操作">
-            <div class="text-blue">查看数据</div>
+            <div
+              class="text-blue select-none cursor-pointer"
+              @click="router.push({ name: 'GatherResult' })"
+              >查看数据</div
+            >
           </el-table-column>
         </el-table>
       </ElCard>
@@ -706,7 +719,11 @@ onMounted(() => {
         </ElCard>
         <div class="flex justify-between mb-20px">
           <p>最近一个人工采集完成任务：{{ extensionData.lastTime }}</p>
-          <p class="text-blue">去添加任务</p>
+          <p
+            class="text-blue select-none cursor-pointer"
+            @click="router.push({ name: 'GatherTask' })"
+            >去添加任务</p
+          >
         </div>
         <el-table :data="[taskMessageData]" border style="width: 100%">
           <el-table-column prop="taskName" label="任务名称" />
@@ -730,7 +747,11 @@ onMounted(() => {
           </el-table-column>
           <el-table-column prop="issuanceMethod" label="下发方式" />
           <el-table-column width="90" label="操作">
-            <div class="text-blue">查看数据</div>
+            <div
+              class="text-blue select-none cursor-pointer"
+              @click="router.push({ name: 'GatherResult' })"
+              >查看数据</div
+            >
           </el-table-column>
         </el-table>
       </ElCard>
@@ -855,5 +876,8 @@ onMounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.text-blue:hover {
+  color: #a0d3fb;
 }
 </style>

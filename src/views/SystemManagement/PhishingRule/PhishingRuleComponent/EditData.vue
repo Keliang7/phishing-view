@@ -33,8 +33,10 @@ const { formMethods, formRegister } = useForm()
 const { getElFormExpose, getFormData, setValues } = formMethods
 const resetClick = async () => {
   const elFormExpose = await getElFormExpose()
-  elFormExpose?.resetFields()
+  elFormExpose?.resetFields(['name', 'company', 'categoty', 'rule', 'reviewer'])
 }
+
+console.log('我在这能打印吗', props.data)
 const schema = reactive<FormSchema[]>([
   {
     field: 'name',
@@ -110,8 +112,7 @@ const schema = reactive<FormSchema[]>([
       type: 'textarea',
       autosize: { minRows: 11, maxRows: 16 },
       resize: 'none',
-      value: '...',
-      disable: true
+      disabled: true
     }
   },
   {
@@ -160,7 +161,12 @@ const close = () => {
 const open = () => {
   console.log('打印在这里', props.data)
   setValues({
-    content: `${props.data.featureContent}`
+    name: props.data.featureName,
+    company: props.data.victim,
+    categoty: props.data.victimType,
+    rule: props.data.featureContent,
+    content: props.data.featureContent,
+    reviewer: props.data.reviewer
   })
   console.log('打开弹窗')
 }

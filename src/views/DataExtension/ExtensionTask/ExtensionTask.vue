@@ -8,7 +8,7 @@ import { getTaskApi, deleteTaskApi } from '@/api/dataExtension'
 import { formatTime } from '@/utils/index'
 import { ElButton } from 'element-plus'
 const { t } = useI18n()
-const dataArray = ref(['roleName'])
+const dataArray = ref(['taskID', 'taskName', 'createdBy', 'createdTime', 'finishTime', 'taskType'])
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
@@ -35,22 +35,47 @@ const columns: TableColumn[] = [
     type: 'selection'
   },
   {
-    field: 'role',
-    label: '角色'
+    field: 'taskID',
+    label: '任务ID'
   },
   {
-    field: 'oprateBy',
-    label: '操作人'
+    field: 'taskName',
+    label: '任务名称'
   },
-
+  {
+    field: 'taskType',
+    label: '任务类型'
+  },
+  {
+    field: 'taskStatus',
+    label: '任务状态'
+  },
+  {
+    field: 'extendsionResult',
+    label: '拓线结果'
+  },
+  {
+    field: 'useTime',
+    label: '任务耗时'
+  },
+  {
+    field: 'createBy',
+    label: '创建人'
+  },
   {
     field: 'createdTime',
     label: t('tableDemo.createdTime'),
     formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
-    field: 'info',
-    label: '说明'
+    field: 'startTime',
+    label: t('tableDemo.createdTime'),
+    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
+  },
+  {
+    field: 'endTime',
+    label: t('tableDemo.createdTime'),
+    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
     field: 'action',
@@ -62,11 +87,11 @@ const columns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
+            <ElButton type="danger" size="small" onClick={() => delData(data)}>
+              数据
+            </ElButton>
             <ElButton type="danger" size="small" onClick={() => editData(data)}>
               编辑
-            </ElButton>
-            <ElButton type="danger" size="small" onClick={() => delData(data)}>
-              删除
             </ElButton>
           </div>
         )
@@ -87,7 +112,7 @@ const editData = (data) => {
 </script>
 <template>
   <AdvancedSearch :dataArray="dataArray" />
-  角色管理
+  拓线任务
   <Table
     v-model:pageSize="pageSize"
     v-model:currentPage="currentPage"
