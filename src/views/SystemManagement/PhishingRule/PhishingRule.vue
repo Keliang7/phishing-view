@@ -1,15 +1,18 @@
 <script setup lang="tsx">
-import { ref, reactive, unref, onMounted } from 'vue'
+import { ref, reactive, unref, onMounted, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
+import { ElTabs, ElTabPane, ElButton, ElCheckbox, ElMessageBox, ElMessage } from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getPhishingDetectionApi } from '@/api/systemManagement'
+import { getPhishingDetectionApi, deleteDateApi } from '@/api/systemManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
-import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
-
+import AddData from './PhishingRuleComponent/AddData.vue'
+import EditData from './PhishingRuleComponent/EditData.vue'
+import UploadFile from './PhishingRuleComponent/UploadFile.vue'
+import ExportFile from '@/components/ExportFile/ExportFile.vue'
+import { getPhishingDataApi } from '@/api/systemManagement/index'
 // 使用useI18n钩子函数获取国际化相关数据和方法
 const { t } = useI18n()
 // 使用useTable钩子函数获取table相关数据和方法
@@ -17,48 +20,42 @@ const { tableRegister, tableMethods, tableState } = useTable({
   // fetchDataApi方法用于异步获取表格数据
   fetchDataApi: async () => {
     let res = await getTableData(activeName.value)
-
+    console.log(res)
     return {
       list: res.list,
       total: res.total
     }
+  },
+  fetchDelApi: async () => {
+    const res = await deleteDateApi({ ids: ids.value.map((i) => Number(i)) })
+    return !!res
   }
 })
-const systemConstants = useSystemConstantsWithOut()
 // 高级搜索的数据
 const searchData = ref({})
-const checkedAll = ref(false)
 // 定义canShowPagination变量，用于控制是否显示分页
 const canShowPagination = ref(true)
 const dataArray = ref([
+  'checkStatus',
   'featureContent',
   'addType',
+  'createBy',
+  'createTime',
   'featureID',
   'victim',
-  'victimType',
-  'createdBy',
-  'createdTime',
-  'ruleCheck',
-  'operate'
+  'victimType'
 ])
-const optionArray = ref({
-  systemAddType: systemConstants.whiteListFrom,
-  ruleCheck: systemConstants.ruleCheck,
-  victimType: systemConstants.victimType
-})
 // 获取tableState中的数据和方法
 let { loading, total, dataList, currentPage, pageSize } = tableState
-const { setProps } = tableMethods
+const { getList, setProps, getElTableExpose, delList } = tableMethods
 // 定义表格切换器内容
 const tabColumns = [
   {
     label: t('tableDemo.phishingDetectionFeature'),
-
     name: 'phishingDetectionFeature'
   },
   {
     label: t('tableDemo.visualAnalysisManagement'),
-
     name: 'visualAnalysisManagement'
   },
   {
@@ -80,12 +77,12 @@ const DetectionColumns: TableColumn[] = [
   {
     field: 'featureID',
     label: t('tableDemo.featureID'),
-    width: 140
+    width: 90
   },
   {
     field: 'matchPhishingNum',
-    label: t('tableDemo.matchPhishingNum'),
-    width: 240
+    label: '疑似仿冒数据量',
+    width: 120
   },
   {
     field: 'featureName',
@@ -110,17 +107,17 @@ const DetectionColumns: TableColumn[] = [
   {
     field: 'addType',
     label: t('tableDemo.addType'),
-    width: 240
+    width: 100
   },
   {
     field: 'state',
     label: t('tableDemo.state'),
-    width: 240
+    width: 100
   },
   {
     field: 'createdBy',
     label: t('tableDemo.createdBy'),
-    width: 240
+    width: 100
   },
   {
     field: 'createdTime',
@@ -131,7 +128,7 @@ const DetectionColumns: TableColumn[] = [
   {
     field: 'reviewer',
     label: t('tableDemo.reviewer'),
-    width: 240
+    width: 100
   },
   {
     field: 'reviewTime',
@@ -153,7 +150,7 @@ const DetectionColumns: TableColumn[] = [
             <ElButton type="primary" size="small" onClick={() => editFn(data)}>
               {t('tableDemo.edit')}
             </ElButton>
-            <ElButton type="danger" size="small" onClick={() => deleteFn(data)}>
+            <ElButton type="danger" size="small" onClick={() => delData(data)}>
               {t('tableDemo.delete')}
             </ElButton>
           </div>
@@ -361,17 +358,18 @@ const SignatureColumns: TableColumn[] = [
 ]
 // 在页面加载完成后，设置columns的值
 onMounted(() => {
-  setTimeout(() => {
-    // 设置columns的值为一个包含列配置的数组
-    setProps({
-      columns: DetectionColumns
-    })
-  }, 0)
+  // 设置columns的值为一个包含列配置的数组
+  setProps({
+    columns: DetectionColumns
+  })
 })
 
-// 定义表格内操作函数，用于处理点击表格列时的操作
+//编辑
+const isEditDataDrawer = ref(false)
+const editDate = ref()
 const editFn = (data: TableSlotDefault) => {
-  console.log(data)
+  isEditDataDrawer.value = true
+  editDate.value = data.row
 }
 const deleteFn = (data: TableSlotDefault) => {
   console.log(data)
@@ -382,13 +380,12 @@ const getTableData = async (params) => {
     dataArray.value = [
       'featureContent',
       'addType',
+      'createdBy',
+      'createdTime',
       'featureID',
       'victim',
       'victimType',
-      'createdBy',
-      'createdTime',
-      'ruleCheck',
-      'operate'
+      'checkStatus'
     ]
     setProps({
       columns: DetectionColumns
@@ -401,19 +398,22 @@ const getTableData = async (params) => {
     dataList.value = res.data.list
     total.value = res.data.total
   } else if (params === 'visualAnalysisManagement') {
-    dataArray.value = ['addType', 'victim', 'victimType', 'createdBy', 'createdTime', 'operate']
+    dataArray.value = ['websiteName', 'addType', 'victim', 'victimType', 'createdBy', 'createdTime']
     setProps({
       columns: VisualColumns
     })
   } else if (params === 'phishingSampleManagement') {
     dataArray.value = [
       'domain',
-      'addType',
+      'ip',
       'victim',
       'victimType',
+      'addType',
+      'title',
+      'FID',
+      'ICON_hash',
       'createdBy',
-      'createdTime',
-      'operate'
+      'createdTime'
     ]
     setProps({
       columns: SignatureColumns
@@ -441,32 +441,128 @@ const searchTable = async (value) => {
   pageSize.value = 10
   await getTableData(activeName.value)
 }
+//选择全部
+const isCheckedAll = ref(false)
+const selectedData = ref<TableColumn[]>([])
+const temp = ref<any[]>([])
+const cancelData = ref<any[]>([])
+const toggleSelection = async () => {
+  const elTableRef = await getElTableExpose()
+  elTableRef?.toggleAllSelection()
+}
+const handleSelectionChange = (selected: any[]) => {
+  selectedData.value = selected.map((i) => i.featureID)
+  if (temp.value.length > selectedData.value.length) {
+    cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
+  }
+}
+watch(dataList, (newV) => {
+  temp.value.push(...newV.map((i) => i.featureID))
+  temp.value = [...new Set(temp.value)]
+  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.featureID))) {
+    toggleSelection()
+  }
+})
+const clearSelection = async () => {
+  console.log('do')
+  const elTableRef = await getElTableExpose()
+  elTableRef?.clearSelection()
+}
+watch(isCheckedAll, () => {
+  if (isCheckedAll.value) {
+    toggleSelection()
+  } else {
+    clearSelection()
+  }
+})
+//删除
+const ids = ref<string[]>([])
+const delLoading = ref(false)
+const delData = async (data) => {
+  const elTableExpose = await getElTableExpose()
+  ids.value = data
+    ? [data.row.featureID]
+    : elTableExpose?.getSelectionRows().map((v) => Number(v.featureID)) || []
+  delLoading.value = true
+  await delList(unref(ids).length).finally(() => {
+    delLoading.value = false
+  })
+}
+//批量删除
+const deleteAllFn = async () => {
+  const temp = cancelData.value
+  if (isCheckedAll.value) {
+    ElMessageBox.confirm(t('common.delMessage'), t('common.delWarning'), {
+      confirmButtonText: t('common.delOk'),
+      cancelButtonText: t('common.delCancel'),
+      type: 'warning'
+    }).then(async () => {
+      const res = await deleteDateApi({ isCheckedAll: true, temp })
+      if (res.code == 0) {
+        ElMessage.success(t('common.delSuccess'))
+        isCheckedAll.value = false
+        toggleSelection()
+        getList()
+        clearSelection()
+      }
+    })
+  } else {
+    delData(null)
+    clearSelection()
+  }
+}
+
+//添加
+const isAddDataDrawer = ref(false)
+//导出
+const isDrawerExportFile = ref(false)
+const initExportDate = ref({})
+const getSelections = () => {
+  if (isCheckedAll.value) {
+    initExportDate.value = {
+      count: unref(total) - cancelData.value.length,
+      exportDate: {
+        exportAll: isCheckedAll.value,
+        arrayNot: cancelData.value.map((i) => Number(i))
+      }
+    }
+  } else {
+    initExportDate.value = {
+      count: selectedData.value.length,
+      exportDate: {
+        exportAll: isCheckedAll.value,
+        ruleContents: selectedData.value.map((i) => Number(i))
+      }
+    }
+  }
+  isDrawerExportFile.value = true
+}
+//导入
+const isUploadFileDrawer = ref(false)
 </script>
 <template>
   <ElTabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
     <ElTabPane v-for="item in tabColumns" :key="item.name" :label="item.label" :name="item.name" />
-    <AdvancedSearch
-      :dataArray="dataArray"
-      :optionArray="optionArray"
-      :isTip="false"
-      @search-data="searchTable"
-    />
+    <AdvancedSearch :dataArray="dataArray" :isTip="false" @search-data="searchTable" />
     <ContentWrap>
       <div class="table-btn">
-        <ElButton type="default" v-show="activeName !== 'phishingDetectionFeature'">
-          <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />
+        <ElButton type="default">
+          <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
-        <ElButton type="default" v-show="activeName !== 'phishingDetectionFeature'">
-          批量删除
-        </ElButton>
-        <ElButton type="primary"> 添加 </ElButton>
+        <ElButton type="danger" @click="deleteAllFn"> 批量删除 </ElButton>
+        <ElButton type="primary" @click="isAddDataDrawer = !isAddDataDrawer"> 添加 </ElButton>
 
-        <ElButton type="primary" v-show="activeName === 'phishingDetectionFeature'">
+        <ElButton
+          type="primary"
+          @click="isUploadFileDrawer = !isUploadFileDrawer"
+          v-show="activeName === 'phishingDetectionFeature'"
+        >
           导入数据
         </ElButton>
 
         <ElButton
           type="primary"
+          @click="getSelections"
           v-show="
             activeName === 'phishingDetectionFeature' || activeName === 'phishingSampleManagement'
           "
@@ -478,6 +574,8 @@ const searchTable = async (value) => {
         v-model:pageSize="pageSize"
         v-model:currentPage="currentPage"
         stripe
+        row-key="featureID"
+        :reserve-selection="true"
         :columns="columns"
         :data="dataList"
         :loading="loading"
@@ -490,9 +588,25 @@ const searchTable = async (value) => {
             : undefined
         "
         @register="tableRegister"
+        @selection-change="handleSelectionChange"
       />
     </ContentWrap>
   </ElTabs>
+  <AddData :title="'添加检测规则'" v-model:isDrawer="isAddDataDrawer" @get-data="getList" />
+  <EditData
+    :title="'编辑检测规则'"
+    v-model:isDrawer="isEditDataDrawer"
+    :data="editDate"
+    @get-data="getList"
+  />
+  <UploadFile v-model:isDrawer="isUploadFileDrawer" :title="'上传数据'" @get-data="getList" />
+  <ExportFile
+    v-model:isDrawer="isDrawerExportFile"
+    title="仿冒规则检查"
+    :data="initExportDate"
+    :axiosFn="getPhishingDataApi"
+    @clear-selection="clearSelection"
+  />
 </template>
 <style lang="less">
 .operate-box {

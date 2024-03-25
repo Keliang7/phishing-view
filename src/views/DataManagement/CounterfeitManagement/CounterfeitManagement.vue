@@ -291,7 +291,7 @@ const Columns: TableColumn[] = [
 const checkedAll = ref(false)
 // 定义canShowPagination变量，用于控制是否显示分页
 const canShowPagination = ref(true)
-const dataArray = ref(['url', 'domain', 'ip', 'expandStatus', 'victim', 'discoveryTime', 'operate'])
+const dataArray = ref(['url', 'domain', 'ip', 'status', 'victim', 'victimType', 'discoveryTime'])
 const tipTitle = ref('系统默认展示当天接入数据，最多可查看5年内数据，超出5年数据不会留存。')
 const optionArray = ref({ expandStatus: systemConstants.expandStatus })
 

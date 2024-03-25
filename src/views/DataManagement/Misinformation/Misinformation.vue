@@ -212,7 +212,15 @@ const Columns: TableColumn[] = [
 const checkedAll = ref(false)
 // 定义canShowPagination变量，用于控制是否显示分页
 const canShowPagination = ref(true)
-const dataArray = ref(['url', 'domain', 'ip', 'dataSource', 'discoveryTime', 'victim', 'operate'])
+const dataArray = ref([
+  'url',
+  'domain',
+  'ip',
+  'dataSource',
+  'discoveryTime',
+  'victim',
+  'victimType'
+])
 const tipTitle = ref('系统默认展示当天接入数据，最多可查看5年内数据，超出5年数据不会留存。')
 const optionArray = ref({ dataSource: systemConstants.phishingSource })
 // 右侧弹窗信息

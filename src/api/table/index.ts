@@ -44,3 +44,11 @@ export const getSuspectCounterfeitApi = (params: any) => {
 export const getInjuredPartyApi = (params: any) => {
   return request.get({ url: '/api/v1/suspectCounterfeit/victimType/statistics', params })
 }
+
+export const getDownloadCenterListApi = (params: any) => {
+  return request.get({ url: '/api/v1/downloadCenter/list', params })
+}
+export const getDownloadCenterFileApi = (params: any) => {
+  console.log(params)
+  return request.get({ url: '/api/v1/downloadCenter/download', params, responseType: 'blob' })
+}
