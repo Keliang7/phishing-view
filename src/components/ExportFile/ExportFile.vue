@@ -6,7 +6,7 @@ import { reactive } from 'vue'
 import { formatToDateTimeSimple } from '@/utils/dateUtil'
 
 const { formRegister, formMethods } = useForm()
-const { getFormData, setValues } = formMethods
+const { getFormData, setValues, delSchema } = formMethods
 
 const props = defineProps({
   isDrawer: {
@@ -23,6 +23,9 @@ const props = defineProps({
   },
   axiosFn: {
     type: Function
+  },
+  fieldName: {
+    type: Array
   }
 })
 const schema = reactive<FormSchema[]>([
@@ -49,15 +52,28 @@ const schema = reactive<FormSchema[]>([
         }
       ]
     }
+  },
+  {
+    field: 'fieldName',
+    label: '导出数据字段名',
+    component: 'Select',
+    componentProps: {
+      multiple: true,
+      options: props.fieldName
+    }
   }
 ])
-const emit = defineEmits(['update:isDrawer', 'clear-selection'])
+const emit = defineEmits(['update:isDrawer', 'clear-selection', 'isCheckedAll'])
 const close = () => {
   emit('update:isDrawer', false)
+  emit('isCheckedAll', false)
   emit('clear-selection')
 }
 
 const open = () => {
+  if (!props.fieldName) {
+    delSchema('fieldName')
+  }
   setValues({
     fileName: `${props.title}_${formatToDateTimeSimple(Date.now())}`
   })
@@ -88,7 +104,9 @@ const confirmClick = async () => {
     <template #footer>
       <div style="margin-right: 20px">
         <BaseButton type="default" @click="confirmClick">取 消</BaseButton>
-        <BaseButton type="primary" @click="confirmClick">确 定</BaseButton>
+        <BaseButton type="primary" :disabled="data.count == 0" @click="confirmClick"
+          >确 定</BaseButton
+        >
       </div>
     </template>
   </ElDrawer>

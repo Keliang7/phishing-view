@@ -210,6 +210,22 @@ const adminList = [
         }
       }
     ]
+  },
+  {
+    path: '/downloadCenter',
+    component: 'views/DownloadCenter/DownloadCenter',
+    name: 'DownloadCenter',
+    meta: {
+      hidden: true
+    }
+  },
+  {
+    path: '/ViewDetails',
+    name: 'ViewDetails',
+    component: 'views/ViewDetails/ViewDetails',
+    meta: {
+      hidden: true
+    }
   }
 ]
 

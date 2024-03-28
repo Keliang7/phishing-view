@@ -86,8 +86,7 @@ const editData = (data) => {
 }
 </script>
 <template>
-  <AdvancedSearch :dataArray="dataArray" />
-  角色管理
+  <AdvancedSearch :dataArray="dataArray" :title="'角色管理'" />
   <Table
     v-model:pageSize="pageSize"
     v-model:currentPage="currentPage"

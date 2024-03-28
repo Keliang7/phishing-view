@@ -142,7 +142,8 @@ export default {
     login_log: '登录日志管理',
     operation_log: '操作日志管理',
     system_management: '系统管理',
-    policy_configuration: '策略配置管理',
+    // policy_configuration: '策略配置管理',
+    policy_configuration: '白名单管理',
     phishing_rule: '仿冒检测规则管理',
     phishing_recheck: ' 仿冒检测规则复核',
     level: '多级菜单',
@@ -205,6 +206,11 @@ export default {
   },
   permission: {
     hasPermission: '请设置操作权限值'
+  },
+  totalCount: {
+    pendUrlNum: '待处理URL集合数据总量',
+    CounterfeitNum: '疑似仿冒数据总量',
+    affirmCounterfeitNum: '确认仿冒数据总量'
   },
   analysis: {
     dataConversion: '数据转化统计',
@@ -487,7 +493,7 @@ export default {
     table: '表格',
     pendUrl: '待处理URL集合',
     SuspectCounterfeit: '疑似仿冒网页',
-    CounterfeitManagement: '仿冒网页',
+    CounterfeitManagement: '仿冒数据管理',
     UnderstatementCounterfeit: '漏报仿冒网页',
     MisinformationCounterfeit: '误报仿冒网页',
     dataID: '数据ID',
@@ -529,7 +535,7 @@ export default {
     victim: '受害方',
     victimType: '受害方分类',
     intention: '意图',
-    webCode: '网页转态码',
+    webCode: '网页状态码',
     featureMatch: '匹配特征',
     hitRule: '命中规则',
     featureNumber: '特征编号',
@@ -560,7 +566,8 @@ export default {
     eCommerce: '电子商务',
     whitelistManagement: '白名单管理',
     extensiveRuleManagement: '粗放规则管理',
-    policyConfiguration: '策略配置管理',
+    // policyConfiguration: '策略配置管理',
+    policyConfiguration: '白名单管理',
     ruleName: '规则名称',
     ruleContent: '规则内容',
     addType: '添加方式',

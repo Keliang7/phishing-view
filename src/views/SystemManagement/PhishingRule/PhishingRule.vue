@@ -2,17 +2,17 @@
 import { ref, reactive, unref, onMounted, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElTabs, ElTabPane, ElButton, ElCheckbox, ElMessageBox, ElMessage } from 'element-plus'
-import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getPhishingDetectionApi, deleteDateApi } from '@/api/systemManagement'
+import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
+import { Table, TableColumn } from '@/components/Table'
+import { getListApi, exportApi } from '@/api/systemManagement/PhishingRule'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
-import AddData from './PhishingRuleComponent/AddData.vue'
-import EditData from './PhishingRuleComponent/EditData.vue'
+import TableTop from '@/components/TableTop/TableTop.vue'
 import UploadFile from './PhishingRuleComponent/UploadFile.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
-import { getPhishingDataApi } from '@/api/systemManagement/index'
+// import DeleteData from './PhishingRuleComponent/DeleteData.vue'
+import PhishingRuleOperate from '@/components/PhishingRuleOperate/PhishingRuleOperate.vue'
 // 使用useI18n钩子函数获取国际化相关数据和方法
 const { t } = useI18n()
 // 使用useTable钩子函数获取table相关数据和方法
@@ -25,10 +25,6 @@ const { tableRegister, tableMethods, tableState } = useTable({
       list: res.list,
       total: res.total
     }
-  },
-  fetchDelApi: async () => {
-    const res = await deleteDateApi({ ids: ids.value.map((i) => Number(i)) })
-    return !!res
   }
 })
 // 高级搜索的数据
@@ -47,7 +43,7 @@ const dataArray = ref([
 ])
 // 获取tableState中的数据和方法
 let { loading, total, dataList, currentPage, pageSize } = tableState
-const { getList, setProps, getElTableExpose, delList } = tableMethods
+const { getList, setProps, getElTableExpose } = tableMethods
 // 定义表格切换器内容
 const tabColumns = [
   {
@@ -110,7 +106,7 @@ const DetectionColumns: TableColumn[] = [
     width: 100
   },
   {
-    field: 'state',
+    field: 'checkStatus',
     label: t('tableDemo.state'),
     width: 100
   },
@@ -147,10 +143,20 @@ const DetectionColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="primary" size="small" onClick={() => editFn(data)}>
+            <ElButton
+              type="primary"
+              size="small"
+              disabled={data.row.checkStatus === '未复核'}
+              onClick={() => editFn(data)}
+            >
               {t('tableDemo.edit')}
             </ElButton>
-            <ElButton type="danger" size="small" onClick={() => delData(data)}>
+            <ElButton
+              type="danger"
+              size="small"
+              disabled={data.row.checkStatus === '未复核'}
+              onClick={() => deleteFn(data)}
+            >
               {t('tableDemo.delete')}
             </ElButton>
           </div>
@@ -363,18 +369,8 @@ onMounted(() => {
     columns: DetectionColumns
   })
 })
-
-//编辑
-const isEditDataDrawer = ref(false)
-const editDate = ref()
-const editFn = (data: TableSlotDefault) => {
-  isEditDataDrawer.value = true
-  editDate.value = data.row
-}
-const deleteFn = (data: TableSlotDefault) => {
-  console.log(data)
-}
 const getTableData = async (params) => {
+  console.log('chaxuntiaojian', searchData.value)
   loading.value = true
   if (params === 'phishingDetectionFeature') {
     dataArray.value = [
@@ -390,7 +386,7 @@ const getTableData = async (params) => {
     setProps({
       columns: DetectionColumns
     })
-    const res = await getPhishingDetectionApi({
+    const res = await getListApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
       ...searchData.value
@@ -464,7 +460,6 @@ watch(dataList, (newV) => {
   }
 })
 const clearSelection = async () => {
-  console.log('do')
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
@@ -475,45 +470,6 @@ watch(isCheckedAll, () => {
     clearSelection()
   }
 })
-//删除
-const ids = ref<string[]>([])
-const delLoading = ref(false)
-const delData = async (data) => {
-  const elTableExpose = await getElTableExpose()
-  ids.value = data
-    ? [data.row.featureID]
-    : elTableExpose?.getSelectionRows().map((v) => Number(v.featureID)) || []
-  delLoading.value = true
-  await delList(unref(ids).length).finally(() => {
-    delLoading.value = false
-  })
-}
-//批量删除
-const deleteAllFn = async () => {
-  const temp = cancelData.value
-  if (isCheckedAll.value) {
-    ElMessageBox.confirm(t('common.delMessage'), t('common.delWarning'), {
-      confirmButtonText: t('common.delOk'),
-      cancelButtonText: t('common.delCancel'),
-      type: 'warning'
-    }).then(async () => {
-      const res = await deleteDateApi({ isCheckedAll: true, temp })
-      if (res.code == 0) {
-        ElMessage.success(t('common.delSuccess'))
-        isCheckedAll.value = false
-        toggleSelection()
-        getList()
-        clearSelection()
-      }
-    })
-  } else {
-    delData(null)
-    clearSelection()
-  }
-}
-
-//添加
-const isAddDataDrawer = ref(false)
 //导出
 const isDrawerExportFile = ref(false)
 const initExportDate = ref({})
@@ -539,19 +495,62 @@ const getSelections = () => {
 }
 //导入
 const isUploadFileDrawer = ref(false)
+
+//增删改
+const operateTitle = ref('')
+const isOperateDrawer = ref(false)
+const operateType = ref('')
+const operateData = ref()
+const addFn = () => {
+  operateFn('Add')
+}
+const editFn = (data) => {
+  operateData.value = data.row
+  operateFn('Edit')
+}
+const deleteFn = (data) => {
+  operateData.value = data.row
+  operateFn('Delete')
+}
+const operateFn = (type) => {
+  if (type === 'Add') {
+    operateTitle.value = '添加检测规则'
+    operateType.value = 'Add'
+  } else if (type === 'Edit') {
+    operateTitle.value = '编辑检测规则'
+    operateType.value = 'Edit'
+  } else if (type === 'Delete') {
+    operateTitle.value = '删除检测规则'
+    operateType.value = 'Delete'
+  }
+  isOperateDrawer.value = true
+}
 </script>
 <template>
-  <ElTabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
-    <ElTabPane v-for="item in tabColumns" :key="item.name" :label="item.label" :name="item.name" />
-    <AdvancedSearch :dataArray="dataArray" :isTip="false" @search-data="searchTable" />
-    <ContentWrap>
-      <div class="table-btn">
+  <AdvancedSearch
+    :title="'仿冒检测规则管理'"
+    :total="total"
+    :dataArray="dataArray"
+    :isTip="false"
+    @search-data="searchTable"
+  />
+  <ContentWrap>
+    <TableTop>
+      <template #left>
+        <ElTabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
+          <ElTabPane
+            v-for="item in tabColumns"
+            :key="item.name"
+            :label="item.label"
+            :name="item.name"
+          />
+        </ElTabs>
+      </template>
+      <template #right>
         <ElButton type="default">
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
-        <ElButton type="danger" @click="deleteAllFn"> 批量删除 </ElButton>
-        <ElButton type="primary" @click="isAddDataDrawer = !isAddDataDrawer"> 添加 </ElButton>
-
+        <ElButton type="primary" @click="addFn"> 添加 </ElButton>
         <ElButton
           type="primary"
           @click="isUploadFileDrawer = !isUploadFileDrawer"
@@ -559,7 +558,6 @@ const isUploadFileDrawer = ref(false)
         >
           导入数据
         </ElButton>
-
         <ElButton
           type="primary"
           @click="getSelections"
@@ -569,76 +567,48 @@ const isUploadFileDrawer = ref(false)
         >
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
-      </div>
-      <Table
-        v-model:pageSize="pageSize"
-        v-model:currentPage="currentPage"
-        stripe
-        row-key="featureID"
-        :reserve-selection="true"
-        :columns="columns"
-        :data="dataList"
-        :loading="loading"
-        :pagination="
-          canShowPagination
-            ? {
-                total: total,
-                layout: layout
-              }
-            : undefined
-        "
-        @register="tableRegister"
-        @selection-change="handleSelectionChange"
-      />
-    </ContentWrap>
-  </ElTabs>
-  <AddData :title="'添加检测规则'" v-model:isDrawer="isAddDataDrawer" @get-data="getList" />
-  <EditData
-    :title="'编辑检测规则'"
-    v-model:isDrawer="isEditDataDrawer"
-    :data="editDate"
-    @get-data="getList"
-  />
+      </template>
+    </TableTop>
+    <Table
+      v-model:pageSize="pageSize"
+      v-model:currentPage="currentPage"
+      stripe
+      row-key="featureID"
+      :reserve-selection="true"
+      :columns="columns"
+      :data="dataList"
+      :loading="loading"
+      :pagination="
+        canShowPagination
+          ? {
+              total: total,
+              layout: layout
+            }
+          : undefined
+      "
+      @register="tableRegister"
+      @selection-change="handleSelectionChange"
+    />
+  </ContentWrap>
   <UploadFile v-model:isDrawer="isUploadFileDrawer" :title="'上传数据'" @get-data="getList" />
   <ExportFile
     v-model:isDrawer="isDrawerExportFile"
     title="仿冒规则检查"
     :data="initExportDate"
-    :axiosFn="getPhishingDataApi"
+    :axiosFn="exportApi"
     @clear-selection="clearSelection"
   />
+  <PhishingRuleOperate
+    :title="operateTitle"
+    v-model:isDrawer="isOperateDrawer"
+    :operateType="operateType"
+    :data="operateData"
+    @get-data="getList"
+    @isCheckedAll="
+      (temp) => {
+        isCheckedAll = temp
+      }
+    "
+  />
 </template>
-<style lang="less">
-.operate-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.operate-box button {
-  width: fit-content;
-  margin: 2px;
-}
-.demo-tabs > .el-tabs__content {
-  padding: 0px;
-  color: #6b778c;
-  font-size: 32px;
-  font-weight: 500;
-}
-.el-tabs__header {
-  margin: 0;
-  background-color: #fff;
-}
-.el-tabs__item {
-  margin-bottom: 15px;
-}
-.el-tabs__nav-wrap {
-  position: static;
-}
-.table-btn {
-  float: right;
-  margin-bottom: 15px;
-}
-.el-pagination {
-  float: right;
-}
-</style>
+<style lang="less"></style>

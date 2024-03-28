@@ -100,7 +100,7 @@ const onSuccess: UploadProps['onSuccess'] = (response: any) => {
     <ElUpload
       ref="uploadRef"
       class="upload-demo"
-      action="/api/v3/phishing_rule/async_import_file"
+      action="/api/v1/sr/phishing_rule/import"
       accept=".xls,.xlsx"
       drag
       multiple
