@@ -1,8 +1,7 @@
 <script setup lang="tsx">
 import { ref } from 'vue'
 import { ElDrawer, ElInput, ElMessage } from 'element-plus'
-import { useForm } from '@/hooks/web/useForm'
-import { postWhiteListApi } from '@/api/systemManagement'
+import { addApi } from '@/api/systemManagement/PhishingConfiguration'
 import { useUserStore } from '@/store/modules/user'
 defineProps({
   title: {
@@ -22,8 +21,6 @@ defineProps({
     default: '暂无内容'
   }
 })
-const { formMethods } = useForm()
-const { getElFormExpose } = formMethods
 const emit = defineEmits(['update:isDrawer', 'get-data'])
 const close = () => {
   console.log('关闭弹窗')
@@ -33,23 +30,23 @@ const AddDataValue = ref(``)
 const open = () => {
   console.log('打开弹窗')
 }
-const resetClick = async () => {
-  const elFormExpose = await getElFormExpose()
-  elFormExpose?.resetFields()
-}
 const confirmClick = async () => {
   const createdBy = useUserStore().getUserInfo?.username
 
-  let res = await postWhiteListApi({
+  let res = await addApi({
     createdBy,
     addType: 'user',
     ruleContents: AddDataValue.value
   })
   if (res.message == '插入成功') {
+    resetClick()
     close()
     ElMessage.success('添加数据成功')
     emit('get-data')
   }
+}
+const resetClick = () => {
+  AddDataValue.value = ''
 }
 </script>
 <template>

@@ -21,7 +21,8 @@ const columns: TableColumn[] = [
   },
   {
     field: 'image_uri',
-    label: t('tableDemo.preview')
+    label: t('tableDemo.preview'),
+    class: 'max-h-50px'
   },
   {
     field: 'author',

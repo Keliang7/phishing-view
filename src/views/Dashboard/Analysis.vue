@@ -11,10 +11,10 @@ import {
   ElTabs,
   ElTabPane,
   ElDatePicker,
-  ElAlert,
   ElTableColumn,
   ElTable,
-  ElPopover
+  ElPopover,
+  ElButton
 } from 'element-plus'
 import { Echart } from '@/components/Echart'
 import { ref } from 'vue'
@@ -37,7 +37,7 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { onMounted } from 'vue'
 import { set } from 'lodash-es'
 import { useRouter } from 'vue-router'
-
+import { formatTime } from '@/utils/index'
 const { t } = useI18n()
 const loading = ref(true)
 
@@ -128,6 +128,7 @@ const funnelOptions: EChartsOption = {
         { value: 9000, name: '漏报数据总量' },
         { value: 1000, name: '误报数据总量' }
       ],
+      color: ['#2465FA', '#1BB9B9', '#29369D', '#FFB227', '#18C6FC', '#551EEE'],
       z: 100
     }
   ]
@@ -166,7 +167,8 @@ const pieOptions: EChartsOption = {
       type: 'pie',
       radius: ['40%', '70%'],
       center: ['50%', '60%'],
-      bottom: 30
+      bottom: 30,
+      color: ['#2465FA', '#1BB9B9', '#29369D', '#FFB227', '#18C6FC', '#551EEE']
     }
   ]
 }
@@ -204,13 +206,13 @@ const pieOptions2: EChartsOption = {
       radius: ['40%', '70%'],
       center: ['50%', '60%'],
       bottom: 30,
-      data: []
+      data: [],
+      color: ['#2465FA', '#1BB9B9', '#29369D', '#FFB227', '#18C6FC', '#551EEE']
     }
   ]
 }
 const getCounterfeitIntent = async () => {
   const res = await getCounterfeitIntentApi(timeObj)
-  console.log('zhelide ', res)
   set(
     pieOptions2,
     'legend.data',
@@ -487,10 +489,15 @@ onMounted(() => {
       end-placeholder="结束时间"
       :size="'default'"
     />
-    <ElAlert
-      class="el-alert-custom"
-      :description="'温馨提示：自定义时间范围仅对总览页面统计生效，时间跨度越大，需统计数据量越大，统计响应时间越慢，最多可查询5年。'"
-    />
+    <div class="flex justify-center items-center h-100%">
+      <div class="bg-#D3DEFE font-size-12px p-8px flex items-center border-rounded-4px">
+        <div
+          class="border-rounded-2 bg-#0B56FA w-16px h-16px flex justify-center items-center text-white ml-4px mr-4px"
+          >i</div
+        >
+        温馨提示：自定义时间范围仅对总览页面统计生效，时间跨度越大，需统计数据量越大，统计响应时间越慢，最多可查询5年。
+      </div>
+    </div>
   </div>
   <ElRow :gutter="10" justify="start" :class="prefixCls">
     <ElCol
@@ -506,12 +513,12 @@ onMounted(() => {
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated :rows="2">
           <template #default>
-            <div class="flex flex-col justify-between">
-              <div :class="`${prefixCls}__item--text text-16px text-gray-500 text-center`">{{
-                t(`analysis.${item.name}`)
+            <div class="flex flex-col justify-around h-150px">
+              <div :class="`${prefixCls}__item--text text-30px text-black text-center`">{{
+                t(`totalCount.${item.name}`)
               }}</div>
               <CountTo
-                class="text-20px font-700 text-center"
+                class="text-60px font-700 text-center"
                 :start-val="0"
                 :end-val="item.value"
                 :duration="2600"
@@ -559,7 +566,7 @@ onMounted(() => {
           <ElTabs v-model="activeName" class="demo-tabs" @tab-change="handleClick">
             <ElTabPane :key="'dataCount'" :label="'数据统计'" :name="'dataCount'">
               <el-table :data="tableData" border style="width: 100%" height="245">
-                <el-table-column width="120" prop="data" label="时间戳">
+                <el-table-column width="120" prop="data" label="时间">
                   <template #default="{ row }">
                     {{ new Date(row.date).toLocaleDateString() }}
                   </template>
@@ -592,48 +599,59 @@ onMounted(() => {
     <ElCol :xl="12" :lg="12" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
         <div class="flex justify-between mb-20px">
-          <ElCard style="width: 22%" shadow="hover">
-            <div class="flex flex-col justify-center items-center">
-              <p class="m-0">采集完成</p>
-              <p class="m-0">{{ taskMessageData.completed }}</p>
-            </div>
+          <ElCard
+            class="flex flex-col"
+            style="width: 22%; background-color: #e6f4fd"
+            shadow="hover"
+          >
+            <p class="m-0">采集完成</p>
+            <p class="m-0">{{ taskMessageData.completed }}</p>
           </ElCard>
-          <ElCard style="width: 22%" shadow="hover">
-            <div class="flex flex-col justify-center items-center">
+          <ElCard style="width: 22%; background-color: #ebfeee" shadow="hover">
+            <div class="flex flex-col">
               <p class="m-0">采集中</p>
               <p class="m-0">{{ taskMessageData.tracing }}</p>
             </div>
           </ElCard>
-          <ElCard style="width: 22%" shadow="hover">
-            <div class="flex flex-col justify-center items-center">
+          <ElCard style="width: 22%; background-color: #efeefe" shadow="hover">
+            <div class="flex flex-col">
               <p class="m-0">采集失败</p>
               <p class="m-0">{{ taskMessageData.failed }}</p>
             </div>
           </ElCard>
-          <ElCard style="width: 22%" shadow="hover">
-            <div class="flex flex-col justify-center items-center">
+          <ElCard style="width: 22%; background-color: #e6f4fd" shadow="hover">
+            <div class="flex flex-col">
               <p class="m-0">人工采集</p>
               <p class="m-0">{{ taskMessageData.manual }}</p>
             </div>
           </ElCard>
         </div>
-        <ElCard shadow="hover" class="mb-20px">
-          <div class="flex justify-around item-center font-700 font-size-8">
-            <p>采集数据</p>
-            <CountTo
-              class="flex flex-col justify-center"
-              :start-val="0"
-              :end-val="taskMessageData.traceTarget"
-              :duration="2600"
-            />
-          </div>
-        </ElCard>
-        <div class="flex justify-between mb-20px">
-          <p>最近一个人工采集完成任务：{{ taskMessageData.lastTime }}</p>
-          <p
-            class="text-blue select-none cursor-pointer"
-            @click="router.push({ name: 'GatherTask' })"
-            >去添加任务</p
+        <ElRow class="mb-20px">
+          <ElCol :span="12">
+            <div class="flex items-center">
+              <div class="flex justify-center items-center border-rd-50% bg-#F3F6F8 p-8px mx-8px">
+                <Icon color="5F80EC" :size="26" icon="ant-design:file-search-outlined"
+              /></div>
+              <div class="ml-10px">
+                <div class="text-14px mb-4px">采集数据</div>
+                <CountTo
+                  class="fw-700 text-22px"
+                  :start-val="0"
+                  :end-val="taskMessageData.traceTarget"
+                  :duration="2600"
+                />
+              </div>
+            </div>
+          </ElCol>
+        </ElRow>
+        <div class="flex justify-between items-center">
+          <span class="text-14px"
+            >最近一个人工采集完成任务：{{
+              formatTime(taskMessageData.lastTime, 'yyyy-mm-dd HH:MM:ss')
+            }}</span
+          >
+          <ElButton class="mb-4px" type="primary" @click="router.push({ name: 'GatherTask' })"
+            >去添加任务</ElButton
           >
         </div>
         <el-table :data="[taskMessageData]" border style="width: 100%">
@@ -660,7 +678,9 @@ onMounted(() => {
           <el-table-column width="90" label="操作">
             <div
               class="text-blue select-none cursor-pointer"
-              @click="router.push({ name: 'GatherResult' })"
+              @click="
+                router.push({ name: 'GatherResult', query: { taskID: taskMessageData.taskID } })
+              "
               >查看数据</div
             >
           </el-table-column>
@@ -670,59 +690,73 @@ onMounted(() => {
     <ElCol :xl="12" :lg="12" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
         <div class="flex justify-between mb-20px">
-          <ElCard style="width: 22%" shadow="hover">
-            <div class="flex flex-col justify-center items-center">
+          <ElCard style="width: 22%; background-color: #e6f4fd" shadow="hover">
+            <div class="flex flex-col">
               <p class="m-0">拓线完成</p>
               <p class="m-0">{{ extensionData.completed }}</p>
             </div>
           </ElCard>
-          <ElCard style="width: 22%" shadow="hover">
-            <div class="flex flex-col justify-center items-center">
+          <ElCard style="width: 22%; background-color: #ebfeee" shadow="hover">
+            <div class="flex flex-col">
               <p class="m-0">拓线中</p>
               <p class="m-0">{{ extensionData.tracing }}</p>
             </div>
           </ElCard>
-          <ElCard style="width: 22%" shadow="hover">
-            <div class="flex flex-col justify-center items-center">
+          <ElCard style="width: 22%; background-color: #efeefe" shadow="hover">
+            <div class="flex flex-col">
               <p class="m-0">拓线失败</p>
               <p class="m-0">{{ extensionData.failed }}</p>
             </div>
           </ElCard>
-          <ElCard style="width: 22%" shadow="hover">
-            <div class="flex flex-col justify-center items-center">
+          <ElCard style="width: 22%; background-color: #e6f4fd" shadow="hover">
+            <div class="flex flex-col">
               <p class="m-0">人工拓线</p>
               <p class="m-0">{{ extensionData.manual }}</p>
             </div>
           </ElCard>
         </div>
-        <ElCard shadow="hover" class="mb-20px">
-          <div class="flex justify-around item-center font-700 font-size-8">
-            <div class="w-50% flex justify-around">
-              <p>拓线目标</p>
-              <CountTo
-                class="flex flex-col justify-center"
-                :start-val="0"
-                :end-val="extensionData.traceTarget"
-                :duration="2600"
-              />
+        <ElRow class="mb-20px">
+          <ElCol :span="12">
+            <div class="flex items-center">
+              <div class="flex justify-center items-center border-rd-50% bg-#F3F6F8 p-8px mx-8px">
+                <Icon color="5F80EC" :size="26" icon="ant-design:file-search-outlined"
+              /></div>
+              <div class="ml-10px">
+                <div class="text-14px mb-4px">拓线目标</div>
+                <CountTo
+                  class="fw-700 text-22px"
+                  :start-val="0"
+                  :end-val="extensionData.traceTarget"
+                  :duration="2600"
+                />
+              </div>
             </div>
-            <div class="w-50% flex justify-around">
-              <p>拓线结果</p>
-              <CountTo
-                class="flex flex-col justify-center"
-                :start-val="0"
-                :end-val="extensionData.traceResult"
-                :duration="2600"
-              />
+          </ElCol>
+          <ElCol :span="12">
+            <div class="flex items-center">
+              <div class="flex justify-center items-center border-rd-50% bg-#F3F6F8 p-8px mx-8px">
+                <Icon color="5F80EC" :size="26" icon="ant-design:file-search-outlined"
+              /></div>
+              <div class="ml-10px">
+                <div class="text-14px mb-4px">拓线结果</div>
+                <CountTo
+                  class="fw-700 text-22px"
+                  :start-val="0"
+                  :end-val="extensionData.traceResult"
+                  :duration="2600"
+                />
+              </div>
             </div>
-          </div>
-        </ElCard>
-        <div class="flex justify-between mb-20px">
-          <p>最近一个人工采集完成任务：{{ extensionData.lastTime }}</p>
-          <p
-            class="text-blue select-none cursor-pointer"
-            @click="router.push({ name: 'GatherTask' })"
-            >去添加任务</p
+          </ElCol>
+        </ElRow>
+        <div class="flex justify-between items-center">
+          <span class="text-14px"
+            >最近一个人工采集完成任务：{{
+              formatTime(extensionData.lastTime, 'yyyy-mm-dd HH:MM:ss')
+            }}</span
+          >
+          <ElButton class="mb-4px" type="primary" @click="router.push({ name: 'GatherTask' })"
+            >去添加任务</ElButton
           >
         </div>
         <el-table :data="[taskMessageData]" border style="width: 100%">
@@ -749,7 +783,9 @@ onMounted(() => {
           <el-table-column width="90" label="操作">
             <div
               class="text-blue select-none cursor-pointer"
-              @click="router.push({ name: 'GatherResult' })"
+              @click="
+                router.push({ name: 'GatherResult', query: { taskID: taskMessageData.taskID } })
+              "
               >查看数据</div
             >
           </el-table-column>
@@ -775,7 +811,7 @@ onMounted(() => {
                 border
                 style="width: 100%"
               >
-                <ElTableColumn type="index" label="排名" />
+                <ElTableColumn type="index" :width="55" label="排名" />
                 <!-- 第一组 -->
                 <ElTableColumn
                   v-if="activeName_contribution == 'dataSourceContribution'"
@@ -838,7 +874,7 @@ onMounted(() => {
               :name="item.name"
             >
               <ElTable :data="tableData3" border style="width: 100%">
-                <ElTableColumn type="index" label="排名" />
+                <ElTableColumn type="index" :width="55" label="排名" />
                 <!-- 第一组 -->
                 <ElTableColumn v-if="activeName3 == 'rule'" prop="rule" label="仿冒检测特征规则" />
                 <!-- 第二组 -->

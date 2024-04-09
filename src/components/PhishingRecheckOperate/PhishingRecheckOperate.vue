@@ -1,11 +1,12 @@
 <script setup lang="tsx">
-import { ElDrawer } from 'element-plus'
+import { ElDrawer, ElMessage } from 'element-plus'
 import { Form, FormSchema } from '@/components/Form'
 import { reactive, ref } from 'vue'
 import { useForm } from '@/hooks/web/useForm'
 import { useValidator } from '@/hooks/web/useValidator'
+import { recheckApi } from '@/api/systemManagement/PhishingRecheck'
 const { required } = useValidator()
-defineProps({
+const props = defineProps({
   title: {
     type: String,
     default: ''
@@ -14,33 +15,91 @@ defineProps({
     type: Boolean,
     default: false
   },
-  bodyInfo: {
-    type: Object,
-    default: null
+  data: {
+    type: Object
   },
-  placeholder: {
-    type: String,
-    default: '暂无内容'
+  isDo: {
+    type: Boolean
   }
 })
 
-const emit = defineEmits(['update:isDrawer'])
+const emit = defineEmits(['update:isDrawer', 'get-data'])
 const close = () => {
-  console.log('关闭弹窗')
+  resetForm()
   emit('update:isDrawer', false)
 }
 const open = () => {
-  console.log('打开弹窗')
+  if (props.data?.operationType === 'Edit') {
+    addSchema(
+      {
+        field: 'editFeatureContent',
+        label: '编辑特征内容',
+        component: 'Input',
+        formItemProps: {
+          rules: [required()]
+        },
+        componentProps: {
+          type: 'textarea',
+          autosize: { minRows: 11, maxRows: 16 },
+          resize: 'none',
+          placeholder:
+            '支持多种关键特征的组合：title、body、FID、ICON_hash、domain、SDK等，支持&、||的关联关系。'
+        }
+      },
+      4
+    )
+    setSchema([
+      {
+        field: 'featureContent',
+        path: 'componentProps.disabled',
+        value: true
+      }
+    ])
+  }
+  if (props.data?.operationType === 'Delete') {
+    addSchema(
+      {
+        field: 'deleteReason',
+        label: '删除原因',
+        component: 'Input',
+        formItemProps: {
+          rules: [required()]
+        },
+        componentProps: {
+          type: 'textarea',
+          autosize: { minRows: 11, maxRows: 16 },
+          resize: 'none'
+        }
+      },
+      4
+    )
+    setSchema([
+      {
+        field: 'featureContent',
+        path: 'componentProps.disabled',
+        value: true
+      }
+    ])
+  }
+  setValues({
+    featureName: props.data?.formData.featureName,
+    victim: props.data?.formData.victim,
+    victimType: props.data?.formData.victimType,
+    featureContent: props.data?.formData.featureContent,
+    editFeatureContent: props.data?.formData.editFeatureContent,
+    deleteReason: props.data?.formData.deleteReason,
+    operationType: props.data?.operationType
+  })
 }
 const { formMethods, formRegister } = useForm()
-const { getElFormExpose, getFormData } = formMethods
+const { getElFormExpose, getFormData, setValues, addSchema, setSchema, delSchema } = formMethods
 const resetClick = async () => {
   const elFormExpose = await getElFormExpose()
   elFormExpose?.resetFields()
 }
 const schema = reactive<FormSchema[]>([
   {
-    field: 'field1',
+    field: 'featureName',
     label: '特征名称',
     component: 'Input',
     formItemProps: {
@@ -51,7 +110,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'field2',
+    field: 'victim',
     label: '受害方',
     component: 'Input',
     formItemProps: {
@@ -62,7 +121,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'field3',
+    field: 'victimType',
     label: '受害方分类',
     component: 'Select',
     formItemProps: {
@@ -106,7 +165,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'field4',
+    field: 'featureContent',
     label: '特征内容',
     component: 'Input',
     formItemProps: {
@@ -121,31 +180,46 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'field5',
+    field: 'operationType',
     label: '操作类型',
     component: 'Input',
-    formItemProps: {
-      rules: [required()]
+    componentProps: {
+      disabled: true
     }
   }
 ])
+const resetForm = () => {
+  resetClick()
+  delSchema('editFeatureContent')
+  delSchema('deleteReason')
+  setSchema([
+    {
+      field: 'featureContent',
+      path: 'componentProps.disabled',
+      value: false
+    }
+  ])
+}
 const isValid = ref(false)
 const confirmClick = async () => {
   const elFormExpose = await getElFormExpose()
-  elFormExpose?.validate((v) => {
+  await elFormExpose?.validate((v) => {
     isValid.value = v
   })
   if (isValid.value) {
     //获取form数据
     let formData = await getFormData()
-    console.log(formData)
-    //发起post请求
-    // if (res.message == '添加成功') {
-
-    // }
-
-    isValid.value = false
-    close()
+    let operationType = formData.operationType
+    let featureID = props.data?.featureID
+    delete formData.operationType
+    let res = await recheckApi({ featureID, operationType, formData })
+    if (res.code == 0) {
+      isValid.value = false
+      resetClick()
+      close()
+      emit('get-data')
+      ElMessage.success('复核成功')
+    }
   }
 }
 </script>
@@ -160,8 +234,8 @@ const confirmClick = async () => {
     <Form :isCol="false" :schema="schema" @register="formRegister" />
     <template #footer>
       <div style="margin-right: 20px">
-        <BaseButton type="default" @click="resetClick">重 置</BaseButton>
-        <BaseButton type="primary" @click="confirmClick">确 定</BaseButton>
+        <BaseButton type="default" v-show="isDo" @click="resetClick">重 置</BaseButton>
+        <BaseButton type="primary" v-show="isDo" @click="confirmClick">确 定</BaseButton>
       </div>
     </template>
   </ElDrawer>

@@ -4,10 +4,11 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElButton, ElCheckbox, ElMessageBox, ElMessage } from 'element-plus'
 import { Table, TableColumn } from '@/components/Table'
-import { getPolicyWhiteListApi, deleteWhiteListApi, getDataApi } from '@/api/systemManagement'
+import { getListApi, deleteApi, exportApi } from '@/api/systemManagement/PhishingConfiguration'
+import { getStaticFileApi } from '@/api/downLoadCenter'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
-import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
+import TableTop from '@/components/TableTop/TableTop.vue'
 import AddData from './PolicyComponent/AddData.vue'
 import UploadFile from './PolicyComponent/UploadFile.vue'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
@@ -20,7 +21,7 @@ const { tableRegister, tableMethods, tableState } = useTable({
   // fetchDataApi方法用于异步获取表格数据
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
-    const res = await getPolicyWhiteListApi({
+    const res = await getListApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
       ...searchData.value
@@ -31,21 +32,17 @@ const { tableRegister, tableMethods, tableState } = useTable({
     }
   },
   fetchDelApi: async () => {
-    const res = await deleteWhiteListApi({ rules: unref(ids) })
+    const res = await deleteApi({ rules: unref(ids) })
     return !!res
   }
 })
-const systemConstants = useSystemConstantsWithOut()
 // 获取tableState中的数据和方法
 let { loading, total, dataList, currentPage, pageSize } = tableState
 const { setProps, getList, getElTableExpose, delList } = tableMethods
-// 页面主标题
-const title = ref('白名单管理')
 
 // 高级搜索的数据
 const searchData = ref({})
 const dataArray = ref(['ruleContent', 'addType', 'createdBy', 'createdTime'])
-const optionArray = ref({ systemAddType: systemConstants.whiteListFrom })
 
 // 定义columns变量，用于存储表格的列配置
 let columns = reactive<TableColumn[]>([])
@@ -58,11 +55,13 @@ const whiteColumns: TableColumn[] = [
   },
   {
     field: 'ruleContent',
-    label: t('tableDemo.ruleContent')
+    label: t('tableDemo.ruleContent'),
+    width: 300
   },
   {
     field: 'matchNum',
-    label: t('tableDemo.matchNum')
+    label: t('tableDemo.matchNum'),
+    width: 150
   },
   {
     field: 'addType',
@@ -75,6 +74,7 @@ const whiteColumns: TableColumn[] = [
   {
     field: 'createdTime',
     label: t('tableDemo.createdTime'),
+    width: 250,
     formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
@@ -126,7 +126,7 @@ const deleteAllFn = async () => {
       cancelButtonText: t('common.delCancel'),
       type: 'warning'
     }).then(async () => {
-      const res = await deleteWhiteListApi({ isCheckedAll: true, temp })
+      const res = await deleteApi({ isCheckedAll: true, temp })
       if (res) {
         ElMessage.success(t('common.delSuccess'))
         isCheckedAll.value = false
@@ -226,21 +226,29 @@ const canShowPagination = ref(true)
 const isDrawerExportFile = ref(false)
 </script>
 <template>
-  <AdvancedSearch :dataArray="dataArray" :optionArray="optionArray" @search-data="searchTable" />
-  <ContentWrap :title="title" class="table-box">
-    <div class="table-btn">
-      <ElButton type="default">
-        <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
-      </ElButton>
-      <ElButton type="default" @click="deleteAllFn"> 批量删除 </ElButton>
-      <ElButton type="primary" @click="addWhiteList"> 添加 </ElButton>
+  <AdvancedSearch
+    :title="`白名单管理`"
+    :total="total"
+    :dataArray="dataArray"
+    :tip-title="'系统默认展示当天接入数据，最多可查看7天内数据，超出7天数据不会留存'"
+    @search-data="searchTable"
+  />
+  <ContentWrap>
+    <TableTop>
+      <template #right>
+        <ElButton type="default">
+          <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
+        </ElButton>
+        <ElButton type="default" @click="deleteAllFn"> 批量删除 </ElButton>
+        <ElButton type="primary" @click="addWhiteList"> 添加 </ElButton>
 
-      <ElButton type="primary" @click="uploadFile"> 导入数据 </ElButton>
+        <ElButton type="primary" @click="uploadFile"> 导入数据 </ElButton>
 
-      <ElButton type="primary" @click="getSelections">
-        <Icon icon="tdesign:upload" /> 导出数据
-      </ElButton>
-    </div>
+        <ElButton type="primary" @click="getSelections">
+          <Icon icon="tdesign:upload" /> 导出数据
+        </ElButton>
+      </template>
+    </TableTop>
     <Table
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"
@@ -268,41 +276,23 @@ const isDrawerExportFile = ref(false)
 一行一个域名，可输入多行，最多输入1000行。`"
     @get-data="getList"
   />
-  <UploadFile v-model:isDrawer="isDrawerUploadFile" :title="'上传'" @get-data="getList" />
+  <UploadFile
+    v-model:isDrawer="isDrawerUploadFile"
+    :title="'上传'"
+    :axiosFn="getStaticFileApi"
+    @get-data="getList"
+  />
   <ExportFile
     v-model:isDrawer="isDrawerExportFile"
     title="白名单管理"
     :data="initExportDate"
-    :axiosFn="getDataApi"
+    :axiosFn="exportApi"
     @clear-selection="clearSelection"
+    @isCheckedAll="
+      (temp) => {
+        isCheckedAll = temp
+      }
+    "
   />
 </template>
-<style scoped>
-.demo-tabs > .el-tabs__content {
-  padding: 0px;
-  color: #6b778c;
-  font-size: 32px;
-  font-weight: 500;
-}
-.table-box {
-  position: relative;
-}
-.el-tabs__header {
-  z-index: 9;
-}
-.el-tabs__item {
-  margin-bottom: 15px;
-}
-.el-tabs__nav-wrap {
-  position: static;
-}
-.table-btn {
-  position: absolute;
-  right: 20px;
-  top: 20px;
-  z-index: 10;
-}
-.el-pagination {
-  float: right;
-}
-</style>
+<style scoped></style>

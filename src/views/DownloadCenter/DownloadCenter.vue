@@ -2,7 +2,7 @@
 import { ContentWrap } from '@/components/ContentWrap'
 import { useI18n } from '@/hooks/web/useI18n'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getDownloadCenterListApi, getDownloadCenterFileApi } from '@/api/table'
+import { getListApi, getFileApi } from '@/api/downLoadCenter'
 import { reactive, unref } from 'vue'
 import { ElTag, ElButton } from 'element-plus'
 import { useTable } from '@/hooks/web/useTable'
@@ -10,7 +10,7 @@ import { useTable } from '@/hooks/web/useTable'
 const { tableRegister, tableState } = useTable({
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
-    const res = await getDownloadCenterListApi({
+    const res = await getListApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize)
     })
@@ -72,7 +72,7 @@ const columns = reactive<TableColumn[]>([
   }
 ])
 const actionFn = async (data: TableSlotDefault) => {
-  let res = await getDownloadCenterFileApi({ key: data.row.fileName })
+  let res = await getFileApi({ key: data.row.fileName })
   const blob = new Blob([res.data], { type: 'text/xlsx' })
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')

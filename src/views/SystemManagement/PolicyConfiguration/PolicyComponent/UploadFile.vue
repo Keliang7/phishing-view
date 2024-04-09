@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { ElDrawer, ElUpload, ElMessage } from 'element-plus'
 import type { UploadProps, UploadUserFile } from 'element-plus'
 import type { UploadInstance } from 'element-plus'
+import { getStaticFileApi } from '@/api/downLoadCenter'
 defineProps({
   title: {
     type: String,
@@ -19,11 +20,15 @@ defineProps({
   placeholder: {
     type: String,
     default: '暂无内容'
+  },
+  axiosFn: {
+    type: Function
   }
 })
 const emit = defineEmits(['update:isDrawer', 'get-data'])
 const close = () => {
   console.log('关闭弹窗')
+  uploadRef.value?.clearFiles()
   emit('update:isDrawer', false)
   emit('get-data')
 }
@@ -47,13 +52,17 @@ const uploadRef = ref<UploadInstance>()
 const submitUpload = () => {
   uploadRef.value?.submit()
 }
+const getStaticFile = async () => {
+  let res = await getStaticFileApi('whiteList')
+  console.log(res)
+}
 </script>
 <template>
   <ElDrawer :title="title" :modelValue="isDrawer" :before-close="close" custom-class="drawerWidth">
     <ElUpload
       ref="uploadRef"
       class="upload-demo"
-      action="/api/v2/white_list/async_import_file"
+      action="/api/v1/wl/white_list/import"
       drag
       :auto-upload="false"
       accept=".xls,.xlsx"
@@ -67,7 +76,7 @@ const submitUpload = () => {
       <template #tip>
         <div class="el-upload__tip">
           只能上传xlsx文件,不能超过1MB,最多上传5个文件；文件模版
-          <a href="">下载</a>
+          <p @click="getStaticFile">下载</p>
         </div>
       </template>
     </ElUpload>

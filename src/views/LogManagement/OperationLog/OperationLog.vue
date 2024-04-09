@@ -65,8 +65,7 @@ const searchData = ref({})
 const ids = ref<string[]>([])
 </script>
 <template>
-  <AdvancedSearch :dataArray="dataArray" />
-  操作日志
+  <AdvancedSearch :dataArray="dataArray" :title="'操作日志管理'" />
   <Table
     v-model:pageSize="pageSize"
     v-model:currentPage="currentPage"

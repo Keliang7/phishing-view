@@ -111,8 +111,7 @@ const editData = (data) => {
 }
 </script>
 <template>
-  <AdvancedSearch :dataArray="dataArray" />
-  拓线任务
+  <AdvancedSearch :dataArray="dataArray" :title="'拓线任务管理'" />
   <Table
     v-model:pageSize="pageSize"
     v-model:currentPage="currentPage"

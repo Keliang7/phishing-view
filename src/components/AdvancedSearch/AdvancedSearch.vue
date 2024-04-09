@@ -4,13 +4,19 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { reactive, ref, onMounted, watch, defineEmits } from 'vue'
 import { useForm } from '@/hooks/web/useForm'
 import { Form, FormSchema } from '@/components/Form'
-import { ElAlert } from 'element-plus'
 import { formatTime, Timestamp } from '@/utils'
 import { BaseButton } from '@/components/Button'
+import { ElRow, ElCol } from 'element-plus'
 const props = defineProps({
   dataArray: {
     type: Array,
     default: null
+  },
+  title: {
+    type: String
+  },
+  total: {
+    type: Number
   },
   tipTitle: {
     type: String,
@@ -23,7 +29,6 @@ const { getElFormExpose, getFormData } = formMethods
 const emit = defineEmits(['search-data'])
 // 查询到的表格数据
 let searchData = reactive({})
-
 let schema = ref<FormSchema[]>([
   //数据管理
   {
@@ -32,6 +37,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入URL'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -40,6 +48,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入域名'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -48,27 +59,57 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入IP'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
     field: 'status',
-    label: '状态',
+    label: '状态：',
     component: 'Select',
     componentProps: {
       options: [
         {
-          value: 'notSeleted',
+          value: '未采集到',
           label: '未采集到'
         },
         {
-          value: 'seleting',
+          value: '采集中',
           label: '采集中'
         },
         {
-          value: 'selected',
+          value: '采集完成',
           label: '采集完成'
         }
       ]
+    },
+    colProps: {
+      span: 6
+    }
+  },
+  {
+    field: 'status',
+    label: '拓线状态：',
+    component: 'Select',
+    componentProps: {
+      options: [
+        {
+          value: '未采集到',
+          label: '未采集到'
+        },
+        {
+          value: '采集中',
+          label: '采集中'
+        },
+        {
+          value: '采集完成',
+          label: '采集完成'
+        }
+      ]
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -78,6 +119,9 @@ let schema = ref<FormSchema[]>([
     componentProps: {
       type: 'date',
       placeholder: formatTime(new Date(), 'yyyy-MM-dd')
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -86,6 +130,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入受害者'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -128,6 +175,9 @@ let schema = ref<FormSchema[]>([
         }
       ],
       placeholder: '请选择受害方类型'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -158,6 +208,9 @@ let schema = ref<FormSchema[]>([
         }
       ],
       placeholder: '请选择漏报原因'
+    },
+    colProps: {
+      span: 6
     }
   },
   //数据拓线管理
@@ -167,6 +220,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入任务ID'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -175,6 +231,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入任务名称'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -185,14 +244,17 @@ let schema = ref<FormSchema[]>([
       placeholder: '请选择任务类型',
       option: [
         {
-          lable: '系统自动拓线',
+          label: '系统自动拓线',
           value: 'bySystem'
         },
         {
-          lable: '人工触发',
+          label: '人工触发',
           value: 'byHuman'
         }
       ]
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -201,6 +263,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入创建人'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -208,41 +273,43 @@ let schema = ref<FormSchema[]>([
     component: 'DatePicker',
     label: `${t('formDemo.createdTime')}：`,
     componentProps: {
-      type: 'date',
-      placeholder: formatTime(new Date(), 'yyyy-MM-dd')
-    }
-  },
-  {
-    field: 'finishTime',
-    component: 'DatePicker',
-    label: `完成时间：`,
-    componentProps: {
-      type: 'date',
-      placeholder: formatTime(new Date(), 'yyyy-MM-dd')
+      type: 'daterange'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
     field: 'title',
-    label: `title`,
+    label: `title：`,
     component: 'Input',
     componentProps: {
       placeholder: '请输入title'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
     field: 'FID',
-    label: `FID`,
+    label: `FID：`,
     component: 'Input',
     componentProps: {
       placeholder: '请输入FID'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
     field: 'netStatusCode',
-    label: `网络状态码`,
+    label: `网络状态码：`,
     component: 'Input',
     componentProps: {
       placeholder: '请输入网络状态码'
+    },
+    colProps: {
+      span: 6
     }
   },
   //数据采集管理
@@ -251,16 +318,19 @@ let schema = ref<FormSchema[]>([
     label: '下发方式：',
     component: 'Select',
     componentProps: {
-      option: [
+      options: [
         {
-          lable: '系统自动拓线',
-          value: 'byAuto'
+          label: '自动化采集',
+          value: '自动下发'
         },
         {
-          lable: '人工触发',
-          value: 'byHuman'
+          label: '人工触发',
+          value: '人工下发'
         }
       ]
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -268,20 +338,23 @@ let schema = ref<FormSchema[]>([
     label: '探测类型：',
     component: 'Select',
     componentProps: {
-      option: [
+      options: [
         {
-          lable: '网站探测任务',
-          value: 'website'
+          label: '网站探测任务',
+          value: 'webAsset'
         },
         {
-          lable: '域名探测任务',
-          value: 'domain'
+          label: '域名探测任务',
+          value: 'domainResolve'
         },
         {
-          lable: '资产探测任务',
-          value: 'property'
+          label: '资产探测任务',
+          value: 'ipAsset'
         }
       ]
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -289,32 +362,35 @@ let schema = ref<FormSchema[]>([
     label: '任务状态：',
     component: 'Select',
     componentProps: {
-      option: [
+      options: [
         {
-          lable: '已下发',
-          value: 'distributed'
+          label: '已下发',
+          value: '已下发'
         },
         {
-          lable: '扫描中',
-          value: 'scanning'
+          label: '扫描中',
+          value: '执行中'
         },
         {
-          lable: '扫描完成',
-          value: 'scanned'
+          label: '扫描完成',
+          value: '完成'
         },
         {
-          lable: '扫描失败',
-          value: 'scanFailed'
+          label: '扫描失败',
+          value: '执行错误'
         },
         {
-          lable: '停止中',
-          value: 'stopping'
+          label: '停止中',
+          value: '停止中'
         },
         {
-          lable: '停止完成',
-          value: 'stopping'
+          label: '停止完成',
+          value: '已停止'
         }
       ]
+    },
+    colProps: {
+      span: 6
     }
   },
   //icon我们用插槽
@@ -325,6 +401,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入登录名'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -333,6 +412,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入邮箱'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -341,6 +423,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入手机号'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -349,6 +434,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入角色名称'
+    },
+    colProps: {
+      span: 6
     }
   },
   //日志管理
@@ -358,6 +446,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入登录IP'
+    },
+    colProps: {
+      span: 6
     }
   },
   //系统管理
@@ -367,6 +458,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入规则内容'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -376,14 +470,17 @@ let schema = ref<FormSchema[]>([
     componentProps: {
       options: [
         {
-          lable: '系统预置',
+          label: '系统预置',
           value: 'system'
         },
         {
-          lable: '自定义',
+          label: '自定义',
           value: 'user'
         }
       ]
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -392,6 +489,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入特征内容'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -400,6 +500,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入特征ID'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -409,7 +512,7 @@ let schema = ref<FormSchema[]>([
     componentProps: {
       options: [
         {
-          value: 'notCheck',
+          value: '未复核',
           label: '未复核'
         },
         {
@@ -417,10 +520,13 @@ let schema = ref<FormSchema[]>([
           label: '提交复核'
         },
         {
-          value: 'checked',
+          value: '复核通过',
           label: '复核通过'
         }
       ]
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -442,6 +548,9 @@ let schema = ref<FormSchema[]>([
           label: '删除'
         }
       ]
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -450,6 +559,9 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入网站名称'
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -458,24 +570,23 @@ let schema = ref<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入ICON_hash'
+    },
+    colProps: {
+      span: 6
     }
   }
 ])
-
 let schemaCopy = ref<FormSchema[]>([])
-const tipCont = ref('')
-onMounted(async () => {
-  await getShowData()
-})
 const getShowData = () => {
-  tipCont.value = props.tipTitle
   let temp = schema.value.filter((i) => props.dataArray.includes(i.field))
   temp.sort((a, b) => props.dataArray.indexOf(a.field) - props.dataArray.indexOf(b.field))
   schemaCopy.value = temp
 }
+onMounted(async () => {
+  await getShowData()
+})
 // 当同一个页面，不同的高级搜索组件进行切换时，需要用watch来监听变化。
 watch(() => props.dataArray, getShowData)
-
 // 重置
 const verifyReset = async () => {
   const elFormExpose = await getElFormExpose()
@@ -484,20 +595,45 @@ const verifyReset = async () => {
 // 查询
 const searchFn = async () => {
   const formData = await getFormData()
-  formData.discoveryTime = Timestamp(formData.discoveryTime)
-  formData.createdTime = Timestamp(formData.createdTime)
-  searchData = formData
+  if (formData.discoveryTime) formData.discoveryTime = Timestamp(formData.discoveryTime)
+  let temp = formData.createdTime
+  let startTime = Timestamp(temp?.[0])
+  let endTime = Timestamp(temp?.[1])
+  delete formData.createdTime
+  if (temp) {
+    searchData = { ...formData, startTime, endTime }
+  } else {
+    searchData = formData
+  }
+  console.log('advanceSearch-searchData', searchData)
   emit('search-data', searchData)
 }
 </script>
 <template>
   <ContentWrap class="advance-search" style="margin-bottom: 20px">
-    <ElAlert
-      class="el-alert-custom"
-      style="width: fit-content"
-      v-show="tipTitle"
-      :description="tipCont"
-    />
+    <ElRow class="mb-1rem">
+      <ElCol :span="8">
+        <div class="title flex">
+          <h3 class="m-0">{{ title }}</h3>
+          <span
+            v-if="total"
+            class="bg-#0B56FA text-white font-size-12px ml-8px px-6px border-rounded-2px flex items-center"
+            >{{ total }}</span
+          >
+        </div>
+      </ElCol>
+      <ElCol :span="8" v-if="tipTitle">
+        <div class="flex justify-center items-center h-100%">
+          <div class="bg-#D3DEFE font-size-12px p-8px flex items-center border-rounded-4px">
+            <div
+              class="border-rounded-2 bg-#0B56FA w-16px h-16px flex justify-center items-center text-white ml-4px mr-4px"
+              >i</div
+            >
+            温馨提示：{{ tipTitle }}
+          </div>
+        </div>
+      </ElCol>
+    </ElRow>
     <Form :autoSetPlaceholder="false" :schema="schemaCopy" @register="formRegister" />
     <div class="height-32px float-right p-10px">
       <BaseButton type="default" @click="verifyReset"> 重置 </BaseButton>
@@ -505,15 +641,4 @@ const searchFn = async () => {
     </div>
   </ContentWrap>
 </template>
-<style lang="less" scoped>
-.el-alert-custom {
-  background-color: #e9f6fe; /* Change background color */
-  border: 1px solid #a0d3fb;
-  margin-bottom: 12px;
-}
-</style>
-<style>
-.el-alert .el-alert__content p.el-alert__description {
-  margin-top: 0;
-}
-</style>
+<style lang="less" scoped></style>

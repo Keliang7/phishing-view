@@ -408,7 +408,7 @@ export default defineComponent({
             <ElImage
               src={url}
               fit="cover"
-              class="w-[100%]"
+              class="w-[100%] max-h-50px"
               lazy
               preview-src-list={[url]}
               preview-teleported

@@ -228,7 +228,6 @@ export default defineComponent({
     const renderFormItemWrap = () => {
       // hidden属性表示隐藏，不做渲染
       const { schema = [], isCol } = unref(getProps)
-
       return schema
         .filter((v) => !v.remove && !v.hidden)
         .map((item) => {

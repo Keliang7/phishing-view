@@ -2,43 +2,28 @@
 import { ref, reactive, unref, onMounted, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import {
-  ElTabs,
-  ElTabPane,
-  ElButton,
-  ElCheckbox,
-  ElMessageBox,
-  ElMessage,
-  ElInput
-} from 'element-plus'
+import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getUrlBWListApi, getUrlBWwebInfoApi } from '@/api/table'
+import { getBwListApi, exportApi, getBwDetailApi, backtrackApi } from '@/api/dataManagement/pendUrl'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
-import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
+import TableTop from '@/components/TableTop/TableTop.vue'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
-import DrawerOperate from '@/components/DrawerOperate/DrawerOperate.vue'
+import SelectData from '@/components/SelectData/SelectData.vue'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
-import { FormSchema } from '@/components/Form'
-import { useValidator } from '@/hooks/web/useValidator'
-import { BaseButton } from '@/components/Button'
+import ExportFile from '@/components/ExportFile/ExportFile.vue'
+import Backtrack from '@/components/Backtrack/Backtrack.vue'
 
-// 使用useI18n钩子函数获取国际化相关数据和方法
 const { t } = useI18n()
-// 使用useTable钩子函数获取table相关数据和方法
 const { tableRegister, tableMethods, tableState } = useTable({
-  // fetchDataApi方法用于异步获取表格数据
   fetchDataApi: async () => {
     let res = await getTableData(activeName.value)
-
     return {
       list: res.list,
       total: res.total
     }
   }
 })
-const systemConstants = useSystemConstantsWithOut()
-// 获取tableState中的数据和方法
 const { loading, total, dataList, currentPage, pageSize } = tableState
 const { setProps, getElTableExpose } = tableMethods
 // 查看网页信息
@@ -47,16 +32,9 @@ const isDrawerInfo = ref(false)
 const titleDrawer = ref('')
 // 查看网页信息-弹窗内容
 const bodyInfo = ref([{}])
-// 高级搜索的数据
-const searchData = ref({})
-// 定义canShowPagination变量，用于控制是否显示分页
-const canShowPagination = ref(true)
 // 该字段用来区别不同页面之间的高级搜索需要展示的内容
 const dataArray = ref(['url', 'domain', 'ip', 'status', 'discoveryTime'])
-const optionArray = ref({ collectionStatus: systemConstants.collectionStatus })
 const tipTitle = ref('系统默认展示当天接入数据，最多可查看7天内数据，超出7天数据不会留存。')
-// 操作任务弹窗
-const isDrawerOperate = ref(false)
 
 // 定义表格切换器内容
 const tabColumns = [
@@ -136,7 +114,7 @@ const BWColumns: TableColumn[] = [
     width: 120
   },
   {
-    field: 'state',
+    field: 'status',
     label: t('tableDemo.state'),
     width: 120
   },
@@ -177,13 +155,18 @@ const BWColumns: TableColumn[] = [
     fixed: 'right',
     headerAlign: 'center',
     align: 'center',
-    width: 120,
+    width: 150,
     slots: {
       default: (data) => {
         return (
-          <ElButton size="small" type="primary" onClick={() => gatherFn(data)}>
-            {t('tableDemo.gather')}
-          </ElButton>
+          <div>
+            <ElButton size="small" type="primary" onClick={() => gatherFn(data)}>
+              {t('tableDemo.gather')}
+            </ElButton>
+            <ElButton size="small" type="primary" onClick={() => backtrackFn(data)}>
+              回溯
+            </ElButton>
+          </div>
         )
       }
     }
@@ -474,168 +457,28 @@ onMounted(() => {
   }, 0)
 })
 
-/**
- * 定义表格中的一些操作函数
- */
 // 采集任务事件
-const drawerData = ref<FormSchema[]>()
-const { required } = useValidator()
-let exploreAimBody = ref('')
-let explorePlaceholder =
-  '请输入IP、IP段，可支持多行，最多支持10000个目标\n支持格式如下：\n192.168.10.0-100\n192.168.1.2\n192.168.1.0/32'
+const isSelectData = ref(false)
+const selectData = ref()
 const gatherFn = (data: TableSlotDefault) => {
-  console.log('添加任务', data)
-  titleDrawer.value = '添加任务'
-  isDrawerOperate.value = true
-  drawerData.value = [
-    {
-      field: 'taskName',
-      label: `${t('formDemo.taskName')}：`,
-      component: 'Input',
-      componentProps: {
-        placeholder: '请输入任务名称'
-      },
-      formItemProps: {
-        rules: [required()]
-      }
-    },
-    {
-      field: 'exploreType',
-      label: `${t('formDemo.exploreType')}：`,
-      component: 'Select',
-      value: '1',
-      componentProps: {
-        options: [
-          {
-            label: '资产探测（可探测title、FID、IP等信息）',
-            value: '1'
-          },
-          {
-            label: '网站探测（可探测网站截图）',
-            value: '2'
-          },
-          {
-            label: '域名探测（可探测WHOIS、网站备案信息）',
-            value: '3'
-          }
-        ]
-      },
-      formItemProps: {
-        rules: [required()]
-      }
-    },
-    {
-      field: 'exploreContent',
-      label: `${t('formDemo.exploreContent')}：`,
-      component: 'CheckboxGroup',
-      componentProps: {
-        options: [
-          {
-            label: '完整资产探测',
-            value: '1',
-            checked: true
-          }
-        ]
-      },
-      formItemProps: {
-        rules: [required()]
-      }
-    },
-    {
-      field: 'exploreAim',
-      label: `${t('formDemo.exploreAim')}：`,
-      component: 'Upload',
-      componentProps: {
-        limit: 1,
-        // action: 'http://172.16.20.30:32080',
-        multiple: true,
-        onPreview: (uploadFile) => {
-          console.log(uploadFile)
-        },
-        onRemove: (file) => {
-          console.log(file)
-        },
-        beforeRemove: (uploadFile) => {
-          return ElMessageBox.confirm(`Cancel the transfer of ${uploadFile.name} ?`).then(
-            () => true,
-            () => false
-          )
-        },
-        onExceed: (files, uploadFiles) => {
-          ElMessage.warning(
-            `The limit is 1, you selected ${files.length} files this time, add up to ${
-              files.length + uploadFiles.length
-            } totally`
-          )
-        },
-        slots: {
-          trigger: () => <BaseButton type="primary">点击上传</BaseButton>,
-          default: () => (
-            <div class="el-upload__tip">
-              <p>
-                支持上传.xlsx、.xls、.txt、.xml、.json、.csv文件，最大上传文件为1M <a>下载模板</a>
-              </p>
-              <p class="attention">
-                注意：目标地址添加方式为文件上传时，系统调度策略默认按IP拆分。
-              </p>
-              <ElInput
-                v-model={exploreAimBody.value}
-                type="textarea"
-                autosize={{ minRows: 8, maxRows: 16 }}
-                resize="none"
-                placeholder={explorePlaceholder}
-              />
-            </div>
-          )
-        }
-      },
-      formItemProps: {
-        rules: [required()]
-      }
-    },
-    {
-      field: 'explorePort',
-      label: `${t('formDemo.explorePort')}：`,
-      component: 'Input',
-      componentProps: {
-        type: 'textarea',
-        placeholder: `请输入端口号\n支持输入多个端口进行探测“,”隔开\n最多输入300个端口`,
-        rows: 8
-      },
-      formItemProps: {
-        rules: [required()]
-      }
-    },
-    {
-      field: 'priority',
-      label: `${t('formDemo.priority')}：`,
-      component: 'Select',
-      value: '3',
-      componentProps: {
-        options: [
-          {
-            label: '紧急',
-            value: '1'
-          },
-          {
-            label: '高',
-            value: '2'
-          },
-          {
-            label: '中',
-            value: '3'
-          },
-          {
-            label: '低',
-            value: '4'
-          }
-        ]
-      },
-      formItemProps: {
-        rules: [required()]
-      }
-    }
-  ]
+  console.log('添加任务', data.row)
+  isSelectData.value = true
+  selectData.value = [data.row]
+}
+//批量采集
+const gatherAllFn = () => {
+  isSelectData.value = true
+  selectData.value = selectedData.value
+}
+//回溯
+const isBacktrack = ref(false)
+const backtrackData = ref()
+const backtrackFn = async (data) => {
+  let temp = data.row.dataID
+  const res = await backtrackApi({ id: temp })
+  backtrackData.value = res
+  console.log(backtrackData.value)
+  isBacktrack.value = true
 }
 // 表格查看信息事件
 const openDrawerInfo = async (data: TableSlotDefault) => {
@@ -644,7 +487,7 @@ const openDrawerInfo = async (data: TableSlotDefault) => {
   if (activeName.value == 'bw') {
     isDrawerInfo.value = true
     titleDrawer.value = '查看网页信息'
-    res = await getUrlBWwebInfoApi(data.row.dataID)
+    res = await getBwDetailApi(data.row.dataID)
     bodyInfo.value = [
       {
         value: res.data.webInfo.request,
@@ -658,7 +501,7 @@ const openDrawerInfo = async (data: TableSlotDefault) => {
   } else if (activeName.value == 'urlLog') {
     isDrawerInfo.value = true
     titleDrawer.value = '查看网页信息'
-    res = await getUrlBWwebInfoApi(data.row.dataID)
+    res = await getBwDetailApi(data.row.dataID)
     bodyInfo.value = [
       {
         value: res.data.webInfo.request,
@@ -672,7 +515,7 @@ const openDrawerInfo = async (data: TableSlotDefault) => {
   } else {
     isDrawerInfo.value = true
     titleDrawer.value = '查看证书信息'
-    res = await getUrlBWwebInfoApi(data.row.dataID)
+    res = await getBwDetailApi(data.row.dataID)
     bodyInfo.value = [
       {
         value: res.data.webInfo.request,
@@ -681,13 +524,19 @@ const openDrawerInfo = async (data: TableSlotDefault) => {
     ]
   }
 }
+//高级搜索
+const searchData = ref({})
+const searchTable = async (value) => {
+  searchData.value = value
+  await getTableData(activeName.value)
+}
 const getTableData = async (params) => {
   loading.value = true
   if (params === 'bw') {
     setProps({
       columns: BWColumns
     })
-    const res = await getUrlBWListApi({
+    const res = await getBwListApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
       ...searchData.value
@@ -698,13 +547,6 @@ const getTableData = async (params) => {
     setProps({
       columns: DomainColumns
     })
-    // const res = await getUrlDomainListApi({
-    //   pageIndex: unref(currentPage),
-    //   pageSize: unref(pageSize),
-    //   ...searchData.value
-    // })
-    // dataList.value = res.data.list
-    // total.value = res.data.total
   } else if (params === 'urlLog') {
     setProps({
       columns: URLColumns
@@ -726,117 +568,135 @@ const handleClick = async (tab) => {
   pageSize.value = 10
   await getTableData(tab.props.name)
 }
-// 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
-const searchTable = async (value) => {
-  searchData.value = value
-  currentPage.value = 1
-  pageSize.value = 10
-  await getTableData(activeName.value)
-}
 
 // 选择全部
 const isCheckedAll = ref(false)
-const selectedData = ref<TableColumn[]>([])
+const selectedId = ref<any[]>([])
+const selectedData = ref()
+const temp = ref<any[]>([])
+const cancelData = ref<any[]>([])
 const toggleSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.toggleAllSelection()
 }
 const handleSelectionChange = (selected: any[]) => {
-  selectedData.value = selected.map((i) => i.dataID)
+  selectedId.value = selected.map((i) => i.dataID)
+  if (temp.value.length > selectedId.value.length) {
+    cancelData.value = temp.value.filter((i) => !selectedId.value.includes(i))
+  }
+  selectedData.value = selected
 }
 watch(dataList, (newV) => {
-  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.dataID))) {
+  temp.value.push(...newV.map((i) => i.dataID))
+  temp.value = [...new Set(temp.value)]
+  if (isCheckedAll.value && !newV.some((i) => selectedId.value.includes(i.dataID))) {
     toggleSelection()
+  }
+})
+const clearSelection = async () => {
+  const elTableRef = await getElTableExpose()
+  elTableRef?.clearSelection()
+}
+watch(isCheckedAll, () => {
+  if (isCheckedAll.value) {
+    toggleSelection()
+  } else {
+    clearSelection()
   }
 })
 
 // 导出多选数据
-const getSelections = async () => {
-  const elTableRef = await getElTableExpose()
-  const selections = elTableRef?.getSelectionRows()
-  console.log(selections)
+const fieldName = BWColumns.map((i) => {
+  return {
+    label: i.label,
+    value: i.field
+  }
+}).slice(1, -1)
+const isDrawerExportFile = ref(false)
+const initExportDate = ref({})
+const getSelections = () => {
+  if (isCheckedAll.value) {
+    initExportDate.value = {
+      count: unref(total) - cancelData.value.length,
+      exportDate: {
+        exportAll: isCheckedAll.value,
+        arrayNot: cancelData.value
+      }
+    }
+  } else {
+    initExportDate.value = {
+      count: selectedId.value.length,
+      exportDate: {
+        exportAll: isCheckedAll.value,
+        ruleContents: selectedId.value
+      }
+    }
+  }
+  titleDrawer.value = '导出数据'
+  isDrawerExportFile.value = true
 }
 </script>
 <template>
   <AdvancedSearch
+    :title="t('tableDemo.pendUrl')"
     :dataArray="dataArray"
-    :optionArray="optionArray"
     :tipTitle="tipTitle"
     @search-data="searchTable"
   />
-  <ContentWrap class="table-box" :title="t('tableDemo.pendUrl')">
-    <div class="table-btn">
-      <ElButton type="default" @click="toggleSelection()">
-        <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
-      </ElButton>
-      <ElButton type="default"> 批量采集 </ElButton>
-      <ElButton type="primary" @click="getSelections()">
-        <Icon icon="tdesign:upload" /> 导出数据
-      </ElButton>
-    </div>
-    <ElTabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
-      <ElTabPane
-        v-for="item in tabColumns"
-        :key="item.name"
-        :label="item.label"
-        :name="item.name"
-      />
-      <Table
-        v-model:pageSize="pageSize"
-        v-model:currentPage="currentPage"
-        stripe
-        row-key="dataID"
-        :columns="columns"
-        :data="dataList"
-        :loading="loading"
-        :pagination="
-          canShowPagination
-            ? {
-                total: total,
-                layout: layout
-              }
-            : undefined
-        "
-        @register="tableRegister"
-        :reserve-selection="true"
-        @selection-change="handleSelectionChange"
-      />
-    </ElTabs>
+  <ContentWrap class="table-box">
+    <TableTop>
+      <template #left>
+        <ElTabs type="card" v-model="activeName" @tab-click="handleClick">
+          <ElTabPane
+            v-for="item in tabColumns"
+            :key="item.name"
+            :label="item.label"
+            :name="item.name"
+          />
+        </ElTabs>
+      </template>
+      <template #right>
+        <ElButton type="default">
+          <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
+        </ElButton>
+        <ElButton type="default" @click="gatherAllFn"> 批量采集 </ElButton>
+        <ElButton type="primary" @click="getSelections">
+          <Icon icon="tdesign:upload" /> 导出数据
+        </ElButton>
+      </template>
+    </TableTop>
+    <Table
+      v-model:pageSize="pageSize"
+      v-model:currentPage="currentPage"
+      stripe
+      row-key="dataID"
+      :columns="columns"
+      :data="dataList"
+      :loading="loading"
+      :pagination="{
+        total: total,
+        layout: layout
+      }"
+      @register="tableRegister"
+      :reserve-selection="true"
+      @selection-change="handleSelectionChange"
+    />
   </ContentWrap>
   <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="titleDrawer" :bodyInfo="bodyInfo" />
-  <DrawerOperate
-    v-if="true"
-    :drawerData="drawerData"
-    v-model:isDrawer="isDrawerOperate"
-    :title="titleDrawer"
+  <SelectData v-model:isDrawer="isSelectData" :title="'添加任务'" :data="selectData" />
+  <ExportFile
+    v-model:isDrawer="isDrawerExportFile"
+    title="待处理URL集合"
+    :fieldName="fieldName"
+    :data="initExportDate"
+    :axiosFn="exportApi"
+    @clear-selection="clearSelection"
+  />
+  <Backtrack
+    v-model:isDrawer="isBacktrack"
+    :title="'数据回溯'"
+    :backtrackData="backtrackData"
+    :dataSourceInfo="{ name: 'wangdao' }"
   />
 </template>
-<style lang="less" scoped>
-.demo-tabs > .el-tabs__content {
-  padding: 0px;
-  color: #6b778c;
-  font-size: 32px;
-  font-weight: 500;
-}
-.table-box {
-  position: relative;
-}
-.el-tabs__header {
-  z-index: 888;
-}
-.el-tabs__item {
-  margin-bottom: 15px;
-}
-.el-tabs__nav-wrap {
-  position: static;
-}
-.table-btn {
-  position: absolute;
-  right: 20px;
-  top: 75px;
-  z-index: 999;
-}
-.el-pagination {
-  float: right;
-}
-</style>
+<style lang="less" scoped></style>

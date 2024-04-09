@@ -4,9 +4,9 @@ import { Form, FormSchema } from '@/components/Form'
 import { reactive, ref } from 'vue'
 import { useForm } from '@/hooks/web/useForm'
 import { useValidator } from '@/hooks/web/useValidator'
-import { addDateApi } from '@/api/systemManagement/index'
+import { addApi, editApi, deleteApi } from '@/api/systemManagement/PhishingRule'
 const { required } = useValidator()
-defineProps({
+const props = defineProps({
   title: {
     type: String,
     default: ''
@@ -15,34 +15,103 @@ defineProps({
     type: Boolean,
     default: false
   },
-  bodyInfo: {
-    type: Object,
-    default: null
+  data: {
+    type: Object
+  },
+  operateType: {
+    type: String
+  },
+  recheckType: {
+    type: String,
+    default: ''
   },
   placeholder: {
     type: String,
     default: '暂无内容'
   }
 })
-
 const emit = defineEmits(['update:isDrawer', 'get-data'])
 const close = () => {
-  console.log('关闭弹窗')
+  resetForm()
   emit('update:isDrawer', false)
-  emit('get-data')
 }
 const open = () => {
-  console.log('打开弹窗')
+  if (props.operateType === 'Edit') {
+    setValues({
+      featureName: props.data?.featureName,
+      victim: props.data?.victim,
+      victimType: props.data?.victimType,
+      featureContent: props.data?.featureContent,
+      reviewer: props.data?.reviewer
+    })
+    addSchema(
+      {
+        field: 'editFeatureContent',
+        label: '编辑特征内容',
+        component: 'Input',
+        formItemProps: {
+          rules: [required()]
+        },
+        componentProps: {
+          type: 'textarea',
+          autosize: { minRows: 11, maxRows: 16 },
+          resize: 'none',
+          placeholder:
+            '支持多种关键特征的组合：title、body、FID、ICON_hash、domain、SDK等，支持&、||的关联关系。'
+        }
+      },
+      4
+    )
+    setSchema([
+      {
+        field: 'featureContent',
+        path: 'componentProps.disabled',
+        value: true
+      }
+    ])
+  }
+  if (props.operateType === 'Delete') {
+    setValues({
+      featureName: props.data?.featureName,
+      victim: props.data?.victim,
+      victimType: props.data?.victimType,
+      featureContent: props.data?.featureContent,
+      reviewer: props.data?.reviewer
+    })
+    addSchema(
+      {
+        field: 'deleteReason',
+        label: '删除原因',
+        component: 'Input',
+        formItemProps: {
+          rules: [required()]
+        },
+        componentProps: {
+          type: 'textarea',
+          autosize: { minRows: 11, maxRows: 16 },
+          resize: 'none'
+        }
+      },
+      4
+    )
+    setSchema([
+      {
+        field: 'featureContent',
+        path: 'componentProps.disabled',
+        value: true
+      }
+    ])
+  }
 }
 const { formMethods, formRegister } = useForm()
-const { getElFormExpose, getFormData } = formMethods
+const { getElFormExpose, getFormData, setValues, addSchema, setSchema, delSchema } = formMethods
 const resetClick = async () => {
   const elFormExpose = await getElFormExpose()
   elFormExpose?.resetFields()
 }
 const schema = reactive<FormSchema[]>([
   {
-    field: 'name',
+    field: 'featureName',
     label: '特征名称',
     component: 'Input',
     formItemProps: {
@@ -53,7 +122,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'company',
+    field: 'victim',
     label: '受害方',
     component: 'Input',
     formItemProps: {
@@ -64,7 +133,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'category',
+    field: 'victimType',
     label: '受害方分类',
     component: 'Select',
     formItemProps: {
@@ -108,7 +177,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'rule',
+    field: 'featureContent',
     label: '特征内容',
     component: 'Input',
     formItemProps: {
@@ -126,6 +195,7 @@ const schema = reactive<FormSchema[]>([
     field: 'reviewer',
     label: '复核人员',
     component: 'Select',
+    value: '',
     formItemProps: {
       rules: [required()]
     },
@@ -143,6 +213,19 @@ const schema = reactive<FormSchema[]>([
     }
   }
 ])
+const resetForm = () => {
+  resetClick()
+  delSchema('editFeatureContent')
+  delSchema('deleteReason')
+  delSchema('operationType')
+  setSchema([
+    {
+      field: 'featureContent',
+      path: 'componentProps.disabled',
+      value: false
+    }
+  ])
+}
 const isValid = ref(false)
 const confirmClick = async () => {
   const elFormExpose = await getElFormExpose()
@@ -152,14 +235,40 @@ const confirmClick = async () => {
   if (isValid.value) {
     //获取form数据
     let formData = await getFormData()
-    console.log(formData)
-    let res = await addDateApi({ ...formData, from: 'user', createBy: 'user' })
-    console.log(res)
-    //发起post请求
-    if (res.code == 0) {
-      isValid.value = false
-      close()
-      ElMessage.success('添加成功')
+    if (props.operateType === 'Add') {
+      console.log('zheli')
+      let res = await addApi({ ...formData, createBy: 'user' })
+      if (res.code == 0) {
+        isValid.value = false
+        resetClick()
+        close()
+        emit('get-data')
+        ElMessage.success('添加成功')
+      }
+    }
+    if (props.operateType === 'Edit') {
+      let temp = props.data?.featureID
+      let res = await editApi({ ...formData, featureID: +temp })
+      if (res.code == 0) {
+        isValid.value = false
+        resetClick()
+        close()
+        emit('get-data')
+        ElMessage.success('修改成功')
+      }
+    }
+    if (props.operateType === 'Delete') {
+      let featureID = +props.data?.featureID
+      let deleteReason = formData.deleteReason
+      let reviewer = formData.reviewer
+      let res = await deleteApi({ featureID, deleteReason, reviewer })
+      if (res.code == 0) {
+        isValid.value = false
+        resetClick()
+        close()
+        emit('get-data')
+        ElMessage.success('删除成功')
+      }
     }
   }
 }

@@ -14,7 +14,6 @@ import { createStyleImportPlugin, ElementPlusResolve } from 'vite-plugin-style-i
 import UnoCSS from 'unocss/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 
-// https://vitejs.dev/config/
 const root = process.cwd()
 
 function pathResolve(dir: string) {
@@ -138,15 +137,28 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
     server: {
       port: 4000,
       proxy: {
-        // 选项写法
-        '/api/v1': {
+        '/api/v1/sm': {
           target: 'http://172.16.20.30:32080',
-          // target: 'http://172.16.20.84:32080',
           changeOrigin: true
         },
-        '/api/v2': {
+        '/api/v1/da': {
+          target: 'http://172.16.20.30:32081',
+          changeOrigin: true
+        },
+        '/api/v1/wl': {
           target: 'http://172.16.20.30:32082',
-          // target: 'http://172.16.20.84:32080',
+          changeOrigin: true
+        },
+        '/api/v1/ac': {
+          target: 'http://172.16.20.30:32083',
+          changeOrigin: true
+        },
+        '/api/v1/sr': {
+          target: 'http://172.16.20.30:32084',
+          changeOrigin: true
+        },
+        '/api/v1/dataGather': {
+          target: 'http://172.16.20.30:32083',
           changeOrigin: true
         },
         '/api/v3': {

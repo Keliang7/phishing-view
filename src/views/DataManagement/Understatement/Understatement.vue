@@ -11,6 +11,7 @@ import { TabSideColumns } from '../types/index'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
 import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
+import TableTop from '@/components/TableTop/TableTop.vue'
 
 // 使用useI18n钩子函数获取国际化相关数据和方法
 const { t } = useI18n()
@@ -403,53 +404,58 @@ watch(
 </script>
 <template>
   <AdvancedSearch
+    :title="t('tableDemo.UnderstatementCounterfeit')"
     :dataArray="dataArray"
     :optionArray="optionArray"
     :tipTitle="tipTitle"
     @search-data="searchTable"
   />
-  <ContentWrap class="table-box" :title="t('tableDemo.UnderstatementCounterfeit')">
-    <div class="table-btn">
-      <ElButton type="default">
-        <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />
-      </ElButton>
-      <ElButton type="default"> 批量设置 </ElButton>
-      <ElButton type="primary"> 推送参数配置 </ElButton>
-      <ElButton type="primary"> <Icon icon="tdesign:upload" /> 导出数据 </ElButton>
-    </div>
-    <ElTabs v-model="activeNameH" class="demo-tabs">
+  <ContentWrap class="table-box">
+    <TableTop>
+      <template #left>
+        <ElTabs v-model="activeNameH" class="demo-tabs">
+          <ElTabPane
+            v-for="tabHead in tabHeadColumns"
+            :key="tabHead.name"
+            :label="tabHead.label"
+            :name="tabHead.name"
+          />
+        </ElTabs>
+      </template>
+      <template #right>
+        <ElButton type="default">
+          <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />
+        </ElButton>
+        <ElButton type="default"> 批量设置 </ElButton>
+        <ElButton type="primary"> 推送参数配置 </ElButton>
+        <ElButton type="primary"> <Icon icon="tdesign:upload" /> 导出数据 </ElButton>
+      </template>
+    </TableTop>
+    <ElTabs v-model="activeNameS" type="card" tab-position="left" class="demo-tabs">
       <ElTabPane
-        v-for="tabHead in tabHeadColumns"
-        :key="tabHead.name"
-        :label="tabHead.label"
-        :name="tabHead.name"
+        v-for="tabSide in tabSideColumns"
+        :key="tabSide.victimKey"
+        :label="`${tabSide.victimName}（${tabSide.count}）`"
+        :name="tabSide.victimName"
       />
-      <ElTabs v-model="activeNameS" type="card" tab-position="left" class="demo-tabs">
-        <ElTabPane
-          v-for="tabSide in tabSideColumns"
-          :key="tabSide.victimKey"
-          :label="`${tabSide.victimName}（${tabSide.count}）`"
-          :name="tabSide.victimName"
-        />
-        <Table
-          v-model:pageSize="pageSize"
-          v-model:currentPage="currentPage"
-          stripe
-          :columns="columns"
-          :data="dataList"
-          :loading="loading"
-          :image-preview="['webScreenshot']"
-          :pagination="
-            canShowPagination
-              ? {
-                  total: total,
-                  layout: layout
-                }
-              : undefined
-          "
-          @register="tableRegister"
-        />
-      </ElTabs>
+      <Table
+        v-model:pageSize="pageSize"
+        v-model:currentPage="currentPage"
+        stripe
+        :columns="columns"
+        :data="dataList"
+        :loading="loading"
+        :image-preview="['webScreenshot']"
+        :pagination="
+          canShowPagination
+            ? {
+                total: total,
+                layout: layout
+              }
+            : undefined
+        "
+        @register="tableRegister"
+      />
     </ElTabs>
   </ContentWrap>
   <DrawerInfo

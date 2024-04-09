@@ -94,8 +94,7 @@ const searchData = ref({})
 const ids = ref<string[]>([])
 </script>
 <template>
-  <AdvancedSearch :dataArray="dataArray" />
-  拓线任务
+  <AdvancedSearch :dataArray="dataArray" :title="'拓线结果查看'" />
   <Table
     v-model:pageSize="pageSize"
     v-model:currentPage="currentPage"
