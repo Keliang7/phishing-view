@@ -630,7 +630,7 @@ onMounted(() => {
           <ElCol :span="12">
             <div class="flex items-center">
               <div class="flex justify-center items-center border-rd-50% bg-#F3F6F8 p-8px mx-8px">
-                <Icon color="5F80EC" :size="26" icon="ant-design:file-search-outlined"
+                <Icon color="5F80EC" :size="26" icon="svg-icon:file"
               /></div>
               <div class="ml-10px">
                 <div class="text-14px mb-4px">采集数据</div>
@@ -719,7 +719,7 @@ onMounted(() => {
           <ElCol :span="12">
             <div class="flex items-center">
               <div class="flex justify-center items-center border-rd-50% bg-#F3F6F8 p-8px mx-8px">
-                <Icon color="5F80EC" :size="26" icon="ant-design:file-search-outlined"
+                <Icon color="5F80EC" :size="26" icon="svg-icon:file"
               /></div>
               <div class="ml-10px">
                 <div class="text-14px mb-4px">拓线目标</div>
@@ -735,7 +735,7 @@ onMounted(() => {
           <ElCol :span="12">
             <div class="flex items-center">
               <div class="flex justify-center items-center border-rd-50% bg-#F3F6F8 p-8px mx-8px">
-                <Icon color="5F80EC" :size="26" icon="ant-design:file-search-outlined"
+                <Icon color="5F80EC" :size="26" icon="svg-icon:file"
               /></div>
               <div class="ml-10px">
                 <div class="text-14px mb-4px">拓线结果</div>

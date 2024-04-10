@@ -12,7 +12,7 @@ const adminList = [
     name: 'DataManagement',
     meta: {
       title: 'router.data_management',
-      icon: 'bx:bxs-component',
+      icon: 'svg-icon:home',
       alwaysShow: true
     },
     children: [
@@ -65,7 +65,7 @@ const adminList = [
     name: 'DataExtension',
     meta: {
       title: 'router.data_extension',
-      icon: 'ant-design:node-index-outlined',
+      icon: 'svg-icon:link',
       alwaysShow: true
     },
     children: [
@@ -94,7 +94,7 @@ const adminList = [
     name: 'DataGather',
     meta: {
       title: 'router.data_gather',
-      icon: 'ant-design:hdd-filled',
+      icon: 'svg-icon:data',
       alwaysShow: true
     },
     children: [
@@ -123,7 +123,7 @@ const adminList = [
     name: 'UserManagement',
     meta: {
       title: 'router.user_management',
-      icon: 'ep:avatar',
+      icon: 'svg-icon:user',
       alwaysShow: true
     },
     children: [
@@ -152,7 +152,7 @@ const adminList = [
     name: 'LogManagement',
     meta: {
       title: 'router.log_management',
-      icon: 'ant-design:snippets-filled',
+      icon: 'svg-icon:log',
       alwaysShow: true
     },
     children: [
@@ -181,7 +181,7 @@ const adminList = [
     name: 'SystemManagement',
     meta: {
       title: 'router.system_management',
-      icon: 'ep:setting',
+      icon: 'svg-icon:setting',
       alwaysShow: true
     },
     children: [
