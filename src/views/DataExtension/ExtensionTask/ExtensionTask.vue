@@ -2,13 +2,14 @@
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import { ref, unref, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
-import { ElButton, ElCheckbox } from 'element-plus'
+import { ElButton, ElCheckbox, ElRow, ElCol } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
 import { getListApi, exportApi } from '@/api/dataExtension/extensionTask'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
+import TableSide from '@/components/TableSide/TableSide.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import DataExtension from '@/components/DataExtension/DataExtension.vue'
 import { useRouter } from 'vue-router'
@@ -194,6 +195,13 @@ const isDataExtension = ref(false)
 const extensionFn = () => {
   isDataExtension.value = true
 }
+
+//tableSide
+const tabSideColumns = ref()
+const activeNameS = ref('1')
+const setActiveNameS = (index) => {
+  activeNameS.value = index
+}
 </script>
 <template>
   <AdvancedSearch
@@ -204,32 +212,39 @@ const extensionFn = () => {
     @search-data="searchTable"
   />
   <ContentWrap>
-    <TableTop>
-      <template #right>
-        <ElButton type="default">
-          <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
-        </ElButton>
-        <ElButton type="primary" @click="extensionFn"> 创建任务 </ElButton>
-        <ElButton type="primary" @click="getSelections">
-          <Icon icon="tdesign:upload" /> 导出数据
-        </ElButton>
-      </template>
-    </TableTop>
-    <Table
-      v-model:pageSize="pageSize"
-      v-model:currentPage="currentPage"
-      stripe
-      row-key="taskID"
-      :reserve-selection="true"
-      :columns="columns"
-      :data="dataList"
-      :loading="loading"
-      :pagination="{
-        total: total
-      }"
-      @register="tableRegister"
-      @selection-change="handleSelectionChange"
-    />
+    <ElRow>
+      <ElCol :span="3">
+        <TableSide :data="tabSideColumns" @change="setActiveNameS" />
+      </ElCol>
+      <ElCol :span="21">
+        <TableTop>
+          <template #right>
+            <ElButton type="default">
+              <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
+            </ElButton>
+            <ElButton type="primary" @click="extensionFn"> 创建任务 </ElButton>
+            <ElButton type="primary" @click="getSelections">
+              <Icon icon="tdesign:upload" /> 导出数据
+            </ElButton>
+          </template>
+        </TableTop>
+        <Table
+          v-model:pageSize="pageSize"
+          v-model:currentPage="currentPage"
+          stripe
+          row-key="taskID"
+          :reserve-selection="true"
+          :columns="columns"
+          :data="dataList"
+          :loading="loading"
+          :pagination="{
+            total: total
+          }"
+          @register="tableRegister"
+          @selection-change="handleSelectionChange"
+        />
+      </ElCol>
+    </ElRow>
   </ContentWrap>
   <DataExtension v-model:isDrawer="isDataExtension" :title="'创建任务'" />
   <ExportFile

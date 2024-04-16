@@ -9,8 +9,6 @@ import { formatTime } from '@/utils/index'
 // import { ElButton } from 'element-plus'
 // const { t } = useI18n()
 //
-import { useRouter } from 'vue-router'
-const router = useRouter()
 //
 const dataArray = ref(['loginName', 'loginIP'])
 const { tableRegister, tableState } = useTable({
@@ -53,15 +51,8 @@ const columns: TableColumn[] = [
   }
 ]
 const searchData = ref({})
-const open = () => {
-  console.log(123)
-  // router.push({ name: 'ViewDetails', params: { id: 123 } })
-  const url = router.resolve({ name: 'ViewDetails', params: { id: 123 } })
-  window.open(url.href, '_blank')
-}
 </script>
 <template>
-  <button @click="open">click</button>
   <AdvancedSearch :dataArray="dataArray" :title="'登录日志管理'" />
   <Table
     v-model:pageSize="pageSize"

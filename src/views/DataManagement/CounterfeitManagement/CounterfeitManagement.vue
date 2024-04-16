@@ -31,6 +31,7 @@ import DrawerOperate from '@/components/DrawerOperate/DrawerOperate.vue'
 import DataExtension from '@/components/DataExtension/DataExtension.vue'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import TableTop from '@/components/TableTop/TableTop.vue'
+import TableSide from '@/components/TableSide/TableSide.vue'
 import router from '@/router'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import Backtrack from '@/components/Backtrack/Backtrack.vue'
@@ -77,6 +78,9 @@ const tabHeadColumns = [
 const tabSideColumns = ref<TabSideColumns[]>([])
 const activeNameH = ref(tabHeadColumns[0].name)
 const activeNameS = ref('1')
+const setActiveNameS = (index) => {
+  activeNameS.value = index
+}
 // 高级搜索的数据
 const searchData = ref({})
 // 定义分页器展示的内容
@@ -538,8 +542,8 @@ const getSelections = () => {
     </TableTop>
     <ElRow>
       <ElCol :span="3">
-        <div class="h-full">
-          <ElTabs style="color: springgreen" v-model="activeNameS" tab-position="left">
+        <TableSide :data="tabSideColumns" @change="setActiveNameS" />
+        <!-- <ElTabs style="color: springgreen" v-model="activeNameS" tab-position="left">
             <ElTabPane
               v-for="tabSide in tabSideColumns"
               :key="tabSide.victimKey"
@@ -550,8 +554,7 @@ const getSelections = () => {
               </template>
               <div>123</div>
             </ElTabPane>
-          </ElTabs>
-        </div>
+          </ElTabs> -->
       </ElCol>
       <ElCol :span="21">
         <Table
