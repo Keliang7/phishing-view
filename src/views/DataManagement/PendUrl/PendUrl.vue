@@ -126,11 +126,12 @@ const BWColumns: TableColumn[] = [
   {
     field: 'webInfo',
     label: t('tableDemo.webInfo'),
-    width: 120,
+    align: 'center',
+    width: 100,
     slots: {
       default: (data) => {
         return (
-          <ElButton type="primary" onClick={() => openDrawerInfo(data)} size="small">
+          <ElButton link type="primary" onClick={() => openDrawerInfo(data)}>
             查看
           </ElButton>
         )
@@ -160,10 +161,10 @@ const BWColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton size="small" type="primary" onClick={() => gatherFn(data)}>
+            <ElButton link type="primary" onClick={() => gatherFn(data)}>
               {t('tableDemo.gather')}
             </ElButton>
-            <ElButton size="small" type="primary" onClick={() => backtrackFn(data)}>
+            <ElButton link type="primary" onClick={() => backtrackFn(data)}>
               回溯
             </ElButton>
           </div>
@@ -228,11 +229,10 @@ const DomainColumns: TableColumn[] = [
     headerAlign: 'center',
     align: 'center',
     width: 120,
-    showOverflowTooltip: false,
     slots: {
       default: (data) => {
         return (
-          <ElButton type="text" size="small" onClick={() => gatherFn(data)}>
+          <ElButton link type="primary" onClick={() => gatherFn(data)}>
             {t('tableDemo.gather')}
           </ElButton>
         )
@@ -310,7 +310,7 @@ const URLColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton onClick={() => openDrawerInfo(data)} type="text" size="small">
+          <ElButton onClick={() => openDrawerInfo(data)} type="primary" link>
             查看
           </ElButton>
         )
@@ -339,7 +339,7 @@ const URLColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton type="text" size="small" onClick={() => gatherFn(data)}>
+          <ElButton type="primary" link onClick={() => gatherFn(data)}>
             {t('tableDemo.gather')}
           </ElButton>
         )
@@ -411,7 +411,7 @@ const TLSColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton onClick={() => openDrawerInfo(data)} type="text" size="small">
+          <ElButton onClick={() => openDrawerInfo(data)} type="primary" link>
             查看
           </ElButton>
         )
@@ -440,7 +440,7 @@ const TLSColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton type="text" size="small" onClick={() => gatherFn(data)}>
+          <ElButton type="primary" link onClick={() => gatherFn(data)}>
             {t('tableDemo.gather')}
           </ElButton>
         )
@@ -661,7 +661,9 @@ const getSelections = () => {
         <ElButton type="default">
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
-        <ElButton type="default" @click="gatherAllFn"> 批量采集 </ElButton>
+        <ElButton type="default" @click="gatherAllFn">
+          <Icon icon="ep:operation" /> 批量采集
+        </ElButton>
         <ElButton type="primary" @click="getSelections">
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
@@ -693,6 +695,11 @@ const getSelections = () => {
     :data="initExportDate"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
+    @is-checked-all="
+      (temp) => {
+        isCheckedAll = temp
+      }
+    "
   />
   <Backtrack
     v-model:isDrawer="isBacktrack"

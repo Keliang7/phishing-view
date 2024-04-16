@@ -150,14 +150,14 @@ const tableColumns: TableColumn[] = [
     fixed: 'right',
     headerAlign: 'center',
     align: 'center',
-    width: 300,
+    width: 250,
     slots: {
       default: (data) => {
         return (
           <div>
             <ElButton
               type="primary"
-              size="small"
+              link
               disabled={data.row.taskStatus === '执行中'}
               onClick={() => viewData(data)}
             >
@@ -165,15 +165,15 @@ const tableColumns: TableColumn[] = [
             </ElButton>
             <ElButton
               type="danger"
+              link
               disabled={data.row.taskStatus === '完成'}
-              size="small"
               onClick={() => stopTask(data)}
             >
               停止任务
             </ElButton>
             <ElButton
               type="danger"
-              size="small"
+              link
               disabled={data.row.taskStatus === '执行中'}
               onClick={() => delData(data)}
             >
@@ -370,7 +370,7 @@ const canShowPagination = ref(true)
     :data="initExportDate"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
-    @isCheckedAll="
+    @is-checked-all="
       (temp) => {
         isCheckedAll = temp
       }

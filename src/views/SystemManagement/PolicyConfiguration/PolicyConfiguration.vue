@@ -87,7 +87,7 @@ const whiteColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="danger" size="small" onClick={() => delData(data)}>
+            <ElButton type="danger" link onClick={() => delData(data)}>
               {t('tableDemo.delete')}
             </ElButton>
           </div>
@@ -142,7 +142,12 @@ const deleteAllFn = async () => {
 }
 
 const placeholderInfo = ref('')
-// 选择全部
+/**
+ * 选择全部
+ * selectedData 选中的id
+ * temp 翻页的时候记录
+ * cancelData 全选状态下，取消的id
+ */
 const selectedData = ref<TableColumn[]>([])
 const temp = ref<any[]>([])
 const cancelData = ref<any[]>([])
@@ -154,7 +159,6 @@ const handleSelectionChange = (selected: any[]) => {
   selectedData.value = selected.map((i) => i.ruleContent)
   if (temp.value.length > selectedData.value.length) {
     cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
-    console.log(cancelData.value)
   }
 }
 watch(dataList, (newV) => {
@@ -173,6 +177,9 @@ watch(isCheckedAll, () => {
     toggleSelection()
   } else {
     clearSelection()
+    cancelData.value = []
+    selectedData.value = []
+    temp.value = []
   }
 })
 
@@ -182,12 +189,9 @@ const searchTable = async (value) => {
   await getList()
 }
 // 添加
-
-const titleDrawer = ref('')
 const isDrawerAddData = ref(false)
 const isDrawerUploadFile = ref(false)
 const addWhiteList = async () => {
-  titleDrawer.value = '添加白名单'
   isDrawerAddData.value = true
   placeholderInfo.value =
     '请输入确认非仿冒网站的域名，匹配成功将不会入库。\n一行一个域名，可输入多行，最多输入1000行。'
@@ -212,12 +216,10 @@ const getSelections = () => {
       }
     }
   }
-  titleDrawer.value = '导出数据'
   isDrawerExportFile.value = true
 }
 //上传文件
 const uploadFile = () => {
-  titleDrawer.value = '上传文件'
   isDrawerUploadFile.value = true
 }
 // 定义canShowPagination变量，用于控制是否显示分页
@@ -239,7 +241,7 @@ const isDrawerExportFile = ref(false)
         <ElButton type="default">
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
-        <ElButton type="default" @click="deleteAllFn"> 批量删除 </ElButton>
+        <ElButton type="danger" @click="deleteAllFn"> 批量删除 </ElButton>
         <ElButton type="primary" @click="addWhiteList"> 添加 </ElButton>
 
         <ElButton type="primary" @click="uploadFile"> 导入数据 </ElButton>
@@ -271,14 +273,14 @@ const isDrawerExportFile = ref(false)
   </ContentWrap>
   <AddData
     v-model:isDrawer="isDrawerAddData"
-    :title="titleDrawer"
+    :title="'添加白名单'"
     :placeholder="`请输入确认非仿冒网站的域名，匹配成功将不会入库。
 一行一个域名，可输入多行，最多输入1000行。`"
     @get-data="getList"
   />
   <UploadFile
     v-model:isDrawer="isDrawerUploadFile"
-    :title="'上传'"
+    :title="'上传文件'"
     :axiosFn="getStaticFileApi"
     @get-data="getList"
   />
@@ -288,7 +290,7 @@ const isDrawerExportFile = ref(false)
     :data="initExportDate"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
-    @isCheckedAll="
+    @is-checked-all="
       (temp) => {
         isCheckedAll = temp
       }

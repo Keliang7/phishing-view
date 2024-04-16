@@ -81,7 +81,7 @@ const resultColumns: TableColumn[] = [
       default: (data: any) => {
         return (
           <>
-            <ElButton type="text" onClick={() => action(data.row)}>
+            <ElButton type="primary" link onClick={() => action(data.row)}>
               {data.row.IP}
             </ElButton>
           </>
@@ -109,15 +109,19 @@ const resultColumns: TableColumn[] = [
   },
   {
     field: 'title',
-    label: 'title'
+    label: 'title',
+    width: 200
   },
   {
     field: 'info',
     label: '网页信息',
+    headerAlign: 'center',
+    align: 'center',
+    width: 100,
     slots: {
       default: (data) => {
         return (
-          <ElButton type="primary" onClick={() => openDrawerInfo(data)} size="small">
+          <ElButton type="primary" link onClick={() => openDrawerInfo(data)}>
             查看
           </ElButton>
         )
@@ -134,14 +138,23 @@ const resultColumns: TableColumn[] = [
   },
   {
     field: 'netStatusCode',
-    label: '网页状态码'
+    label: '网页状态码',
+    width: 120,
+    headerAlign: 'center',
+    align: 'center'
   },
   {
     field: 'domainHolder',
+    width: 120,
+    headerAlign: 'center',
+    align: 'center',
     label: '域名所有者'
   },
   {
     field: 'email',
+    width: 100,
+    headerAlign: 'center',
+    align: 'center',
     label: '注册邮箱'
   },
   {
@@ -150,19 +163,26 @@ const resultColumns: TableColumn[] = [
   },
   {
     field: 'registerTime',
-    label: '注册时间'
+    width: 180,
+    headerAlign: 'center',
+    label: '注册时间',
+    formatter: (data) => formatTime(data.registerTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
     field: 'taskID',
+    width: 180,
     label: '任务ID'
   },
   {
     field: 'tackName',
+    width: 120,
     label: '任务名称'
   },
   {
     field: 'updateTime',
     label: '更新时间',
+    width: 180,
+    headerAlign: 'center',
     formatter: (data) => formatTime(data.updateTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
@@ -303,6 +323,11 @@ const fieldName = resultColumns
     :fieldName="fieldName"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
+    @is-checked-all="
+      (temp) => {
+        isCheckedAll = temp
+      }
+    "
   />
   <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="'网页信息查看'" :bodyInfo="bodyInfo" />
 </template>

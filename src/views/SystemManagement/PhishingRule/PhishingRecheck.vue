@@ -101,7 +101,7 @@ const unRecheck: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="primary" size="small" onClick={() => recheckFn(data)}>
+            <ElButton type="primary" link onClick={() => recheckFn(data)}>
               复核
             </ElButton>
           </div>
@@ -177,7 +177,7 @@ const rechecked: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="primary" size="small" onClick={() => viewFn(data)}>
+            <ElButton type="primary" link onClick={() => viewFn(data)}>
               查看
             </ElButton>
           </div>

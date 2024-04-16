@@ -2,7 +2,7 @@
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import { ref, unref, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
-import { ElButton, ElCheckbox, ElText } from 'element-plus'
+import { ElButton, ElCheckbox } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
@@ -58,7 +58,7 @@ const columns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="text" onClick={() => viewData(data)}>
+            <ElButton type="primary" link onClick={() => viewData(data)}>
               {data.extensionResult}
             </ElButton>
           </div>
@@ -99,10 +99,10 @@ const columns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="danger" size="small" onClick={() => viewData(data)}>
+            <ElButton type="primary" link onClick={() => viewData(data)}>
               数据
             </ElButton>
-            <ElButton type="danger" size="small" onClick={() => editData(data)}>
+            <ElButton type="primary" link onClick={() => editData(data)}>
               编辑
             </ElButton>
           </div>
@@ -196,8 +196,6 @@ const extensionFn = () => {
 }
 </script>
 <template>
-  <ElButton link type="primary">123</ElButton>
-  <ElText link type="primary">123</ElText>
   <AdvancedSearch
     :dataArray="dataArray"
     :total="total"

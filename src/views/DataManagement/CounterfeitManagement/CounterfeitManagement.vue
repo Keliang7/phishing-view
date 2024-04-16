@@ -90,11 +90,12 @@ const Columns: TableColumn[] = [
   {
     field: 'dataSourcesNum',
     label: t('tableDemo.dataSourcesNum'),
+    align: 'center',
     width: 120,
     slots: {
       default: (data) => {
         return (
-          <ElButton onClick={() => openDrawerInfo(data)} type="text" size="small">
+          <ElButton onClick={() => openDrawerInfo(data)} type="primary" link>
             {`${data.row.dataSources?.length}个`}
           </ElButton>
         )
@@ -159,11 +160,12 @@ const Columns: TableColumn[] = [
   {
     field: 'webInfo',
     label: t('tableDemo.webInfo'),
+    align: 'center',
     width: 130,
     slots: {
       default: (data) => {
         return (
-          <ElButton onClick={() => openDrawerInfo(data)} type="primary" size="small">
+          <ElButton onClick={() => openDrawerInfo(data)} type="primary" link>
             查看
           </ElButton>
         )
@@ -267,16 +269,16 @@ const Columns: TableColumn[] = [
       default: (data) => {
         return (
           <div class="action-btn">
-            <ElButton type="primary" size="small" onClick={() => gatherFn(data)}>
+            <ElButton type="primary" link onClick={() => gatherFn(data)}>
               {t('tableDemo.gather')}
             </ElButton>
-            <ElButton disabled type="primary" size="small" onClick={() => extensionFn(data)}>
+            <ElButton disabled type="primary" link onClick={() => extensionFn(data)}>
               {t('tableDemo.extension')}
             </ElButton>
-            <ElButton type="primary" size="small" onClick={() => backtrackFn(data)}>
+            <ElButton type="primary" link onClick={() => backtrackFn(data)}>
               {t('tableDemo.recall')}
             </ElButton>
-            <ElButton disabled type="primary" size="small" onClick={() => addCounterfeitFn(data)}>
+            <ElButton disabled type="primary" link onClick={() => addCounterfeitFn(data)}>
               {t('tableDemo.addCounterfeitSample')}
             </ElButton>
           </div>
@@ -587,6 +589,11 @@ const getSelections = () => {
     :data="initExportDate"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
+    @is-checked-all="
+      (temp) => {
+        isCheckedAll = temp
+      }
+    "
   />
   <Backtrack
     v-model:isDrawer="isBacktrack"

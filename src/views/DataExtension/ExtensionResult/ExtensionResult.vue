@@ -74,7 +74,7 @@ const columns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton onClick={() => openDrawerInfo(data)} type="text" size="small">
+          <ElButton onClick={() => openDrawerInfo(data)} type="primary" link>
             查看
           </ElButton>
         )

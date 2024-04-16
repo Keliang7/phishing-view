@@ -145,7 +145,7 @@ const DetectionColumns: TableColumn[] = [
           <div>
             <ElButton
               type="primary"
-              size="small"
+              link
               disabled={data.row.checkStatus === '未复核'}
               onClick={() => editFn(data)}
             >
@@ -153,7 +153,7 @@ const DetectionColumns: TableColumn[] = [
             </ElButton>
             <ElButton
               type="danger"
-              size="small"
+              link
               disabled={data.row.checkStatus === '未复核'}
               onClick={() => deleteFn(data)}
             >
@@ -218,10 +218,10 @@ const VisualColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="primary" size="small" onClick={() => editFn(data)}>
+            <ElButton type="primary" link onClick={() => editFn(data)}>
               {t('tableDemo.edit')}
             </ElButton>
-            <ElButton type="danger" size="small" onClick={() => deleteFn(data)}>
+            <ElButton type="danger" link onClick={() => deleteFn(data)}>
               {t('tableDemo.delete')}
             </ElButton>
           </div>
@@ -342,18 +342,18 @@ const SignatureColumns: TableColumn[] = [
     fixed: 'right',
     headerAlign: 'center',
     align: 'center',
-    width: 200,
+    width: 300,
     slots: {
       default: (data) => {
         return (
           <div class={'operate-box'}>
-            <ElButton type="primary" size="small" onClick={() => editFn(data)}>
+            <ElButton type="primary" link onClick={() => editFn(data)}>
               放入视觉分析库
             </ElButton>
-            <ElButton type="primary" size="small" onClick={() => editFn(data)}>
+            <ElButton type="primary" link onClick={() => editFn(data)}>
               {t('tableDemo.addDetectionRules')}
             </ElButton>
-            <ElButton type="danger" size="small" onClick={() => deleteFn(data)}>
+            <ElButton type="danger" link onClick={() => deleteFn(data)}>
               {t('tableDemo.delete')}
             </ElButton>
           </div>
@@ -597,6 +597,11 @@ const operateFn = (type) => {
     :data="initExportDate"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
+    @is-checked-all="
+      (temp) => {
+        isCheckedAll = temp
+      }
+    "
   />
   <PhishingRuleOperate
     :title="operateTitle"
@@ -604,7 +609,7 @@ const operateFn = (type) => {
     :operateType="operateType"
     :data="operateData"
     @get-data="getList"
-    @isCheckedAll="
+    @is-checked-all="
       (temp) => {
         isCheckedAll = temp
       }

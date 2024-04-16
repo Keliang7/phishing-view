@@ -63,11 +63,9 @@ const schema = reactive<FormSchema[]>([
     }
   }
 ])
-const emit = defineEmits(['update:isDrawer', 'clear-selection', 'isCheckedAll'])
+const emit = defineEmits(['update:isDrawer', 'clear-selection', 'is-checked-all'])
 const close = () => {
   emit('update:isDrawer', false)
-  emit('isCheckedAll', false)
-  emit('clear-selection')
 }
 
 const open = () => {
@@ -86,6 +84,8 @@ const confirmClick = async () => {
     let res = await props.axiosFn({ ...formData, ...temp })
     if (res.code == 0) {
       close()
+      emit('clear-selection')
+      emit('is-checked-all', false)
       ElMessage.success('导出数据成功，请前往下载中心')
     }
   }
