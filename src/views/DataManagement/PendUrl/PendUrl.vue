@@ -228,6 +228,7 @@ const DomainColumns: TableColumn[] = [
     headerAlign: 'center',
     align: 'center',
     width: 120,
+    showOverflowTooltip: false,
     slots: {
       default: (data) => {
         return (
@@ -305,6 +306,7 @@ const URLColumns: TableColumn[] = [
     field: 'webInfo',
     label: t('tableDemo.webInfo'),
     width: 120,
+    showOverflowTooltip: false,
     slots: {
       default: (data) => {
         return (

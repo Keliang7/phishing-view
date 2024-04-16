@@ -28,7 +28,7 @@ import { formatTime } from '@/utils/index'
 import { TabSideColumns } from '../types/index'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
 import DrawerOperate from '@/components/DrawerOperate/DrawerOperate.vue'
-import DrawerExpend from '@/components/DrawerExpend/DrawerExpend.vue'
+import DataExtension from '@/components/DataExtension/DataExtension.vue'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import router from '@/router'
@@ -380,11 +380,11 @@ const backtrackFn = async (data) => {
   isBacktrack.value = true
 }
 //拓线
-const isDrawerExpend = ref(false)
+const isDataExtension = ref(false)
 const extensionFn = (data: any) => {
   titleDrawer.value = '创建任务'
   console.log('拓线任务', data)
-  isDrawerExpend.value = true
+  isDataExtension.value = true
 }
 // 表格查看信息事件
 const openDrawerInfo = async (data: TableSlotDefault) => {
@@ -535,20 +535,23 @@ const getSelections = () => {
       </template>
     </TableTop>
     <ElRow>
-      <ElCol :span="4">
+      <ElCol :span="3">
         <div class="h-full">
-          <ElTabs v-model="activeNameS" tab-position="left">
+          <ElTabs style="color: springgreen" v-model="activeNameS" tab-position="left">
             <ElTabPane
-              class="m-0"
               v-for="tabSide in tabSideColumns"
               :key="tabSide.victimKey"
-              :label="`${tabSide.victimName}（${tabSide.count}）`"
               :name="tabSide.victimName"
-            />
+            >
+              <template #label>
+                <div>{{ `${tabSide.victimName}（${tabSide.count}）` }}</div>
+              </template>
+              <div>123</div>
+            </ElTabPane>
           </ElTabs>
         </div>
       </ElCol>
-      <ElCol :span="20">
+      <ElCol :span="21">
         <Table
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"
@@ -577,7 +580,7 @@ const getSelections = () => {
     :title="titleDrawer"
     :drawerData="drawerData"
   />
-  <DrawerExpend v-model:isDrawer="isDrawerExpend" :title="'创建任务'" :drawerData="drawerData" />
+  <DataExtension v-model:isDrawer="isDataExtension" :title="'创建任务'" />
   <ExportFile
     v-model:isDrawer="isDrawerExportFile"
     title="仿冒数据管理"

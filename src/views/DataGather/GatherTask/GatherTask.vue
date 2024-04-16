@@ -2,7 +2,7 @@
 import { ref, unref, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElButton, ElCheckbox, ElMessageBox, ElMessage } from 'element-plus'
+import { ElButton, ElCheckbox, ElMessageBox, ElMessage, ElRow, ElCol } from 'element-plus'
 import { Table, TableColumn } from '@/components/Table'
 import { getListApi, deleteApi, stopApi, exportApi } from '@/api/dataGather/gatherTask'
 import { useTable } from '@/hooks/web/useTable'
@@ -12,6 +12,7 @@ import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import SelectData from '@/components/SelectData/SelectData.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import TableTop from '@/components/TableTop/TableTop.vue'
+import TableSide from '@/components/TableSide/TableSide.vue'
 // 使用useI18n钩子函数获取国际化相关数据和方法
 const { t } = useI18n()
 // 使用useTable钩子函数获取table相关数据和方法
@@ -150,7 +151,6 @@ const tableColumns: TableColumn[] = [
     headerAlign: 'center',
     align: 'center',
     width: 300,
-    showOverflowTooltip: false,
     slots: {
       default: (data) => {
         return (
@@ -334,26 +334,33 @@ const canShowPagination = ref(true)
         </ElButton>
       </template>
     </TableTop>
-    <Table
-      v-model:pageSize="pageSize"
-      v-model:currentPage="currentPage"
-      stripe
-      row-key="taskID"
-      :reserve-selection="true"
-      :columns="tableColumns"
-      :data="dataList"
-      :loading="loading"
-      :pagination="
-        canShowPagination
-          ? {
-              total: total,
-              layout: layout
-            }
-          : undefined
-      "
-      @register="tableRegister"
-      @selection-change="handleSelectionChange"
-    />
+    <ElRow>
+      <ElCol :span="4">
+        <TableSide />
+      </ElCol>
+      <ElCol :span="20">
+        <Table
+          v-model:pageSize="pageSize"
+          v-model:currentPage="currentPage"
+          stripe
+          row-key="taskID"
+          :reserve-selection="true"
+          :columns="tableColumns"
+          :data="dataList"
+          :loading="loading"
+          :pagination="
+            canShowPagination
+              ? {
+                  total: total,
+                  layout: layout
+                }
+              : undefined
+          "
+          @register="tableRegister"
+          @selection-change="handleSelectionChange"
+        />
+      </ElCol>
+    </ElRow>
   </ContentWrap>
   <SelectData :isFile="true" v-model:isDrawer="isSelectData" :title="'添加任务'" />
   <ExportFile

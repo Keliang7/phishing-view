@@ -239,17 +239,17 @@ let schema = ref<FormSchema[]>([
   {
     field: 'taskType',
     label: '任务类型',
-    component: 'Input',
+    component: 'Select',
     componentProps: {
       placeholder: '请选择任务类型',
-      option: [
+      options: [
         {
           label: '系统自动拓线',
-          value: 'bySystem'
+          value: '系统自动拓线'
         },
         {
           label: '人工触发',
-          value: 'byHuman'
+          value: '人工触发'
         }
       ]
     },

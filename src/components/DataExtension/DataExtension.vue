@@ -7,10 +7,9 @@ import { useValidator } from '@/hooks/web/useValidator'
 import { ref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElMessageBox, ElMessage } from 'element-plus'
-import { onMounted } from 'vue'
 const { t } = useI18n()
 const { required } = useValidator()
-const props = defineProps({
+defineProps({
   title: {
     type: String,
     default: ''
@@ -18,18 +17,6 @@ const props = defineProps({
   isDrawer: {
     type: Boolean,
     default: false
-  },
-  isPort: {
-    type: Boolean,
-    default: false
-  },
-  drawerData: {
-    type: Object as () => FormSchema[],
-    default: null
-  },
-  isTip: {
-    type: Boolean,
-    default: true
   }
 })
 
@@ -67,10 +54,10 @@ const confirmClick = async () => {
   })
 }
 //时间
-const today = new Date()
-const threeMonthsAgo = new Date()
-threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
-const timeArray = [threeMonthsAgo, today]
+// const today = new Date()
+// const threeMonthsAgo = new Date()
+// threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
+// const timeArray = [threeMonthsAgo, today]
 const schema = ref<FormSchema[]>([
   {
     field: 'taskName',
@@ -83,82 +70,89 @@ const schema = ref<FormSchema[]>([
       rules: [required()]
     }
   },
-  {
-    field: 'exploreType',
-    label: `任务类型：`,
-    component: 'Select',
-    componentProps: {
-      multiple: true,
-      options: [
-        {
-          label: 'FID',
-          value: 'FID'
-        },
-        {
-          label: 'title',
-          value: 'title'
-        },
-        {
-          label: '根域',
-          value: 'rootDomain'
-        },
-        {
-          label: 'C段扩展',
-          value: 'CExpend'
-        },
-        {
-          label: 'ICON',
-          value: 'ICON'
-        }
-      ]
-    },
-    formItemProps: {
-      rules: [required()]
-    }
-  },
-  {
-    field: 'dataStatus',
-    label: `数据状态：`,
-    component: 'Select',
-    componentProps: {
-      multiple: true,
-      options: [
-        {
-          label: '全部',
-          value: 'all'
-        },
-        {
-          label: '存活',
-          value: 'live'
-        },
-        {
-          label: '离线',
-          value: 'offline'
-        }
-      ]
-    },
-    formItemProps: {
-      rules: [required()]
-    }
-  },
-  {
-    field: 'timeObject',
-    label: '时间范围：',
-    component: 'DatePicker',
-    value: timeArray,
-    componentProps: {
-      type: 'daterange',
-      size: 'default'
-    },
-    formItemProps: {
-      rules: [required()]
-    }
-  },
+  /**
+   * 这里的代码暂时隐藏
+   */
+  // {
+  //   field: 'taskType',
+  //   label: `任务类型：`,
+  //   component: 'Select',
+  //   value: ['FID', 'title', 'rootDomain', 'CExpend', 'ICON'],
+  //   componentProps: {
+  //     multiple: true,
+  //     options: [
+  //       {
+  //         label: 'FID',
+  //         value: 'FID'
+  //       },
+  //       {
+  //         label: 'title',
+  //         value: 'title'
+  //       },
+  //       {
+  //         label: '根域',
+  //         value: 'rootDomain'
+  //       },
+  //       {
+  //         label: 'C段扩展',
+  //         value: 'CExpend'
+  //       },
+  //       {
+  //         label: 'ICON',
+  //         value: 'ICON'
+  //       }
+  //     ]
+  //   },
+  //   formItemProps: {
+  //     rules: [required()]
+  //   }
+  // },
+  // {
+  //   field: 'extensionStatus',
+  //   label: `拓线结果数据状态：`,
+  //   component: 'Select',
+  //   value: '全部',
+  //   componentProps: {
+  //     options: [
+  //       {
+  //         label: '全部',
+  //         value: '全部'
+  //       },
+  //       {
+  //         label: '存活',
+  //         value: '存活'
+  //       },
+  //       {
+  //         label: '离线',
+  //         value: '离线'
+  //       }
+  //     ],
+  //     class: 'extension-status'
+  //   },
+  //   formItemProps: {
+  //     rules: [required()]
+  //   }
+  // },
+  // {
+  //   field: 'timeArray',
+  //   label: '拓线结果时间范围：',
+  //   component: 'DatePicker',
+  //   value: timeArray,
+  //   componentProps: {
+  //     type: 'daterange',
+  //     size: 'default',
+  //     class: 'time-array'
+  //   },
+  //   formItemProps: {
+  //     rules: [required()]
+  //   }
+  // },
   {
     field: 'inputAim',
     label: `输入目标：`,
     component: 'Input',
     componentProps: {
+      class: 'input-aim',
       type: 'textarea',
       placeholder: `请输入目标，1行1个目标，最多上传1万个目标，多余的将会被丢弃。`,
       rows: 3
@@ -168,10 +162,11 @@ const schema = ref<FormSchema[]>([
     }
   },
   {
-    field: 'exploreAimFile',
-    label: `${t('formDemo.exploreAim')}：`,
+    field: 'file',
     component: 'Upload',
+    label: '',
     componentProps: {
+      class: 'explore-aim-file',
       limit: 1,
       // action: 'http://172.16.20.30:32080',
       autoUpload: false,
@@ -199,36 +194,16 @@ const schema = ref<FormSchema[]>([
         trigger: () => <BaseButton type="primary">点击上传</BaseButton>,
         default: () => (
           <div class="el-upload__tip">
-            <p>
-              支持上传.xlsx、.xls、.txt、.xml、.json、.csv文件，最大上传文件为1M <a>下载模板</a>
-            </p>
-            <p class="attention">注意：目标地址添加方式为文件上传时，系统调度策略默认按IP拆分。</p>
+            <p class="attention">支持上传txt,.csv文件，最大上传文件为1M</p>
           </div>
         )
       }
-    },
-    formItemProps: {
-      rules: [required()]
     }
   }
 ])
-const schemaCopy = ref<FormSchema[]>()
-onMounted(() => {
-  if (props.isPort) {
-    schemaCopy.value = schema.value
-  } else {
-    schemaCopy.value = schema.value.splice(5, 1)
-  }
-})
 </script>
 <template>
-  <ElDrawer
-    :title="title"
-    :modelValue="isDrawer"
-    :before-close="close"
-    custom-class="drawerWidth"
-    @open="open"
-  >
+  <ElDrawer :title="title" :modelValue="isDrawer" :before-close="close" @open="open">
     <Form
       :autoSetPlaceholder="false"
       :schema="schema"
@@ -239,35 +214,19 @@ onMounted(() => {
     <template #footer>
       <div style="margin-right: 20px">
         <BaseButton type="default" @click="resetClick">重 置</BaseButton>
-        <BaseButton type="primary" @click="confirmClick" disabled>确 定</BaseButton>
+        <BaseButton type="primary" @click="confirmClick">确 定</BaseButton>
       </div>
     </template>
   </ElDrawer>
 </template>
 <style lang="less" scope>
-.el-drawer {
-  width: 40% !important;
-  .el-drawer__title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #000;
-  }
-  .el-drawer__header {
-    margin-bottom: 0px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #ebeef5;
-  }
-  .el-upload__tip p {
-    margin: 0;
-  }
-  p a {
-    cursor: pointer;
-    color: var(--el-color-primary);
-  }
+.extension-status::after {
+  content: '拓线结果仅返回相应数据状态的数据，如仅返回存活的数据';
+  color: grey;
+  font-size: 12px;
 }
-
-.attention {
-  font-size: 13px;
-  color: var(--el-color-error);
+.explore-aim-file div,
+.explore-aim-file ul {
+  margin-left: 65%;
 }
 </style>
