@@ -163,11 +163,14 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           target: 'http://172.16.20.30:32083',
           changeOrigin: true
         },
-        '/api/v3': {
-          target: 'http://172.16.20.30:32084',
-          // target: 'http://172.16.20.84:32080',
+        '/api/v1/data_extention/': {
+          target: 'http://172.16.20.30:32083',
           changeOrigin: true
         }
+        // '/api/v3': {
+        //   target: 'http://172.16.20.30:32084',
+        //   changeOrigin: true
+        // }
       },
       hmr: {
         overlay: false

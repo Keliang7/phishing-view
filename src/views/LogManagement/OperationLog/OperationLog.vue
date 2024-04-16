@@ -1,18 +1,15 @@
 <script setup lang="tsx">
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import { ref, unref } from 'vue'
-// import { useI18n } from '@/hooks/web/useI18n'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
-import { getTaskApi, deleteTaskApi } from '@/api/dataExtension'
+import { getListApi } from '@/api/dataExtension/extensionTask'
 import { formatTime } from '@/utils/index'
-// import { ElButton } from 'element-plus'
-// const { t } = useI18n()
 const dataArray = ref(['loginName', 'loginIP'])
-const { tableRegister, tableMethods, tableState } = useTable({
+const { tableRegister, tableState } = useTable({
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
-    const res = await getTaskApi({
+    const res = await getListApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
       ...searchData.value
@@ -21,14 +18,9 @@ const { tableRegister, tableMethods, tableState } = useTable({
       list: res.data.list,
       total: res.data.total
     }
-  },
-  fetchDelApi: async () => {
-    const res = await deleteTaskApi({ rules: unref(ids) })
-    return !!res
   }
 })
 const { loading, total, dataList, currentPage, pageSize } = tableState
-const { setProps, getList, getElTableExpose, delList } = tableMethods
 const columns: TableColumn[] = [
   {
     field: 'selection',
@@ -61,8 +53,6 @@ const columns: TableColumn[] = [
   }
 ]
 const searchData = ref({})
-//删除
-const ids = ref<string[]>([])
 </script>
 <template>
   <AdvancedSearch :dataArray="dataArray" :title="'操作日志管理'" />
@@ -79,7 +69,6 @@ const ids = ref<string[]>([])
       total: total
     }"
     @register="tableRegister"
-    @selection-change="handleSelectionChange"
   />
 </template>
 <style scoped></style>
