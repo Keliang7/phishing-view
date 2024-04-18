@@ -760,7 +760,7 @@ onMounted(() => {
             >去添加任务</ElButton
           >
         </div>
-        <el-table :data="[taskMessageData]" border style="width: 100%">
+        <el-table :data="[extensionData]" border style="width: 100%">
           <el-table-column prop="taskName" label="任务名称" />
           <el-table-column prop="taskType" label="探测类型" />
           <el-table-column prop="traceResult" label="探测内容">
