@@ -10,5 +10,7 @@ export const addApi = (params: any) => {
   return request.post({ url: '/api/v1/data_extention/extention_task', data: params })
 }
 export const statisticsApi = () => {
-  return request.get({ url: '/api/v1/data_extention/extention_task/statistics' })
+  return request.get({
+    url: '/api/v1/data_extention/extention_task/statistics'
+  })
 }

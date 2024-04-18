@@ -139,6 +139,14 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
     server: {
       port: 4000,
       proxy: {
+        '/api/v1/dataGather': {
+          target: 'http://172.16.20.30:32083',
+          changeOrigin: true
+        },
+        '/api/v1/data_extention': {
+          target: 'http://172.16.20.30:32087',
+          changeOrigin: true
+        },
         '/api/v1/sm': {
           target: 'http://172.16.20.30:32080',
           changeOrigin: true
@@ -157,14 +165,6 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         },
         '/api/v1/sr': {
           target: 'http://172.16.20.30:32084',
-          changeOrigin: true
-        },
-        '/api/v1/dataGather': {
-          target: 'http://172.16.20.30:32083',
-          changeOrigin: true
-        },
-        '/api/v1/data_extention/': {
-          target: 'http://172.16.20.30:32083',
           changeOrigin: true
         }
       },

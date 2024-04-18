@@ -429,6 +429,7 @@ const getTaskMessageData = async () => {
 const extensionData = ref<any>({})
 const getExtensionData = async () => {
   let res = await getExtensionApi(timeObj)
+  console.log('res', res)
   extensionData.value = res.data
 }
 //仿冒检测特征统计

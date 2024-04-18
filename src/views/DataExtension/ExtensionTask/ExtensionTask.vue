@@ -1,12 +1,12 @@
 <script setup lang="tsx">
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
-import { ref, unref, watch } from 'vue'
+import { onMounted, ref, unref, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElButton, ElCheckbox, ElRow, ElCol } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
-import { getListApi, exportApi } from '@/api/dataExtension/extensionTask'
+import { getListApi, exportApi, statisticsApi } from '@/api/dataExtension/extensionTask'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
@@ -21,6 +21,7 @@ const { tableRegister, tableMethods, tableState } = useTable({
     const res = await getListApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
+      taskStatus: activeNameS.value,
       ...searchData.value
     })
     return {
@@ -198,10 +199,20 @@ const extensionFn = () => {
 
 //tableSide
 const tabSideColumns = ref()
-const activeNameS = ref('1')
-const setActiveNameS = (index) => {
-  activeNameS.value = index
+const setTableSide = async () => {
+  const res = await statisticsApi()
+  activeNameS.value = res.data.list[0].name
+  tabSideColumns.value = res.data.list
 }
+const activeNameS = ref()
+const setActiveNameS = (name) => {
+  activeNameS.value = name
+  getList()
+}
+onMounted(async () => {
+  await setTableSide()
+  getList()
+})
 </script>
 <template>
   <AdvancedSearch
@@ -212,22 +223,22 @@ const setActiveNameS = (index) => {
     @search-data="searchTable"
   />
   <ContentWrap>
+    <TableTop>
+      <template #right>
+        <ElButton type="default">
+          <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
+        </ElButton>
+        <ElButton type="primary" @click="extensionFn"> 创建任务 </ElButton>
+        <ElButton type="primary" @click="getSelections">
+          <Icon icon="tdesign:upload" /> 导出数据
+        </ElButton>
+      </template>
+    </TableTop>
     <ElRow>
       <ElCol :span="3">
         <TableSide :data="tabSideColumns" @change="setActiveNameS" />
       </ElCol>
       <ElCol :span="21">
-        <TableTop>
-          <template #right>
-            <ElButton type="default">
-              <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
-            </ElButton>
-            <ElButton type="primary" @click="extensionFn"> 创建任务 </ElButton>
-            <ElButton type="primary" @click="getSelections">
-              <Icon icon="tdesign:upload" /> 导出数据
-            </ElButton>
-          </template>
-        </TableTop>
         <Table
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"

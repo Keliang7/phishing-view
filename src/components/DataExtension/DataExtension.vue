@@ -53,11 +53,6 @@ const confirmClick = async () => {
     }
   })
 }
-//时间
-// const today = new Date()
-// const threeMonthsAgo = new Date()
-// threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
-// const timeArray = [threeMonthsAgo, today]
 const schema = ref<FormSchema[]>([
   {
     field: 'taskName',

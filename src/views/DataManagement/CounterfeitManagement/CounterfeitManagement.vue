@@ -543,18 +543,6 @@ const getSelections = () => {
     <ElRow>
       <ElCol :span="3">
         <TableSide :data="tabSideColumns" @change="setActiveNameS" />
-        <!-- <ElTabs style="color: springgreen" v-model="activeNameS" tab-position="left">
-            <ElTabPane
-              v-for="tabSide in tabSideColumns"
-              :key="tabSide.victimKey"
-              :name="tabSide.victimName"
-            >
-              <template #label>
-                <div>{{ `${tabSide.victimName}（${tabSide.count}）` }}</div>
-              </template>
-              <div>123</div>
-            </ElTabPane>
-          </ElTabs> -->
       </ElCol>
       <ElCol :span="21">
         <Table

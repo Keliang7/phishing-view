@@ -1,38 +1,33 @@
 <script setup lang="tsx">
-import { onMounted } from 'vue'
 import { ref } from 'vue'
 defineProps({
   data: {
     type: Array as () => Array<{
-      // name: string
-      // key: string
+      name: string
+      key: string
       count: number
-      victimName: string
-      victimKey: string
-    }>
+    }>,
+    default: () => [{}, {}]
   }
 })
 const emit = defineEmits(['change'])
 const temp = ref(0)
-const action = (num) => {
-  emit('change', num)
+const action = (num, name) => {
+  emit('change', name)
   temp.value = num
 }
-onMounted(() => {
-  console.log(temp.value)
-})
 </script>
 <template>
   <div class="h-full">
     <div class="p-4px">
       <div
-        v-for="({ count, victimName, victimKey }, index) in data"
+        v-for="({ count, name, key }, index) in data"
         :style="temp === index ? 'color:#3595FB;background:#F0F2F3;' : ''"
         class="py-4px px-10px flex justify-between border-rd-4px cursor-pointer item-card"
-        @click="action(index)"
-        :key="victimKey"
+        @click="action(index, name)"
+        :key="key"
       >
-        <div class="title">{{ victimName }}</div>
+        <div class="title">{{ name }}</div>
         <div class="count">{{ count }}</div>
       </div>
     </div>
