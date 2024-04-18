@@ -334,7 +334,7 @@ onMounted(async () => {
 const getInjuredParty = async (params: any) => {
   const res = await getInjuredPartyApi(params)
   tabSideColumns.value = res.data.list
-  activeNameS.value = tabSideColumns.value[0].victimName
+  activeNameS.value = tabSideColumns.value[0].name
 }
 // 定义表格内操作函数，用于处理点击表格列时的操作
 const addCounterfeitFn = (data: TableSlotDefault) => {

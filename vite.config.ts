@@ -143,7 +143,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           target: 'http://172.16.20.30:32083',
           changeOrigin: true
         },
-        '/api/v1/data_extention': {
+        '/api/v1/data_extension': {
           target: 'http://172.16.20.30:32087',
           changeOrigin: true
         },
