@@ -83,10 +83,7 @@ const columns: TableColumn[] = [
   },
   {
     field: 'netStatusCode',
-    label: '网页状态码'
-  },
-  {
-    field: 'netStatusCode',
+    width: 120,
     label: '网页状态码'
   },
   {

@@ -39,22 +39,27 @@ const columns: TableColumn[] = [
   },
   {
     field: 'taskID',
+    width: 180,
     label: '任务ID'
   },
   {
     field: 'taskName',
+    width: 240,
     label: '任务名称'
   },
   {
     field: 'taskType',
+    width: 90,
     label: '任务类型'
   },
   {
     field: 'distributeType',
+    width: 90,
     label: '任务状态'
   },
   {
     field: 'extensionResult',
+    width: 90,
     label: '拓线结果',
     slots: {
       default: (data) => {
@@ -70,7 +75,27 @@ const columns: TableColumn[] = [
   },
   {
     field: 'useTime',
-    label: '任务耗时'
+    width: 90,
+    label: '任务耗时',
+    formatter: (data) => {
+      console.log(data)
+      return (
+        <div style={{ display: 'flex' }}>
+          <span style={{ display: data.useTime / 1000 > 86400 ? 'block' : 'none' }}>
+            {Math.floor(data.useTime / 1000 / 86400)}天
+          </span>
+          <span style={{ display: data.useTime / 1000 > 3600 ? 'block' : 'none' }}>
+            {Math.floor(((data.useTime / 1000) % 86400) / 3600)}时
+          </span>
+          <span style={{ display: data.useTime / 1000 > 60 ? 'block' : 'none' }}>
+            {Math.floor(((data.useTime / 1000) % 3600) / 60)}分
+          </span>
+          <span style={{ display: data.useTime / 1000 > 0 ? 'block' : 'none' }}>
+            {Math.floor(data.useTime / 1000) % 60}秒
+          </span>
+        </div>
+      )
+    }
   },
   {
     field: 'createdBy',
@@ -79,17 +104,20 @@ const columns: TableColumn[] = [
   {
     field: 'createdTime',
     label: t('tableDemo.createdTime'),
+    width: 180,
     formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
     field: 'startTime',
-    label: t('tableDemo.createdTime'),
-    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
+    label: '任务开始时间',
+    width: 180,
+    formatter: (data) => formatTime(data.startTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
     field: 'endTime',
-    label: t('tableDemo.createdTime'),
-    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
+    label: '任务结束时间',
+    width: 180,
+    formatter: (data) => formatTime(data.endTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
     field: 'action',
