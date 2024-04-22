@@ -61,10 +61,6 @@ const columns: TableColumn[] = [
     width: 200
   },
   {
-    field: 'protocol',
-    label: '协议'
-  },
-  {
     field: 'FID',
     label: 'FID'
   },

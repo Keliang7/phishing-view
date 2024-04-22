@@ -143,7 +143,8 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           target: 'http://10.10.11.131:32081',
           changeOrigin: true
         },
-        '/api/v1/ac': {
+        //数据采集
+        '/api/v1/gather': {
           target: 'http://10.10.11.131:32084',
           changeOrigin: true
         },

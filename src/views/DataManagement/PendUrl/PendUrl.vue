@@ -705,14 +705,12 @@ watch(isCheckedAll, () => {
 })
 
 // 导出多选数据
-const fieldName = columns
-  .map((i) => {
-    return {
-      label: i.label,
-      value: i.field
-    }
-  })
-  .slice(1, -1)
+const fieldName = BWColumns.map((i) => {
+  return {
+    label: i.label,
+    value: i.field
+  }
+}).slice(1, -1)
 const isDrawerExportFile = ref(false)
 const initExportDate = ref({})
 const getSelections = () => {

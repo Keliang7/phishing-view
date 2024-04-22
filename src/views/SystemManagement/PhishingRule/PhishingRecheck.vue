@@ -94,11 +94,11 @@ const columns: TableColumn[] = [
     width: 120,
     slots: {
       default: (data) => {
-        if (data.reviewer) {
+        if (activeName.value === '未复核') {
           return (
             <div>
               <ElButton type="primary" link onClick={() => recheckOrViewFn(data, '复核规则复核')}>
-                查看
+                复核
               </ElButton>
             </div>
           )
@@ -106,7 +106,7 @@ const columns: TableColumn[] = [
           return (
             <div>
               <ElButton type="primary" link onClick={() => recheckOrViewFn(data, '查看规则复核')}>
-                复核
+                查看
               </ElButton>
             </div>
           )

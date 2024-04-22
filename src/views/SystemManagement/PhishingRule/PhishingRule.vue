@@ -76,7 +76,7 @@ const DetectionColumns: TableColumn[] = [
     width: 90
   },
   {
-    field: 'matchPhishingNum',
+    field: 'count',
     label: '疑似仿冒数据量',
     width: 140
   },

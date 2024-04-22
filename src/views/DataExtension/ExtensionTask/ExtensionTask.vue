@@ -61,7 +61,7 @@ const columns: TableColumn[] = [
         return (
           <div>
             <ElButton type="primary" link onClick={() => viewData(data)}>
-              {data.extensionResult}
+              {data.row.extensionResult}
             </ElButton>
           </div>
         )

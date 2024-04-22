@@ -130,17 +130,6 @@ const schema = ref<FormSchema[]>([
     }
   },
   {
-    field: 'intention',
-    label: `意图：`,
-    component: 'Input',
-    componentProps: {
-      placeholder: '请输入意图'
-    },
-    formItemProps: {
-      rules: [required()]
-    }
-  },
-  {
     field: 'priority',
     label: `${t('formDemo.priority')}：`,
     component: 'Select',

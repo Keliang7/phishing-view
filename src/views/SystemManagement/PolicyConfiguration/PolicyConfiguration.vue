@@ -59,11 +59,6 @@ const whiteColumns: TableColumn[] = [
     width: 300
   },
   {
-    field: 'matchNum',
-    label: t('tableDemo.matchNum'),
-    width: 100
-  },
-  {
     field: 'addType',
     width: 150,
     label: t('tableDemo.addType')

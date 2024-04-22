@@ -69,6 +69,7 @@ const close = () => {
 }
 
 const open = () => {
+  console.log('fieldName', props.fieldName)
   if (!props.fieldName) {
     delSchema('fieldName')
   }
