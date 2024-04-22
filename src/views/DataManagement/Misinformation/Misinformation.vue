@@ -228,7 +228,7 @@ const tabColumns = [
     name: 'extensionData'
   }
 ]
-const handleClick = async (tab) => {
+const handleClick = async () => {
   currentPage.value = 1
   pageSize.value = 10
   // await getTableData(tab.props.name)
