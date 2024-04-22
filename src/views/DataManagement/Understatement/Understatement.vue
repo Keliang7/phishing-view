@@ -1,11 +1,11 @@
 <script setup lang="tsx">
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
-import { ref, unref, watch } from 'vue'
+import { ref, unref, watch, onMounted } from 'vue'
 import { ElButton, ElCheckbox, ElRow, ElCol } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
-import { getListApi, exportApi } from '@/api/dataManagement/understatement'
+import { getListApi, statisticsApi, exportApi } from '@/api/dataManagement/understatement'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
@@ -308,10 +308,20 @@ const extensionFn = () => {
 
 //tableSide
 const tabSideColumns = ref()
-const activeNameS = ref('1')
-const setActiveNameS = (index) => {
-  activeNameS.value = index
+const activeNameS = ref()
+const setTableSide = async () => {
+  const res = await statisticsApi()
+  activeNameS.value = res.data.list[0].name
+  tabSideColumns.value = res.data.list
 }
+const setActiveNameS = (name) => {
+  activeNameS.value = name
+  getList()
+}
+onMounted(async () => {
+  await setTableSide()
+  getList()
+})
 </script>
 <template>
   <AdvancedSearch
