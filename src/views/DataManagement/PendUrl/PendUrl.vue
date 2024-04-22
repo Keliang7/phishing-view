@@ -4,7 +4,15 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getBwListApi, exportApi, getBwDetailApi, backtrackApi } from '@/api/dataManagement/pendUrl'
+import {
+  getBwListApi,
+  getDomainListApi,
+  getURLListApi,
+  getTLSListApi,
+  getExtListApi,
+  getBwDetailApi
+} from '@/api/dataManagement/pendUrl'
+import { exportApi, backtrackApi } from '@/api/dataManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
@@ -19,50 +27,44 @@ const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
     let res = await getTableData(activeName.value)
     return {
-      list: res.list,
-      total: res.total
+      list: res?.data.list,
+      total: res?.data.total
     }
   }
 })
 const { loading, total, dataList, currentPage, pageSize } = tableState
-const { setProps, getElTableExpose } = tableMethods
+const { setProps, getElTableExpose, getList } = tableMethods
 // 查看网页信息
 const isDrawerInfo = ref(false)
 // 查看网页信息-弹窗标题
 const titleDrawer = ref('')
 // 查看网页信息-弹窗内容
 const bodyInfo = ref([{}])
-const dataArray = ref(['url', 'domain', 'ip', 'status', 'discoveryTime'])
-const tipTitle = ref('系统默认展示当天接入数据，最多可查看7天内数据，超出7天数据不会留存。')
-
 //tableTop
 const tabColumns = [
   {
     label: t('tableDemo.bw'),
-    name: 'bw'
+    name: 'BWColumns'
   },
   {
     label: t('tableDemo.domainMonitor'),
-    name: 'domainMonitor'
+    name: 'DomainColumns'
   },
   {
     label: t('tableDemo.urlLog'),
-    name: 'urlLog'
+    name: 'URLColumns'
   },
   {
     label: t('tableDemo.tlsLog'),
-    name: 'tlsLog'
+    name: 'TLSColumns'
   },
   {
     label: t('tableDemo.extensionData'),
-    name: 'extensionData'
+    name: 'ExtColumns'
   }
 ]
-
 const activeName = ref(tabColumns[0].name)
-
-// 定义columns变量，用于存储表格的列配置
-let columns = reactive<TableColumn[]>([])
+const columns = reactive<TableColumn[]>([])
 // BW监测子系统表头内容
 const BWColumns: TableColumn[] = [
   {
@@ -175,7 +177,7 @@ const BWColumns: TableColumn[] = [
     }
   }
 ]
-// 域名监测子系统表头内容
+// 对比BW只有域名
 const DomainColumns: TableColumn[] = [
   {
     field: 'selection',
@@ -242,7 +244,7 @@ const DomainColumns: TableColumn[] = [
     }
   }
 ]
-// URL日志子系统表头内容
+// URL对比BW没有 规则ID
 const URLColumns: TableColumn[] = [
   {
     field: 'selection',
@@ -349,7 +351,7 @@ const URLColumns: TableColumn[] = [
     }
   }
 ]
-// TLS日志子系统表头内容
+// TSL和EXT没有url 对比URL
 const TLSColumns: TableColumn[] = [
   {
     field: 'selection',
@@ -450,7 +452,7 @@ const TLSColumns: TableColumn[] = [
     }
   }
 ]
-const ExTColumns: TableColumn[] = [
+const ExtColumns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection'
@@ -550,6 +552,40 @@ const ExTColumns: TableColumn[] = [
     }
   }
 ]
+const getTableData = async (params) => {
+  let handler = new Map([
+    ['BWColumns', getBwListApi],
+    ['DomainColumns', getDomainListApi],
+    ['URLColumns', getURLListApi],
+    ['TLSColumns', getTLSListApi],
+    ['ExtColumns', getExtListApi]
+  ]).get(params)
+  if (handler) {
+    const res = await handler({
+      pageIndex: unref(currentPage),
+      pageSize: unref(pageSize),
+      ...searchData.value
+    })
+    return res
+  }
+}
+//给我表名，我帮你设置table
+const setTable = async (tableName) => {
+  loading.value = true
+  const temp = { BWColumns, DomainColumns, URLColumns, TLSColumns, ExtColumns }
+  setProps({
+    columns: temp[tableName]
+  })
+  await getList()
+  loading.value = false
+}
+//高级搜索
+const dataArray = ref(['url', 'domain', 'ip', 'collectStatus', 'discoveryTime'])
+const searchData = ref({})
+const searchTable = async (value) => {
+  searchData.value = value
+  getList()
+}
 onMounted(() => {
   setProps({
     columns: BWColumns
@@ -619,55 +655,6 @@ const openDrawerInfo = async (data: TableSlotDefault) => {
     ]
   }
 }
-//高级搜索
-const searchData = ref({})
-const searchTable = async (value) => {
-  searchData.value = value
-  await getTableData(activeName.value)
-}
-const getTableData = async (params) => {
-  loading.value = true
-  if (params === 'bw') {
-    setProps({
-      columns: BWColumns
-    })
-    const res = await getBwListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize),
-      ...searchData.value
-    })
-    dataList.value = res.data.list
-    total.value = res.data.total
-  } else if (params === 'domainMonitor') {
-    setProps({
-      columns: DomainColumns
-    })
-  } else if (params === 'urlLog') {
-    setProps({
-      columns: URLColumns
-    })
-  } else if (params === 'tlsLog') {
-    setProps({
-      columns: TLSColumns
-    })
-  } else if (params === 'extensionData') {
-    setProps({
-      columns: ExTColumns
-    })
-  }
-  loading.value = false
-  return {
-    list: dataList.value,
-    total: total.value
-  }
-}
-// 表格切换器的点击事件
-const handleClick = async (tab) => {
-  currentPage.value = 1
-  pageSize.value = 10
-  await getTableData(tab.props.name)
-}
-
 // 选择全部
 const isCheckedAll = ref(false)
 const selectedId = ref<any[]>([])
@@ -703,7 +690,6 @@ watch(isCheckedAll, () => {
     clearSelection()
   }
 })
-
 // 导出多选数据
 const fieldName = BWColumns.map((i) => {
   return {
@@ -739,13 +725,13 @@ const getSelections = () => {
   <AdvancedSearch
     :title="t('tableDemo.pendUrl')"
     :dataArray="dataArray"
-    :tipTitle="tipTitle"
+    :tipTitle="'系统默认展示当天接入数据，最多可查看7天内数据，超出7天数据不会留存。'"
     @search-data="searchTable"
   />
   <ContentWrap class="table-box">
     <TableTop>
       <template #left>
-        <ElTabs type="card" v-model="activeName" @tab-click="handleClick">
+        <ElTabs type="card" v-model="activeName" @tab-change="setTable">
           <ElTabPane
             v-for="item in tabColumns"
             :key="item.name"
