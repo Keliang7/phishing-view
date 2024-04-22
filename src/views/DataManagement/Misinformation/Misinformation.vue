@@ -5,7 +5,7 @@ import { ElButton, ElCheckbox, ElRow, ElCol, ElTabs, ElTabPane } from 'element-p
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
-import { getListApi, exportApi } from '@/api/dataExtension/extensionTask'
+import { getListApi } from '@/api/dataManagement/misinformation'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'

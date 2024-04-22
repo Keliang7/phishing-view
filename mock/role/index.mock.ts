@@ -31,23 +31,23 @@ const adminList = [
         meta: {
           title: 'router.counterfeit_management'
         }
+      },
+      {
+        path: 'understatement',
+        component: 'views/DataManagement/Understatement/Understatement',
+        name: 'Understatement',
+        meta: {
+          title: 'router.understatement'
+        }
+      },
+      {
+        path: 'misinformation',
+        component: 'views/DataManagement/Misinformation/Misinformation',
+        name: 'Misinformation',
+        meta: {
+          title: 'router.misinformation'
+        }
       }
-      // {
-      //   path: 'understatement',
-      //   component: 'views/DataManagement/Understatement/Understatement',
-      //   name: 'Understatement',
-      //   meta: {
-      //     title: 'router.understatement'
-      //   }
-      // },
-      // {
-      //   path: 'misinformation',
-      //   component: 'views/DataManagement/Misinformation/Misinformation',
-      //   name: 'Misinformation',
-      //   meta: {
-      //     title: 'router.misinformation'
-      //   }
-      // }
     ]
   },
   {
