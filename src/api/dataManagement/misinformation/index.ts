@@ -14,3 +14,6 @@ export const backtrackApi = (params: any) => {
 export const sourceApi = (params: any) => {
   return request.get({ url: '/api/v1/sm/misinformation/data_source/bw', params })
 }
+export const exportApi = (params: any) => {
+  return request.post({ url: '/api/v1/sm/misinformation/bw/export', data: params })
+}

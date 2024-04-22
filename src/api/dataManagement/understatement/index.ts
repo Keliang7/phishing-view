@@ -19,3 +19,6 @@ export const joinSampApi = (params: any) => {
 export const addApi = (params: any) => {
   return request.post({ url: '/api/v1/sm/understatement/gather_task/bw', data: params })
 }
+export const exportApi = (params: any) => {
+  return request.post({ url: '/api/v1/sm/understatement/bw/export', data: params })
+}
