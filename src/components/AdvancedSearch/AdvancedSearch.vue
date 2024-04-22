@@ -153,7 +153,7 @@ let schema = ref<FormSchema[]>([
     label: `${t('formDemo.victim')}：`,
     component: 'Input',
     componentProps: {
-      placeholder: '请输入受害者'
+      placeholder: '请输入受害方'
     },
     colProps: {
       span: 6
@@ -531,7 +531,7 @@ let schema = ref<FormSchema[]>([
   },
   {
     field: 'checkStatus',
-    label: '复核状态',
+    label: '复核状态：',
     component: 'Select',
     componentProps: {
       options: [

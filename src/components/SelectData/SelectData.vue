@@ -77,7 +77,7 @@ const schema = ref<FormSchema[]>([
                   rows: 4
                 }
               },
-              -1
+              -2
             )
           }
           if (v == 'webAsset') {
@@ -124,6 +124,17 @@ const schema = ref<FormSchema[]>([
       type: 'textarea',
       placeholder: `'请输入IP、IP段，可支持多行，最多支持10000个目标\n支持格式如下：\n192.168.10.0-100\n192.168.1.2\n192.168.1.0/32'`,
       rows: 8
+    },
+    formItemProps: {
+      rules: [required()]
+    }
+  },
+  {
+    field: 'intention',
+    label: `意图：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入意图'
     },
     formItemProps: {
       rules: [required()]
@@ -196,18 +207,7 @@ const open = () => {
                       rows: 8
                     },
                     formItemProps: {
-                      rules: [
-                        required()
-                        // {
-                        //   validator: (_, val, callback) => {
-                        //     if (/[\\n\\r]/gi.test(val)) {
-                        //       callback(new Error('不能输入"\\n\\r"'))
-                        //     } else {
-                        //       callback()
-                        //     }
-                        //   }
-                        // }
-                      ]
+                      rules: [required()]
                     }
                   },
                   3
@@ -292,9 +292,10 @@ const confirmClick = async () => {
     if (isValid) {
       if (formData.exploreAimFile) {
         formData.exploreAimFile = formData.exploreAimFile[0].raw
+      } else {
+        delete formData.exploreAimFile
       }
       const res = await addApi(formData)
-      console.log(formData)
       if (res.code == 0) {
         close()
         ElMessage.success('添加任务成功')

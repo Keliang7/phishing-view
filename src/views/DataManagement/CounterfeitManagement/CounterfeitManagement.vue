@@ -154,7 +154,8 @@ const Columns: TableColumn[] = [
   {
     field: 'featureNumber',
     label: t('tableDemo.featureNumber'),
-    width: 60
+    align: 'center',
+    width: 90
   },
   {
     field: 'featureMatch',
@@ -184,7 +185,8 @@ const Columns: TableColumn[] = [
   {
     field: 'webCode',
     label: t('tableDemo.webCode'),
-    width: 60
+    align: 'center',
+    width: 100
   },
   {
     field: 'FID',
@@ -194,7 +196,7 @@ const Columns: TableColumn[] = [
   {
     field: 'ICON',
     label: 'ICON',
-    width: 130
+    formatter: (data) => <img class="max-w-18px" src={data.ICON}></img>
   },
   {
     field: 'domainOwner',

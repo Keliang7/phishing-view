@@ -139,34 +139,34 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
     server: {
       port: 4000,
       proxy: {
-        '/api/v1/dataGather': {
-          target: 'http://172.16.20.30:32083',
-          changeOrigin: true
-        },
-        '/api/v1/data_extension': {
-          target: 'http://172.16.20.30:32087',
-          changeOrigin: true
-        },
         '/api/v1/sm': {
-          target: 'http://172.16.20.30:32080',
-          changeOrigin: true
-        },
-        '/api/v1/da': {
-          target: 'http://172.16.20.30:32081',
-          changeOrigin: true
-        },
-        '/api/v1/wl': {
-          target: 'http://172.16.20.30:32082',
+          target: 'http://10.10.11.131:32081',
           changeOrigin: true
         },
         '/api/v1/ac': {
-          target: 'http://172.16.20.30:32083',
+          target: 'http://10.10.11.131:32084',
+          changeOrigin: true
+        },
+        '/api/v1/wl': {
+          target: 'http://10.10.11.131:32083',
           changeOrigin: true
         },
         '/api/v1/sr': {
-          target: 'http://172.16.20.30:32084',
+          target: 'http://10.10.11.131:32085',
+          changeOrigin: true
+        },
+        '/api/v1/data_extension': {
+          target: 'http://10.10.11.131:32089',
           changeOrigin: true
         }
+        /* 
+          网关转发服务:32080
+          业务系统管理服务	   /eyfm/service/sys_mgr                32081
+          白名单过滤检测服务	  /eyfm/service/white_list_filter      32083
+          数据采集服务         /eyfm/service/asset_collection       32084
+          仿冒网站特征检测服务  /eyfm/service/sample_ruler           32085
+          数据源接入服务	     /eyfm/service/asset_collection       32082
+        */
       },
       hmr: {
         overlay: false

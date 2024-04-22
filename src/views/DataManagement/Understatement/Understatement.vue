@@ -12,16 +12,7 @@ import TableSide from '@/components/TableSide/TableSide.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import DataExtension from '@/components/DataExtension/DataExtension.vue'
 import { useRouter } from 'vue-router'
-const dataArray = ref([
-  'url',
-  'domain',
-  'ip',
-  'status',
-  'discoveryTime',
-  'victim',
-  'victimType',
-  'misReason'
-])
+const dataArray = ref(['url', 'domain', 'ip', 'status', 'discoveryTime', 'victim', 'victimType'])
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState

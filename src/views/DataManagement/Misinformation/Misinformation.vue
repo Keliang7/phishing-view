@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import { ref, unref, watch } from 'vue'
-import { ElButton, ElCheckbox, ElRow, ElCol } from 'element-plus'
+import { ElButton, ElCheckbox, ElRow, ElCol, ElTabs, ElTabPane } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
@@ -11,6 +11,8 @@ import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import DataExtension from '@/components/DataExtension/DataExtension.vue'
+import { useI18n } from '@/hooks/web/useI18n'
+const { t } = useI18n()
 const dataArray = ref(['url', 'domain', 'ip', 'discoveryTime', 'victim'])
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
@@ -204,7 +206,34 @@ const columns: TableColumn[] = [
     formatter: (data) => formatTime(data.fxczGetTime, 'yyyy-MM-dd HH:mm:ss')
   }
 ]
-
+const tabColumns = [
+  {
+    label: t('tableDemo.bw'),
+    name: 'bw'
+  },
+  {
+    label: t('tableDemo.domainMonitor'),
+    name: 'domainMonitor'
+  },
+  {
+    label: t('tableDemo.urlLog'),
+    name: 'urlLog'
+  },
+  {
+    label: t('tableDemo.tlsLog'),
+    name: 'tlsLog'
+  },
+  {
+    label: t('tableDemo.extensionData'),
+    name: 'extensionData'
+  }
+]
+const handleClick = async (tab) => {
+  currentPage.value = 1
+  pageSize.value = 10
+  // await getTableData(tab.props.name)
+}
+const activeName = ref(tabColumns[0].name)
 // 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
 const searchData = ref({})
 const searchTable = async (value) => {
@@ -292,6 +321,16 @@ const setActiveNameS = (index) => {
   />
   <ContentWrap>
     <TableTop>
+      <template #left>
+        <ElTabs type="card" v-model="activeName" @tab-click="handleClick">
+          <ElTabPane
+            v-for="item in tabColumns"
+            :key="item.name"
+            :label="item.label"
+            :name="item.name"
+          />
+        </ElTabs>
+      </template>
       <template #right>
         <ElButton type="default">
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />

@@ -19,7 +19,6 @@ export const exportApi = (params: any) => {
   })
 }
 export const stopApi = (params: any) => {
-  console.log(params)
   return request.post({
     url: '/api/v1/ac/gather_task/stop',
     data: { taskID: [params] }

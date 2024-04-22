@@ -100,10 +100,6 @@ const resultColumns: TableColumn[] = [
     width: 100
   },
   {
-    field: 'protocol',
-    label: '协议'
-  },
-  {
     field: 'port',
     label: '端口'
   },
@@ -134,7 +130,8 @@ const resultColumns: TableColumn[] = [
   },
   {
     field: 'ICON',
-    label: 'ICON'
+    label: 'ICON',
+    formatter: (data) => <img class="max-w-18px" src={data.ICON}></img>
   },
   {
     field: 'netStatusCode',

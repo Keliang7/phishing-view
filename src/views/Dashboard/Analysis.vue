@@ -429,7 +429,6 @@ const getTaskMessageData = async () => {
 const extensionData = ref<any>({})
 const getExtensionData = async () => {
   let res = await getExtensionApi(timeObj)
-  console.log('res', res)
   extensionData.value = res.data
 }
 //仿冒检测特征统计
@@ -752,11 +751,11 @@ onMounted(() => {
         </ElRow>
         <div class="flex justify-between items-center">
           <span class="text-14px"
-            >最近一个人工采集完成任务：{{
+            >最近一个人工拓线完成任务：{{
               formatTime(extensionData.lastTime, 'yyyy-mm-dd HH:MM:ss')
             }}</span
           >
-          <ElButton class="mb-4px" type="primary" @click="router.push({ name: 'GatherTask' })"
+          <ElButton class="mb-4px" type="primary" @click="router.push({ name: 'ExtensionTask' })"
             >去添加任务</ElButton
           >
         </div>
@@ -785,7 +784,7 @@ onMounted(() => {
             <div
               class="text-blue select-none cursor-pointer"
               @click="
-                router.push({ name: 'GatherResult', query: { taskID: taskMessageData.taskID } })
+                router.push({ name: 'ExtensionResult', query: { taskID: extensionData.taskID } })
               "
               >查看数据</div
             >

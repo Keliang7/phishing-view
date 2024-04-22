@@ -50,7 +50,7 @@ const columns: TableColumn[] = [
     label: '任务类型'
   },
   {
-    field: 'taskStatus',
+    field: 'distributeType',
     label: '任务状态'
   },
   {

@@ -32,11 +32,10 @@ const isDrawerInfo = ref(false)
 const titleDrawer = ref('')
 // 查看网页信息-弹窗内容
 const bodyInfo = ref([{}])
-// 该字段用来区别不同页面之间的高级搜索需要展示的内容
 const dataArray = ref(['url', 'domain', 'ip', 'status', 'discoveryTime'])
 const tipTitle = ref('系统默认展示当天接入数据，最多可查看7天内数据，超出7天数据不会留存。')
 
-// 定义表格切换器内容
+//tableTop
 const tabColumns = [
   {
     label: t('tableDemo.bw'),
@@ -53,12 +52,15 @@ const tabColumns = [
   {
     label: t('tableDemo.tlsLog'),
     name: 'tlsLog'
+  },
+  {
+    label: t('tableDemo.extensionData'),
+    name: 'extensionData'
   }
 ]
-// 表格切换器-默认高亮的tab选项
+
 const activeName = ref(tabColumns[0].name)
-// 定义分页器展示的内容
-const layout = 'prev, pager, next, sizes,jumper,->, total'
+
 // 定义columns变量，用于存储表格的列配置
 let columns = reactive<TableColumn[]>([])
 // BW监测子系统表头内容
@@ -448,22 +450,115 @@ const TLSColumns: TableColumn[] = [
     }
   }
 ]
-
-// 在页面加载完成后，设置columns的值
+const ExTColumns: TableColumn[] = [
+  {
+    field: 'selection',
+    type: 'selection'
+  },
+  {
+    field: 'dataID',
+    label: t('tableDemo.dataID'),
+    width: 120
+  },
+  {
+    field: 'domain',
+    label: t('tableDemo.domain'),
+    width: 130
+  },
+  {
+    field: 'ipv4',
+    label: t('tableDemo.ipv4'),
+    width: 120
+  },
+  {
+    field: 'ipv6',
+    label: t('tableDemo.ipv6'),
+    width: 180
+  },
+  {
+    field: 'protocolType',
+    label: t('tableDemo.protocolType'),
+    width: 120
+  },
+  {
+    field: 'aimPort',
+    label: t('tableDemo.aimPort'),
+    width: 120
+  },
+  {
+    field: 'discoveryTime',
+    label: `${t('tableDemo.discoveryTime')}（进入系统时间）`,
+    width: 200,
+    formatter: (data) => formatTime(data.discoveryTime, 'yyyy-MM-dd HH:mm:ss')
+  },
+  {
+    field: 'featureMatchState',
+    label: t('tableDemo.featureMatchState'),
+    width: 120
+  },
+  {
+    field: 'state',
+    label: t('tableDemo.state'),
+    width: 120
+  },
+  {
+    field: 'gatherInfo',
+    label: t('tableDemo.gatherInfo'),
+    width: 120
+  },
+  {
+    field: 'certInfo',
+    label: t('tableDemo.certInfo'),
+    width: 120,
+    slots: {
+      default: (data) => {
+        return (
+          <ElButton onClick={() => openDrawerInfo(data)} type="primary" link>
+            查看
+          </ElButton>
+        )
+      }
+    }
+  },
+  {
+    field: 'startTime',
+    label: t('tableDemo.startTime'),
+    width: 180,
+    formatter: (data) => formatTime(data.startTime, 'yyyy-MM-dd HH:mm:ss')
+  },
+  {
+    field: 'endTime',
+    label: t('tableDemo.endTime'),
+    width: 180,
+    formatter: (data) => formatTime(data.endTime, 'yyyy-MM-dd HH:mm:ss')
+  },
+  {
+    field: 'action',
+    label: t('tableDemo.action'),
+    fixed: 'right',
+    headerAlign: 'center',
+    align: 'center',
+    width: 120,
+    slots: {
+      default: (data) => {
+        return (
+          <ElButton type="primary" link onClick={() => gatherFn(data)}>
+            {t('tableDemo.gather')}
+          </ElButton>
+        )
+      }
+    }
+  }
+]
 onMounted(() => {
-  setTimeout(() => {
-    // 设置页面初始表格为BW检测子系统列表
-    setProps({
-      columns: BWColumns
-    })
-  }, 0)
+  setProps({
+    columns: BWColumns
+  })
 })
-
 // 采集任务事件
 const isSelectData = ref(false)
 const selectData = ref()
 const gatherFn = (data: TableSlotDefault) => {
-  console.log('添加任务', data.row)
   isSelectData.value = true
   selectData.value = [data.row]
 }
@@ -479,12 +574,10 @@ const backtrackFn = async (data) => {
   let temp = data.row.dataID
   const res = await backtrackApi({ id: temp })
   backtrackData.value = res
-  console.log(backtrackData.value)
   isBacktrack.value = true
 }
 // 表格查看信息事件
 const openDrawerInfo = async (data: TableSlotDefault) => {
-  console.log('查看网页信息', data.row.dataID)
   let res
   if (activeName.value == 'bw') {
     isDrawerInfo.value = true
@@ -557,6 +650,10 @@ const getTableData = async (params) => {
     setProps({
       columns: TLSColumns
     })
+  } else if (params === 'extensionData') {
+    setProps({
+      columns: ExTColumns
+    })
   }
   loading.value = false
   return {
@@ -608,12 +705,14 @@ watch(isCheckedAll, () => {
 })
 
 // 导出多选数据
-const fieldName = BWColumns.map((i) => {
-  return {
-    label: i.label,
-    value: i.field
-  }
-}).slice(1, -1)
+const fieldName = columns
+  .map((i) => {
+    return {
+      label: i.label,
+      value: i.field
+    }
+  })
+  .slice(1, -1)
 const isDrawerExportFile = ref(false)
 const initExportDate = ref({})
 const getSelections = () => {
@@ -679,7 +778,7 @@ const getSelections = () => {
       :loading="loading"
       :pagination="{
         total: total,
-        layout: layout
+        layout: 'prev, pager, next, sizes,jumper,->, total'
       }"
       @register="tableRegister"
       :reserve-selection="true"

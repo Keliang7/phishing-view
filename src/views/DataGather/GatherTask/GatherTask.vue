@@ -86,6 +86,7 @@ const tableColumns: TableColumn[] = [
   },
   {
     field: 'taskStatus',
+    width: 90,
     label: '任务状态'
   },
   {
