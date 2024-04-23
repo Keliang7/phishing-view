@@ -5,20 +5,21 @@ import { ElButton, ElCheckbox, ElRow, ElCol } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
-import { getListApi, statisticsApi, exportApi } from '@/api/dataManagement/understatement'
+import { getListApi, statisticsApi } from '@/api/dataManagement/understatement'
+import { exportApi } from '@/api/dataManagement'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import DataExtension from '@/components/DataExtension/DataExtension.vue'
 import { useRouter } from 'vue-router'
-const dataArray = ref(['url', 'domain', 'ip', 'status', 'discoveryTime', 'victim', 'victimType'])
 const { tableRegister, tableMethods, tableState } = useTable({
+  immediate: false,
   fetchDataApi: async () => {
-    const { currentPage, pageSize } = tableState
     const res = await getListApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
+      victimType: unref(activeNameS),
       ...searchData.value
     })
     return {
@@ -38,7 +39,14 @@ const columns: TableColumn[] = [
     field: 'dataCount',
     label: '数据来源个数',
     width: 120,
-    align: 'center'
+    align: 'center',
+    formatter(data) {
+      return (
+        <ElButton type="primary" link>
+          {data.dataSources.length}
+        </ElButton>
+      )
+    }
   },
   {
     field: 'misReason',
@@ -203,6 +211,7 @@ const columns: TableColumn[] = [
     field: 'action',
     label: '操作',
     fixed: 'right',
+    width: 200,
     headerAlign: 'center',
     align: 'center',
     slots: {
@@ -221,8 +230,24 @@ const columns: TableColumn[] = [
     }
   }
 ]
-
+//tableSide
+const tabSideColumns = ref()
+const activeNameS = ref()
+const setTableSide = async () => {
+  const res = await statisticsApi()
+  tabSideColumns.value = res.data.list
+  activeNameS.value = tabSideColumns.value[0].name
+  getList()
+}
+const setActiveNameS = (name) => {
+  activeNameS.value = name
+  getList()
+}
+onMounted(async () => {
+  await setTableSide()
+})
 // 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
+const dataArray = ref(['url', 'domain', 'ip', 'status', 'discoveryTime', 'victim', 'misReason'])
 const searchData = ref({})
 const searchTable = async (value) => {
   searchData.value = value
@@ -305,30 +330,13 @@ const isDataExtension = ref(false)
 const extensionFn = () => {
   isDataExtension.value = true
 }
-
-//tableSide
-const tabSideColumns = ref()
-const activeNameS = ref()
-const setTableSide = async () => {
-  const res = await statisticsApi()
-  activeNameS.value = res.data.list[0].name
-  tabSideColumns.value = res.data.list
-}
-const setActiveNameS = (name) => {
-  activeNameS.value = name
-  getList()
-}
-onMounted(async () => {
-  await setTableSide()
-  getList()
-})
 </script>
 <template>
   <AdvancedSearch
     :dataArray="dataArray"
     :total="total"
     :title="'漏报数据管理'"
-    tip-title="温馨提示：系统默认展示当天接入数据，最多可查看5年内数据，超出五年数据不会留存。"
+    tip-title="系统默认展示当天接入数据，最多可查看5年内数据，超出5年数据不会留存。"
     @search-data="searchTable"
   />
   <ContentWrap>

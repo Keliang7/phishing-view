@@ -139,25 +139,25 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
     server: {
       port: 4000,
       proxy: {
-        '/api/v1/sm': {
-          target: 'http://10.10.11.131:32081',
-          changeOrigin: true
-        },
         //数据采集
         '/api/v1/gather': {
           target: 'http://10.10.11.131:32084',
           changeOrigin: true
         },
-        '/api/v1/wl': {
+        '/api/v1/white_list': {
           target: 'http://10.10.11.131:32083',
           changeOrigin: true
         },
-        '/api/v1/sr': {
+        '/api/v1/phishing': {
           target: 'http://10.10.11.131:32085',
           changeOrigin: true
         },
         '/api/v1/data_extension': {
           target: 'http://10.10.11.131:32089',
+          changeOrigin: true
+        },
+        '/api/v1': {
+          target: 'http://10.10.11.131:32080',
           changeOrigin: true
         }
         /* 

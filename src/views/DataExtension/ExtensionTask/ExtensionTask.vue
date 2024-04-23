@@ -16,6 +16,7 @@ import { useRouter } from 'vue-router'
 const { t } = useI18n()
 const dataArray = ref(['taskID', 'taskName', 'createdBy', 'createdTime', 'taskType'])
 const { tableRegister, tableMethods, tableState } = useTable({
+  immediate: false,
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
     const res = await getListApi({
@@ -123,6 +124,7 @@ const columns: TableColumn[] = [
     field: 'action',
     label: t('tableDemo.action'),
     fixed: 'right',
+    width: 200,
     headerAlign: 'center',
     align: 'center',
     slots: {
@@ -141,6 +143,22 @@ const columns: TableColumn[] = [
     }
   }
 ]
+//tableSide
+const tabSideColumns = ref()
+const setTableSide = async () => {
+  const res = await statisticsApi()
+  activeNameS.value = res.data.list[0].name
+  tabSideColumns.value = res.data.list
+}
+const activeNameS = ref()
+const setActiveNameS = (name) => {
+  activeNameS.value = name
+  getList()
+}
+onMounted(async () => {
+  await setTableSide()
+  getList()
+})
 // 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
 const searchData = ref({})
 const searchTable = async (value) => {
@@ -224,23 +242,6 @@ const isDataExtension = ref(false)
 const extensionFn = () => {
   isDataExtension.value = true
 }
-
-//tableSide
-const tabSideColumns = ref()
-const setTableSide = async () => {
-  const res = await statisticsApi()
-  activeNameS.value = res.data.list[0].name
-  tabSideColumns.value = res.data.list
-}
-const activeNameS = ref()
-const setActiveNameS = (name) => {
-  activeNameS.value = name
-  getList()
-}
-onMounted(async () => {
-  await setTableSide()
-  getList()
-})
 </script>
 <template>
   <AdvancedSearch

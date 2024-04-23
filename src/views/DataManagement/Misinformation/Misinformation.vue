@@ -1,11 +1,12 @@
 <script setup lang="tsx">
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
-import { ref, unref, watch } from 'vue'
+import { ref, unref, watch, onMounted } from 'vue'
 import { ElButton, ElCheckbox, ElRow, ElCol, ElTabs, ElTabPane } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
-import { getListApi, exportApi } from '@/api/dataManagement/misinformation'
+import { getListApi, statisticsApi } from '@/api/dataManagement/misinformation'
+import { exportApi } from '@/api/dataManagement'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
@@ -13,13 +14,14 @@ import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import DataExtension from '@/components/DataExtension/DataExtension.vue'
 import { useI18n } from '@/hooks/web/useI18n'
 const { t } = useI18n()
-const dataArray = ref(['url', 'domain', 'ip', 'discoveryTime', 'victim'])
 const { tableRegister, tableMethods, tableState } = useTable({
+  immediate: false,
   fetchDataApi: async () => {
-    const { currentPage, pageSize } = tableState
-    const res = await getListApi({
+    let res = await getListApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
+      tableName: unref(activeNameH),
+      victimType: unref(activeNameS),
       ...searchData.value
     })
     return {
@@ -29,7 +31,7 @@ const { tableRegister, tableMethods, tableState } = useTable({
   }
 })
 const { loading, total, dataList, currentPage, pageSize } = tableState
-const { getList, getElTableExpose } = tableMethods
+const { getElTableExpose, getList } = tableMethods
 const columns: TableColumn[] = [
   {
     field: 'selection',
@@ -206,35 +208,50 @@ const columns: TableColumn[] = [
     formatter: (data) => formatTime(data.fxczGetTime, 'yyyy-MM-dd HH:mm:ss')
   }
 ]
-const tabColumns = [
+const tabHeadColumns = [
   {
     label: t('tableDemo.bw'),
     name: 'bw'
   },
   {
     label: t('tableDemo.domainMonitor'),
-    name: 'domainMonitor'
+    name: 'domain'
   },
   {
     label: t('tableDemo.urlLog'),
-    name: 'urlLog'
+    name: 'URL'
   },
   {
     label: t('tableDemo.tlsLog'),
-    name: 'tlsLog'
+    name: 'TLS'
   },
   {
     label: t('tableDemo.extensionData'),
-    name: 'extensionData'
+    name: 'EXT'
   }
 ]
-const handleClick = async () => {
-  currentPage.value = 1
-  pageSize.value = 10
-  // await getTableData(tab.props.name)
+const activeNameH = ref(tabHeadColumns[0].name)
+const setActiveNameH = async (name) => {
+  activeNameH.value = name
+  await setTableSide(name)
 }
-const activeName = ref(tabColumns[0].name)
-// 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
+const tabSideColumns = ref()
+const activeNameS = ref()
+const setTableSide = async (tableName) => {
+  const res = await statisticsApi({ tableName })
+  tabSideColumns.value = res.data.list
+  activeNameS.value = tabSideColumns.value[0].name
+  getList()
+}
+const setActiveNameS = (name) => {
+  activeNameS.value = name
+  getList()
+}
+onMounted(async () => {
+  await setTableSide(activeNameH.value)
+})
+// 高级搜索
+const dataArray = ref(['url', 'domain', 'ip', 'discoveryTime', 'victim'])
 const searchData = ref({})
 const searchTable = async (value) => {
   searchData.value = value
@@ -303,13 +320,6 @@ const isDataExtension = ref(false)
 const extensionFn = () => {
   isDataExtension.value = true
 }
-
-//tableSide
-const tabSideColumns = ref()
-const activeNameS = ref('1')
-const setActiveNameS = (index) => {
-  activeNameS.value = index
-}
 </script>
 <template>
   <AdvancedSearch
@@ -322,12 +332,12 @@ const setActiveNameS = (index) => {
   <ContentWrap>
     <TableTop>
       <template #left>
-        <ElTabs type="card" v-model="activeName" @tab-click="handleClick">
+        <ElTabs v-model="activeNameH" class="demo-tabs" @tab-change="setActiveNameH">
           <ElTabPane
-            v-for="item in tabColumns"
-            :key="item.name"
-            :label="item.label"
-            :name="item.name"
+            v-for="tabHead in tabHeadColumns"
+            :key="tabHead.name"
+            :label="tabHead.label"
+            :name="tabHead.name"
           />
         </ElTabs>
       </template>
