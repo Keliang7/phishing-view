@@ -1,10 +1,8 @@
 import request from '@/axios'
-// 获取疑似仿冒数据列表接口
-export const getSuspectCounterfeitApi = (params: any) => {
+export const getListApi = (params: any) => {
   return request.get({ url: '/api/v1/sm/suspectCounterfeit/bw', params })
 }
-// 获取受害方数据统计(左侧边栏)
-export const getInjuredPartyApi = (params: any) => {
+export const statisticsApi = (params: any) => {
   return request.get({ url: '/api/v1/sm/suspectCounterfeit/victimType/statistics', params })
 }
 export const exportApi = (params: any) => {

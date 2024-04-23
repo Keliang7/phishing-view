@@ -3,9 +3,10 @@ import request from '@/axios'
 export const getListApi = (params: any) => {
   return request.get({ url: '/api/v1/sm/misinformation/bw', params })
 }
-export const statisticsApi = () => {
+export const statisticsApi = (params: any) => {
   return request.get({
-    url: '/api/v1/sm/misinformation/statistics/bw'
+    url: '/api/v1/sm/misinformation/statistics/bw',
+    params
   })
 }
 export const backtrackApi = (params: any) => {

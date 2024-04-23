@@ -16,6 +16,7 @@ import { useRouter } from 'vue-router'
 const { t } = useI18n()
 const dataArray = ref(['taskID', 'taskName', 'createdBy', 'createdTime', 'taskType'])
 const { tableRegister, tableMethods, tableState } = useTable({
+  immediate: false,
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
     const res = await getListApi({

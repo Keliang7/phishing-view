@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref, unref, onMounted, watch, h } from 'vue'
+import { ref, unref, watch, h, onMounted } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import {
@@ -18,14 +18,13 @@ import { Icon } from '@/components/Icon'
 import { FormSchema } from '@/components/Form'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
 import {
-  getSuspectCounterfeitApi,
-  getInjuredPartyApi,
+  getListApi,
+  statisticsApi,
   backtrackApi,
   exportApi
 } from '@/api/dataManagement/counterfeitManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
-import { TabSideColumns } from '../types/index'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
 import DrawerOperate from '@/components/DrawerOperate/DrawerOperate.vue'
 import DataExtension from '@/components/DataExtension/DataExtension.vue'
@@ -36,63 +35,32 @@ import router from '@/router'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import Backtrack from '@/components/Backtrack/Backtrack.vue'
 import SelectData from '@/components/SelectData/SelectData.vue'
-// 使用useI18n钩子函数获取国际化相关数据和方法
 const { t } = useI18n()
-// 使用useTable钩子函数获取table相关数据和方法
 const { tableRegister, tableMethods, tableState } = useTable({
-  // fetchDataApi方法用于异步获取表格数据
+  immediate: false,
   fetchDataApi: async () => {
-    let res = await getTableData([activeNameH.value, activeNameS.value])
+    let res = await getListApi({
+      pageIndex: unref(currentPage),
+      pageSize: unref(pageSize),
+      tableName: unref(activeNameH),
+      victimType: unref(activeNameS),
+      ...searchData.value
+    })
     return {
       list: res.list,
       total: res.total
     }
   }
 })
-// 获取tableState中的数据和方法
-let { loading, total, dataList, currentPage, pageSize } = tableState
-const { setProps, getElTableExpose } = tableMethods
-// 定义表格切换器内容
-const tabHeadColumns = [
-  {
-    label: t('tableDemo.bw'),
-    name: 'bw'
-  },
-  {
-    label: t('tableDemo.domainMonitor'),
-    name: 'domainMonitor'
-  },
-  {
-    label: t('tableDemo.urlLog'),
-    name: 'urlLog'
-  },
-  {
-    label: t('tableDemo.tlsLog'),
-    name: 'tlsLog'
-  },
-  {
-    label: t('tableDemo.extensionData'),
-    name: 'extensionData'
-  }
-]
-const tabSideColumns = ref<TabSideColumns[]>([])
-const activeNameH = ref(tabHeadColumns[0].name)
-const activeNameS = ref('1')
-const setActiveNameS = (index) => {
-  activeNameS.value = index
-}
-// 高级搜索的数据
-const searchData = ref({})
-// 定义分页器展示的内容
-const layout = 'prev, pager, next, sizes,jumper,->, total'
-// 定义columns变量，用于存储表格的列配置
+const { loading, total, dataList, currentPage, pageSize } = tableState
+const { getElTableExpose, getList } = tableMethods
 const Columns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection'
   },
   {
-    field: 'dataSourcesNum',
+    field: 'count',
     label: t('tableDemo.dataSourcesNum'),
     align: 'center',
     width: 120,
@@ -204,11 +172,6 @@ const Columns: TableColumn[] = [
     width: 130
   },
   {
-    field: 'phone',
-    label: t('tableDemo.phone'),
-    width: 130
-  },
-  {
     field: 'domainEmail',
     label: t('tableDemo.domainEmail'),
     width: 130
@@ -293,9 +256,56 @@ const Columns: TableColumn[] = [
     }
   }
 ]
-const checkedAll = ref(false)
-const dataArray = ref(['url', 'domain', 'ip', 'status', 'victim', 'victimType', 'discoveryTime'])
-
+//tableTop,tableSide逻辑
+const tabHeadColumns = [
+  {
+    label: t('tableDemo.bw'),
+    name: 'bw'
+  },
+  {
+    label: t('tableDemo.domainMonitor'),
+    name: 'domain'
+  },
+  {
+    label: t('tableDemo.urlLog'),
+    name: 'URL'
+  },
+  {
+    label: t('tableDemo.tlsLog'),
+    name: 'TLS'
+  },
+  {
+    label: t('tableDemo.extensionData'),
+    name: 'EXT'
+  }
+]
+const activeNameH = ref(tabHeadColumns[0].name)
+const setActiveNameH = async (name) => {
+  activeNameH.value = name
+  await setTableSide(name)
+}
+const tabSideColumns = ref()
+const activeNameS = ref()
+const setTableSide = async (tableName) => {
+  const res = await statisticsApi({ tableName })
+  tabSideColumns.value = res.data.list
+  activeNameS.value = tabSideColumns.value[0].name
+  getList()
+}
+const setActiveNameS = (name) => {
+  activeNameS.value = name
+  getList()
+}
+onMounted(async () => {
+  await setTableSide(activeNameH)
+})
+//搜索逻辑
+const dataArray = ref(['url', 'domain', 'ip', 'extstatus', 'victim', 'discoveryTime'])
+const searchData = ref({})
+const searchTable = async (value) => {
+  searchData.value = value
+  await getList()
+}
 // 右侧弹窗信息
 const isDrawerInfo = ref(false)
 const isDrawerTimeLine = ref(false)
@@ -305,15 +315,8 @@ const titleDrawer = ref('')
 const bodyInfo = ref([{}])
 // 查看回溯信息-弹窗内容
 const dataSourceInfo = ref([{}])
-
-// 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
-const searchTable = async (value) => {
-  searchData.value = value
-  await getTableData([activeNameH.value, activeNameS.value])
-}
 // 任务弹窗
 const isDrawerOperate = ref(false)
-
 // 任务弹窗表单数据
 const drawerData = ref<FormSchema[]>()
 // 映射表
@@ -323,21 +326,7 @@ const sourceMap = {
   urlLog: 'URL日志系统 获取',
   tlsLog: 'TLS日志系统 获取'
 }
-// 在页面加载完成后，设置columns的值
-onMounted(async () => {
-  await getInjuredParty(activeNameH.value)
-  setTimeout(() => {
-    setProps({
-      columns: Columns
-    })
-  }, 0)
-})
-// 获取侧边栏数据
-const getInjuredParty = async (params: any) => {
-  const res = await getInjuredPartyApi(params)
-  tabSideColumns.value = res.data.list
-  activeNameS.value = tabSideColumns.value[0].name
-}
+
 // 定义表格内操作函数，用于处理点击表格列时的操作
 const addCounterfeitFn = (data: TableSlotDefault) => {
   console.log(data)
@@ -414,37 +403,7 @@ const openDrawerInfo = async (data: TableSlotDefault) => {
     ]
   }
 }
-// 判断当前要展示的数据
-const getTableData = async (params) => {
-  loading.value = true
-  dataArray.value = ['url', 'domain', 'ip', 'expandStatus', 'victim', 'victimType', 'discoveryTime']
-  const res = await getSuspectCounterfeitApi({
-    pageIndex: unref(currentPage),
-    pageSize: unref(pageSize),
-    originType: params[0],
-    victimType: params[1],
-    ...searchData.value
-  })
-  dataList.value = res.data.list
-  total.value = res.data.total
-  loading.value = false
-  return {
-    list: dataList.value,
-    total: total.value
-  }
-}
-// 【tab切换】在这里用监听而不用点击事件，是因为v-model有异步延迟，点击切换，获取到的activeName显示的是上一个
-watch(
-  () => [activeNameH.value, activeNameS.value],
-  async (newValue) => {
-    currentPage.value = 1
-    pageSize.value = 10
-    await getTableData(newValue)
-  },
-  {
-    immediate: true
-  }
-)
+
 // 选择全部
 const isCheckedAll = ref(false)
 const selectedData = ref<TableColumn[]>([])
@@ -513,7 +472,7 @@ const getSelections = () => {
   <ContentWrap class="table-box">
     <TableTop>
       <template #left>
-        <ElTabs v-model="activeNameH" class="demo-tabs">
+        <ElTabs v-model="activeNameH" class="demo-tabs" @tab-change="setActiveNameH">
           <ElTabPane
             v-for="tabHead in tabHeadColumns"
             :key="tabHead.name"
@@ -524,7 +483,7 @@ const getSelections = () => {
       </template>
       <template #right>
         <ElButton type="default" @click="toggleSelection()">
-          <ElCheckbox v-model="checkedAll" label="选择全部" size="large" />
+          <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
         <ElDropdown class="mx-12px">
           <ElButton type="default"> 批量设置 </ElButton>
@@ -559,7 +518,7 @@ const getSelections = () => {
           :image-preview="['webScreenshot']"
           :pagination="{
             total: total,
-            layout: layout
+            layout: 'prev, pager, next, sizes,jumper,->, total'
           }"
           @register="tableRegister"
           @selection-change="handleSelectionChange"
