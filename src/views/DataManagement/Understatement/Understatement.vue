@@ -5,7 +5,8 @@ import { ElButton, ElCheckbox, ElRow, ElCol } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
-import { getListApi, statisticsApi, exportApi } from '@/api/dataManagement/understatement'
+import { getListApi, statisticsApi } from '@/api/dataManagement/understatement'
+import { exportApi } from '@/api/dataManagement'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
@@ -38,7 +39,14 @@ const columns: TableColumn[] = [
     field: 'dataCount',
     label: '数据来源个数',
     width: 120,
-    align: 'center'
+    align: 'center',
+    formatter(data) {
+      return (
+        <ElButton type="primary" link>
+          {data.dataSources.length}
+        </ElButton>
+      )
+    }
   },
   {
     field: 'misReason',
@@ -203,6 +211,7 @@ const columns: TableColumn[] = [
     field: 'action',
     label: '操作',
     fixed: 'right',
+    width: 200,
     headerAlign: 'center',
     align: 'center',
     slots: {

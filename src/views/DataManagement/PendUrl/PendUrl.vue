@@ -10,10 +10,9 @@ import {
   getURLListApi,
   getTLSListApi,
   getExtListApi,
-  exportApi,
-  getBwDetailApi,
-  backtrackApi
+  getBwDetailApi
 } from '@/api/dataManagement/pendUrl'
+import { exportApi, backtrackApi } from '@/api/dataManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'

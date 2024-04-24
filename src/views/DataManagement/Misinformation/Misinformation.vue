@@ -5,7 +5,8 @@ import { ElButton, ElCheckbox, ElRow, ElCol, ElTabs, ElTabPane } from 'element-p
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
-import { getListApi, exportApi, statisticsApi } from '@/api/dataManagement/misinformation'
+import { getListApi, statisticsApi } from '@/api/dataManagement/misinformation'
+import { exportApi } from '@/api/dataManagement'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
@@ -24,8 +25,8 @@ const { tableRegister, tableMethods, tableState } = useTable({
       ...searchData.value
     })
     return {
-      list: res.list,
-      total: res.total
+      list: res.data.list,
+      total: res.data.total
     }
   }
 })
@@ -247,7 +248,7 @@ const setActiveNameS = (name) => {
   getList()
 }
 onMounted(async () => {
-  await setTableSide(activeNameH)
+  await setTableSide(activeNameH.value)
 })
 // 高级搜索
 const dataArray = ref(['url', 'domain', 'ip', 'discoveryTime', 'victim'])

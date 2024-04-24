@@ -17,12 +17,8 @@ import {
 import { Icon } from '@/components/Icon'
 import { FormSchema } from '@/components/Form'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import {
-  getListApi,
-  statisticsApi,
-  backtrackApi,
-  exportApi
-} from '@/api/dataManagement/counterfeitManagement'
+import { getListApi, statisticsApi } from '@/api/dataManagement/counterfeitManagement'
+import { backtrackApi, exportApi } from '@/api/dataManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
@@ -47,8 +43,8 @@ const { tableRegister, tableMethods, tableState } = useTable({
       ...searchData.value
     })
     return {
-      list: res.list,
-      total: res.total
+      list: res.data.list,
+      total: res.data.total
     }
   }
 })
@@ -281,11 +277,13 @@ const tabHeadColumns = [
 ]
 const activeNameH = ref(tabHeadColumns[0].name)
 const setActiveNameH = async (name) => {
+  console.log('这里的name', name)
   activeNameH.value = name
   await setTableSide(name)
 }
 const tabSideColumns = ref()
 const activeNameS = ref()
+
 const setTableSide = async (tableName) => {
   const res = await statisticsApi({ tableName })
   tabSideColumns.value = res.data.list
@@ -297,7 +295,7 @@ const setActiveNameS = (name) => {
   getList()
 }
 onMounted(async () => {
-  await setTableSide(activeNameH)
+  await setTableSide(activeNameH.value)
 })
 //搜索逻辑
 const dataArray = ref(['url', 'domain', 'ip', 'extstatus', 'victim', 'discoveryTime'])
