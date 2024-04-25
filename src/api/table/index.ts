@@ -26,7 +26,7 @@ export const delTableListApi = (ids: string[] | number[]): Promise<IResponse> =>
 }
 // 获取系统全局静态变量
 export const getSystemConstantApi = () => {
-  return request.get({ url: '/api/v1/sm/system/constant' })
+  return request.get({ url: '/api/v1/system/constant' })
 }
 // 获取BW检测子系统列表接口
 export const getUrlBWListApi = (params: any) => {

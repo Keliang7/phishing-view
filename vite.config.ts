@@ -13,6 +13,7 @@ import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import { createStyleImportPlugin, ElementPlusResolve } from 'vite-plugin-style-import'
 import UnoCSS from 'unocss/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
+import Icon from 'vite-plugin-iconify-vue-offline'
 
 const root = process.cwd()
 
@@ -31,6 +32,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
   return {
     base: env.VITE_BASE_PATH,
     plugins: [
+      Icon(),
       Vue({
         script: {
           // 开启defineModel
@@ -137,35 +139,35 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
     server: {
       port: 4000,
       proxy: {
-        '/api/v1/sm': {
-          target: 'http://172.16.20.30:32080',
+        //数据采集
+        '/api/v1/gather': {
+          target: 'http://10.10.11.131:32084',
           changeOrigin: true
         },
-        '/api/v1/da': {
-          target: 'http://172.16.20.30:32081',
+        '/api/v1/white_list': {
+          target: 'http://10.10.11.131:32083',
           changeOrigin: true
         },
-        '/api/v1/wl': {
-          target: 'http://172.16.20.30:32082',
+        '/api/v1/phishing': {
+          target: 'http://10.10.11.131:32085',
           changeOrigin: true
         },
-        '/api/v1/ac': {
-          target: 'http://172.16.20.30:32083',
+        '/api/v1/data_extension': {
+          target: 'http://10.10.11.131:32089',
           changeOrigin: true
         },
-        '/api/v1/sr': {
-          target: 'http://172.16.20.30:32084',
-          changeOrigin: true
-        },
-        '/api/v1/dataGather': {
-          target: 'http://172.16.20.30:32083',
-          changeOrigin: true
-        },
-        '/api/v3': {
-          target: 'http://172.16.20.30:32084',
-          // target: 'http://172.16.20.84:32080',
+        '/api/v1': {
+          target: 'http://10.10.11.131:32080',
           changeOrigin: true
         }
+        /* 
+          网关转发服务:32080
+          业务系统管理服务	   /eyfm/service/sys_mgr                32081
+          白名单过滤检测服务	  /eyfm/service/white_list_filter      32083
+          数据采集服务         /eyfm/service/asset_collection       32084
+          仿冒网站特征检测服务  /eyfm/service/sample_ruler           32085
+          数据源接入服务	     /eyfm/service/asset_collection       32082
+        */
       },
       hmr: {
         overlay: false

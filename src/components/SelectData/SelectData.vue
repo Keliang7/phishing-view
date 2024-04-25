@@ -77,7 +77,7 @@ const schema = ref<FormSchema[]>([
                   rows: 4
                 }
               },
-              -1
+              -2
             )
           }
           if (v == 'webAsset') {
@@ -196,18 +196,7 @@ const open = () => {
                       rows: 8
                     },
                     formItemProps: {
-                      rules: [
-                        required()
-                        // {
-                        //   validator: (_, val, callback) => {
-                        //     if (/[\\n\\r]/gi.test(val)) {
-                        //       callback(new Error('不能输入"\\n\\r"'))
-                        //     } else {
-                        //       callback()
-                        //     }
-                        //   }
-                        // }
-                      ]
+                      rules: [required()]
                     }
                   },
                   3
@@ -292,9 +281,10 @@ const confirmClick = async () => {
     if (isValid) {
       if (formData.exploreAimFile) {
         formData.exploreAimFile = formData.exploreAimFile[0].raw
+      } else {
+        delete formData.exploreAimFile
       }
       const res = await addApi(formData)
-      console.log(formData)
       if (res.code == 0) {
         close()
         ElMessage.success('添加任务成功')

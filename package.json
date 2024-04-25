@@ -51,6 +51,7 @@
     "qrcode": "^1.5.3",
     "qs": "^6.11.2",
     "url": "^0.11.3",
+    "vite-plugin-iconify-vue-offline": "^0.0.5",
     "vue": "3.4.7",
     "vue-draggable-plus": "^0.3.4",
     "vue-i18n": "9.9.0",

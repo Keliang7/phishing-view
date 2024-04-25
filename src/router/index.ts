@@ -21,7 +21,7 @@ export const constantRouterMap: AppRouteRecordRaw[] = [
         component: () => import('@/views/Dashboard/Analysis.vue'),
         meta: {
           title: t('router.dashboard'),
-          icon: 'ant-design:dashboard-filled',
+          icon: 'svg-icon:board',
           affix: true
         }
       }

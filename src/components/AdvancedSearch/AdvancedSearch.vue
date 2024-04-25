@@ -65,8 +65,8 @@ let schema = ref<FormSchema[]>([
     }
   },
   {
-    field: 'status',
-    label: '状态：',
+    field: 'collectStatus',
+    label: '采集状态：',
     component: 'Select',
     componentProps: {
       options: [
@@ -89,14 +89,58 @@ let schema = ref<FormSchema[]>([
     }
   },
   {
-    field: 'status',
+    field: 'extstatus',
     label: '拓线状态：',
     component: 'Select',
     componentProps: {
       options: [
         {
-          value: '未采集到',
-          label: '未采集到'
+          value: '拓线完成',
+          label: '拓线完成'
+        },
+        {
+          value: '拓线中',
+          label: '拓线中'
+        },
+        {
+          value: '拓线失败',
+          label: '拓线失败'
+        }
+      ]
+    },
+    colProps: {
+      span: 6
+    }
+  },
+  {
+    field: 'status',
+    label: '状态：',
+    component: 'Select',
+    componentProps: {
+      options: [
+        {
+          value: '拓线中',
+          label: '拓线中'
+        },
+        {
+          value: '拓线完成',
+          label: '拓线完成'
+        },
+        {
+          value: '拓线失败',
+          label: '拓线失败'
+        },
+        {
+          value: '更新中',
+          label: '更新中'
+        },
+        {
+          value: '更新完成',
+          label: '更新完成'
+        },
+        {
+          value: '更新失败',
+          label: '更新失败'
         },
         {
           value: '采集中',
@@ -105,6 +149,10 @@ let schema = ref<FormSchema[]>([
         {
           value: '采集完成',
           label: '采集完成'
+        },
+        {
+          value: '采集失败',
+          label: '采集失败'
         }
       ]
     },
@@ -129,7 +177,7 @@ let schema = ref<FormSchema[]>([
     label: `${t('formDemo.victim')}：`,
     component: 'Input',
     componentProps: {
-      placeholder: '请输入受害者'
+      placeholder: '请输入受害方'
     },
     colProps: {
       span: 6
@@ -239,17 +287,17 @@ let schema = ref<FormSchema[]>([
   {
     field: 'taskType',
     label: '任务类型',
-    component: 'Input',
+    component: 'Select',
     componentProps: {
       placeholder: '请选择任务类型',
-      option: [
+      options: [
         {
           label: '系统自动拓线',
-          value: 'bySystem'
+          value: '系统自动拓线'
         },
         {
           label: '人工触发',
-          value: 'byHuman'
+          value: '人工触发'
         }
       ]
     },
@@ -507,7 +555,7 @@ let schema = ref<FormSchema[]>([
   },
   {
     field: 'checkStatus',
-    label: '复核状态',
+    label: '复核状态：',
     component: 'Select',
     componentProps: {
       options: [

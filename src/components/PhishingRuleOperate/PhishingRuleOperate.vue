@@ -42,7 +42,8 @@ const open = () => {
       victim: props.data?.victim,
       victimType: props.data?.victimType,
       featureContent: props.data?.featureContent,
-      reviewer: props.data?.reviewer
+      reviewer: props.data?.reviewer,
+      intent: props.data?.intent
     })
     addSchema(
       {
@@ -76,7 +77,8 @@ const open = () => {
       victim: props.data?.victim,
       victimType: props.data?.victimType,
       featureContent: props.data?.featureContent,
-      reviewer: props.data?.reviewer
+      reviewer: props.data?.reviewer,
+      intent: props.data?.intent
     })
     addSchema(
       {
@@ -191,6 +193,18 @@ const schema = reactive<FormSchema[]>([
         '支持多种关键特征的组合：title、body、FID、ICON_hash、domain、SDK等，支持&、||的关联关系。'
     }
   },
+  {
+    field: 'intent',
+    label: '意图',
+    component: 'Input',
+    formItemProps: {
+      rules: [required()]
+    },
+    componentProps: {
+      placeholder: '请输入受害方'
+    }
+  },
+
   {
     field: 'reviewer',
     label: '复核人员',

@@ -17,9 +17,6 @@ const props = defineProps({
   },
   data: {
     type: Object
-  },
-  isDo: {
-    type: Boolean
   }
 })
 
@@ -233,9 +230,9 @@ const confirmClick = async () => {
   >
     <Form :isCol="false" :schema="schema" @register="formRegister" />
     <template #footer>
-      <div style="margin-right: 20px">
-        <BaseButton type="default" v-show="isDo" @click="resetClick">重 置</BaseButton>
-        <BaseButton type="primary" v-show="isDo" @click="confirmClick">确 定</BaseButton>
+      <div style="margin-right: 20px" v-show="title === '复核规则复核'">
+        <BaseButton type="default" @click="resetClick">重 置</BaseButton>
+        <BaseButton type="primary" @click="confirmClick">确 定</BaseButton>
       </div>
     </template>
   </ElDrawer>

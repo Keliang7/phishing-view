@@ -6,6 +6,9 @@ import '@/plugins/unocss'
 // 导入全局的svg图标
 import '@/plugins/svgIcon'
 
+//解决纯内网模版引用Icon的问题
+import 'virtual:icon'
+
 // 初始化多语言
 import { setupI18n } from '@/plugins/vueI18n'
 

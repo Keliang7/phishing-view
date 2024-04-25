@@ -12,7 +12,7 @@ const adminList = [
     name: 'DataManagement',
     meta: {
       title: 'router.data_management',
-      icon: 'bx:bxs-component',
+      icon: 'svg-icon:home',
       alwaysShow: true
     },
     children: [
@@ -24,14 +24,6 @@ const adminList = [
           title: 'router.pend_url'
         }
       },
-      // {
-      //   path: 'suspect_counterfeit',
-      //   component: 'views/DataManagement/SuspectCounterfeit/SuspectCounterfeit',
-      //   name: 'SuspectCounterfeit',
-      //   meta: {
-      //     title: 'router.suspect_counterfeit'
-      //   }
-      // },
       {
         path: 'counterfeit_management',
         component: 'views/DataManagement/CounterfeitManagement/CounterfeitManagement',
@@ -65,7 +57,7 @@ const adminList = [
     name: 'DataExtension',
     meta: {
       title: 'router.data_extension',
-      icon: 'ant-design:node-index-outlined',
+      icon: 'svg-icon:link',
       alwaysShow: true
     },
     children: [
@@ -94,7 +86,7 @@ const adminList = [
     name: 'DataGather',
     meta: {
       title: 'router.data_gather',
-      icon: 'ant-design:hdd-filled',
+      icon: 'svg-icon:data',
       alwaysShow: true
     },
     children: [
@@ -116,64 +108,64 @@ const adminList = [
       }
     ]
   },
-  {
-    path: '/user_management',
-    component: '#',
-    redirect: '/user_management/role_management',
-    name: 'UserManagement',
-    meta: {
-      title: 'router.user_management',
-      icon: 'ep:avatar',
-      alwaysShow: true
-    },
-    children: [
-      {
-        path: 'userInfo_management',
-        component: 'views/UserManagement/UserInfoManagement/UserInfoManagement',
-        name: 'UserInfoManagement',
-        meta: {
-          title: 'router.role_management'
-        }
-      },
-      {
-        path: 'role_management',
-        component: 'views/UserManagement/RoleManagement/RoleManagement',
-        name: 'RoleManagement',
-        meta: {
-          title: 'router.role_management'
-        }
-      }
-    ]
-  },
-  {
-    path: '/log_management',
-    component: '#',
-    redirect: '/log_management/login_log',
-    name: 'LogManagement',
-    meta: {
-      title: 'router.log_management',
-      icon: 'ant-design:snippets-filled',
-      alwaysShow: true
-    },
-    children: [
-      {
-        path: 'login_log',
-        component: 'views/LogManagement/LoginLog/LoginLog',
-        name: 'LoginLog',
-        meta: {
-          title: 'router.login_log'
-        }
-      },
-      {
-        path: 'operation_log',
-        component: 'views/LogManagement/OperationLog/OperationLog',
-        name: 'OperationLog',
-        meta: {
-          title: 'router.operation_log'
-        }
-      }
-    ]
-  },
+  // {
+  //   path: '/user_management',
+  //   component: '#',
+  //   redirect: '/user_management/role_management',
+  //   name: 'UserManagement',
+  //   meta: {
+  //     title: 'router.user_management',
+  //     icon: 'svg-icon:user',
+  //     alwaysShow: true
+  //   },
+  //   children: [
+  //     {
+  //       path: 'userInfo_management',
+  //       component: 'views/UserManagement/UserInfoManagement/UserInfoManagement',
+  //       name: 'UserInfoManagement',
+  //       meta: {
+  //         title: 'router.role_management'
+  //       }
+  //     },
+  //     {
+  //       path: 'role_management',
+  //       component: 'views/UserManagement/RoleManagement/RoleManagement',
+  //       name: 'RoleManagement',
+  //       meta: {
+  //         title: 'router.role_management'
+  //       }
+  //     }
+  //   ]
+  // },
+  // {
+  //   path: '/log_management',
+  //   component: '#',
+  //   redirect: '/log_management/login_log',
+  //   name: 'LogManagement',
+  //   meta: {
+  //     title: 'router.log_management',
+  //     icon: 'svg-icon:log',
+  //     alwaysShow: true
+  //   },
+  //   children: [
+  //     {
+  //       path: 'login_log',
+  //       component: 'views/LogManagement/LoginLog/LoginLog',
+  //       name: 'LoginLog',
+  //       meta: {
+  //         title: 'router.login_log'
+  //       }
+  //     },
+  //     {
+  //       path: 'operation_log',
+  //       component: 'views/LogManagement/OperationLog/OperationLog',
+  //       name: 'OperationLog',
+  //       meta: {
+  //         title: 'router.operation_log'
+  //       }
+  //     }
+  //   ]
+  // },
   {
     path: '/system_management',
     component: '#',
@@ -181,7 +173,7 @@ const adminList = [
     name: 'SystemManagement',
     meta: {
       title: 'router.system_management',
-      icon: 'ep:setting',
+      icon: 'svg-icon:setting',
       alwaysShow: true
     },
     children: [

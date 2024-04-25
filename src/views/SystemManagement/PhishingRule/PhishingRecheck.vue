@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref, reactive, unref, onMounted } from 'vue'
+import { ref, unref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElButton, ElTabs, ElTabPane } from 'element-plus'
@@ -21,8 +21,136 @@ const { tableRegister, tableMethods, tableState } = useTable({
   }
 })
 let { loading, total, dataList, currentPage, pageSize } = tableState
-const { setProps, getList } = tableMethods
+const { getList, addColumn, delColumn } = tableMethods
 // 高级搜索的数据
+const searchData = ref({})
+const searchTable = async (value) => {
+  searchData.value = value
+  await getTableData(activeName.value)
+}
+// 定义分页器展示的内容
+const layout = 'prev, pager, next, sizes,jumper,->, total'
+
+const columns: TableColumn[] = [
+  {
+    field: 'selection',
+    type: 'selection'
+  },
+  {
+    field: 'featureID',
+    label: '特征ID'
+  },
+  {
+    field: 'featureName',
+    width: 120,
+    label: '特征名称'
+  },
+  {
+    field: 'featureContent',
+    width: 200,
+    label: '特征内容'
+  },
+  {
+    field: 'victim',
+    width: 180,
+    label: '受害方'
+  },
+  {
+    field: 'victimType',
+    width: 120,
+    label: '受害方分类'
+  },
+  {
+    field: 'addType',
+    width: 90,
+    label: '添加方式'
+  },
+  {
+    field: 'operationType',
+    label: '操作类型',
+    width: 90,
+    formatter: (data) => {
+      if (data.operationType === 'Add') return '添加'
+      if (data.operationType === 'Edit') return '编辑'
+      if (data.operationType === 'Delete') return '删除'
+    }
+  },
+  {
+    field: 'createdBy',
+    label: '创建人'
+  },
+  {
+    field: 'createdTime',
+    label: '提交时间',
+    width: 180,
+    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
+  },
+  {
+    field: 'action',
+    label: t('tableDemo.action'),
+    fixed: 'right',
+    headerAlign: 'center',
+    align: 'center',
+    width: 120,
+    slots: {
+      default: (data) => {
+        if (activeName.value === '未复核') {
+          return (
+            <div>
+              <ElButton type="primary" link onClick={() => recheckOrViewFn(data, '复核规则复核')}>
+                复核
+              </ElButton>
+            </div>
+          )
+        } else {
+          return (
+            <div>
+              <ElButton type="primary" link onClick={() => recheckOrViewFn(data, '查看规则复核')}>
+                查看
+              </ElButton>
+            </div>
+          )
+        }
+      }
+    }
+  }
+]
+//更改表头
+const editTabelColumn = (type) => {
+  if (type === '未复核') {
+    delColumn('reviewer')
+    delColumn('reviewTime')
+  } else {
+    addColumn({
+      field: 'reviewer',
+      label: '复核人'
+    })
+    addColumn({
+      field: 'reviewTime',
+      width: 180,
+      label: '复核时间',
+      formatter: (data) => formatTime(data.reviewTime, 'yyyy-MM-dd HH:mm:ss')
+    })
+  }
+}
+//获取数据
+const getTableData = async (params) => {
+  loading.value = true
+  const res = await getListApi({
+    pageIndex: unref(currentPage),
+    pageSize: unref(pageSize),
+    checkStatus: params,
+    ...searchData.value
+  })
+  dataList.value = res.data.list
+  total.value = res.data.total
+  loading.value = false
+  return {
+    list: dataList.value,
+    total: total.value
+  }
+}
+//tableTop
 const tabHeadColumns = [
   {
     label: '未复核',
@@ -34,226 +162,20 @@ const tabHeadColumns = [
   }
 ]
 const activeName = ref(tabHeadColumns[0].name)
-const searchData = ref({})
-const searchTable = async (value) => {
-  searchData.value = value
-  await getTableData(activeName.value)
-}
-// 定义分页器展示的内容
-const layout = 'prev, pager, next, sizes,jumper,->, total'
-
-let columns = reactive<TableColumn[]>([])
-const unRecheck: TableColumn[] = [
-  {
-    field: 'selection',
-    type: 'selection'
-  },
-  {
-    field: 'featureID',
-    label: '特征ID'
-  },
-  {
-    field: 'featureName',
-    label: '特征名称'
-  },
-  {
-    field: 'featureContent',
-    label: '特征内容'
-  },
-  {
-    field: 'victim',
-    label: '受害方'
-  },
-  {
-    field: 'victimType',
-    label: '受害方分类'
-  },
-  {
-    field: 'addType',
-    label: '添加方式'
-  },
-  {
-    field: 'operationType',
-    label: '操作类型',
-    formatter: (data) => {
-      if (data.operationType === 'Add') return '添加'
-      if (data.operationType === 'Edit') return '编辑'
-      if (data.operationType === 'Delete') return '删除'
-    }
-  },
-  {
-    field: 'createdBy',
-    label: '提交人'
-  },
-  {
-    field: 'createdTime',
-    label: '提交时间',
-    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
-  },
-  {
-    field: 'action',
-    label: t('tableDemo.action'),
-    fixed: 'right',
-    headerAlign: 'center',
-    align: 'center',
-    width: 120,
-    slots: {
-      default: (data) => {
-        return (
-          <div>
-            <ElButton type="primary" size="small" onClick={() => recheckFn(data)}>
-              复核
-            </ElButton>
-          </div>
-        )
-      }
-    }
-  }
-]
-const rechecked: TableColumn[] = [
-  {
-    field: 'selection',
-    type: 'selection'
-  },
-  {
-    field: 'featureID',
-    label: '特征ID'
-  },
-  {
-    field: 'featureName',
-    label: '特征名称'
-  },
-  {
-    field: 'featureContent',
-    label: '特征内容'
-  },
-  {
-    field: 'victim',
-    label: '受害方'
-  },
-  {
-    field: 'victimType',
-    label: '受害方分类'
-  },
-  {
-    field: 'addType',
-    label: '添加方式'
-  },
-  {
-    field: 'operationType',
-    label: '操作类型',
-    formatter: (data) => {
-      if (data.operationType === 'Add') return '添加'
-      if (data.operationType === 'Edit') return '编辑'
-      if (data.operationType === 'Delete') return '删除'
-    }
-  },
-  {
-    field: 'createdBy',
-    label: '提交人'
-  },
-  {
-    field: 'createdTime',
-    label: '提交时间',
-    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
-  },
-  {
-    field: 'reviewer',
-    label: '复核人'
-  },
-  {
-    field: 'reviewTime',
-    label: '复核时间',
-    formatter: (data) => formatTime(data.reviewTime, 'yyyy-MM-dd HH:mm:ss')
-  },
-  {
-    field: 'action',
-    label: t('tableDemo.action'),
-    fixed: 'right',
-    headerAlign: 'center',
-    align: 'center',
-    width: 120,
-    slots: {
-      default: (data) => {
-        return (
-          <div>
-            <ElButton type="primary" size="small" onClick={() => viewFn(data)}>
-              查看
-            </ElButton>
-          </div>
-        )
-      }
-    }
-  }
-]
-const getTableData = async (params) => {
-  loading.value = true
-  if (params === '未复核') {
-    setProps({
-      columns: unRecheck
-    })
-    const res = await getListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize),
-      checkStatus: params,
-      ...searchData.value
-    })
-    dataList.value = res.data.list
-    total.value = res.data.total
-  } else if (params === '复核通过') {
-    setProps({
-      columns: rechecked
-    })
-    const res = await getListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize),
-      check: params,
-      ...searchData.value
-    })
-    dataList.value = res.data.list
-    total.value = res.data.total
-  }
-  loading.value = false
-  return {
-    list: dataList.value,
-    total: total.value
-  }
-}
 const handleClick = async (tab) => {
+  editTabelColumn(tab.props.name)
   currentPage.value = 1
   pageSize.value = 10
   await getTableData(tab.props.name)
 }
-// 在页面加载完成后，设置columns的值
-onMounted(() => {
-  // 设置columns的值为一个包含列配置的数组
-  setProps({
-    columns: unRecheck
-  })
-})
 //复核查看
 const operateTitle = ref('')
 const isOperateDrawer = ref(false)
 const operateData = ref()
-const isDo = ref(true)
-const recheckFn = async (data) => {
+const recheckOrViewFn = async (data, title) => {
   let res = await formApi({ featureID: +data.row.featureID })
   operateData.value = { featureID: +data.row.featureID, ...res.data }
-  operateFn('recheck')
-}
-const viewFn = async (data) => {
-  let res = await formApi({ featureID: +data.row.featureID })
-  operateData.value = { featureID: +data.row.featureID, ...res.data }
-  operateFn('view')
-}
-const operateFn = (type) => {
-  if (type === 'recheck') {
-    operateTitle.value = '复核规则复核'
-    isDo.value = true
-  } else if (type === 'view') {
-    operateTitle.value = '查看规则复核'
-    isDo.value = false
-  }
+  operateTitle.value = title
   isOperateDrawer.value = true
 }
 </script>
@@ -306,7 +228,6 @@ const operateFn = (type) => {
     :title="operateTitle"
     v-model:isDrawer="isOperateDrawer"
     :data="operateData"
-    :isDo="isDo"
     @get-data="getList"
   />
 </template>

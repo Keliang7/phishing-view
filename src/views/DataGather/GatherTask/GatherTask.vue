@@ -12,6 +12,7 @@ import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import SelectData from '@/components/SelectData/SelectData.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import TableTop from '@/components/TableTop/TableTop.vue'
+
 // 使用useI18n钩子函数获取国际化相关数据和方法
 const { t } = useI18n()
 // 使用useTable钩子函数获取table相关数据和方法
@@ -85,6 +86,7 @@ const tableColumns: TableColumn[] = [
   },
   {
     field: 'taskStatus',
+    width: 90,
     label: '任务状态'
   },
   {
@@ -149,15 +151,14 @@ const tableColumns: TableColumn[] = [
     fixed: 'right',
     headerAlign: 'center',
     align: 'center',
-    width: 300,
-    showOverflowTooltip: false,
+    width: 250,
     slots: {
       default: (data) => {
         return (
           <div>
             <ElButton
               type="primary"
-              size="small"
+              link
               disabled={data.row.taskStatus === '执行中'}
               onClick={() => viewData(data)}
             >
@@ -165,15 +166,15 @@ const tableColumns: TableColumn[] = [
             </ElButton>
             <ElButton
               type="danger"
+              link
               disabled={data.row.taskStatus === '完成'}
-              size="small"
               onClick={() => stopTask(data)}
             >
               停止任务
             </ElButton>
             <ElButton
               type="danger"
-              size="small"
+              link
               disabled={data.row.taskStatus === '执行中'}
               onClick={() => delData(data)}
             >
@@ -334,6 +335,7 @@ const canShowPagination = ref(true)
         </ElButton>
       </template>
     </TableTop>
+
     <Table
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"
@@ -363,7 +365,7 @@ const canShowPagination = ref(true)
     :data="initExportDate"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
-    @isCheckedAll="
+    @is-checked-all="
       (temp) => {
         isCheckedAll = temp
       }

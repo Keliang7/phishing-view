@@ -4,19 +4,17 @@ import { ref, unref } from 'vue'
 // import { useI18n } from '@/hooks/web/useI18n'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
-import { getTaskApi, deleteTaskApi } from '@/api/dataExtension'
+import { getListApi } from '@/api/dataExtension/extensionTask'
 import { formatTime } from '@/utils/index'
 // import { ElButton } from 'element-plus'
 // const { t } = useI18n()
 //
-import { useRouter } from 'vue-router'
-const router = useRouter()
 //
 const dataArray = ref(['loginName', 'loginIP'])
-const { tableRegister, tableMethods, tableState } = useTable({
+const { tableRegister, tableState } = useTable({
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
-    const res = await getTaskApi({
+    const res = await getListApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
       ...searchData.value
@@ -25,14 +23,9 @@ const { tableRegister, tableMethods, tableState } = useTable({
       list: res.data.list,
       total: res.data.total
     }
-  },
-  fetchDelApi: async () => {
-    const res = await deleteTaskApi({ rules: unref(ids) })
-    return !!res
   }
 })
 const { loading, total, dataList, currentPage, pageSize } = tableState
-const { setProps, getList, getElTableExpose, delList } = tableMethods
 const columns: TableColumn[] = [
   {
     field: 'selection',
@@ -58,17 +51,8 @@ const columns: TableColumn[] = [
   }
 ]
 const searchData = ref({})
-//删除
-const ids = ref<string[]>([])
-const open = () => {
-  console.log(123)
-  // router.push({ name: 'ViewDetails', params: { id: 123 } })
-  const url = router.resolve({ name: 'ViewDetails', params: { id: 123 } })
-  window.open(url.href, '_blank')
-}
 </script>
 <template>
-  <button @click="open">click</button>
   <AdvancedSearch :dataArray="dataArray" :title="'登录日志管理'" />
   <Table
     v-model:pageSize="pageSize"
@@ -83,7 +67,6 @@ const open = () => {
       total: total
     }"
     @register="tableRegister"
-    @selection-change="handleSelectionChange"
   />
 </template>
 <style scoped></style>

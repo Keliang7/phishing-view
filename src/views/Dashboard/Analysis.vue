@@ -630,7 +630,7 @@ onMounted(() => {
           <ElCol :span="12">
             <div class="flex items-center">
               <div class="flex justify-center items-center border-rd-50% bg-#F3F6F8 p-8px mx-8px">
-                <Icon color="5F80EC" :size="26" icon="ant-design:file-search-outlined"
+                <Icon color="5F80EC" :size="26" icon="svg-icon:file"
               /></div>
               <div class="ml-10px">
                 <div class="text-14px mb-4px">采集数据</div>
@@ -654,7 +654,7 @@ onMounted(() => {
             >去添加任务</ElButton
           >
         </div>
-        <el-table :data="[taskMessageData]" border style="width: 100%">
+        <el-table :data="[taskMessageData]" show-overflow-tooltip border style="width: 100%">
           <el-table-column prop="taskName" label="任务名称" />
           <el-table-column prop="taskType" label="探测类型" />
           <el-table-column prop="traceResult" label="探测内容">
@@ -719,7 +719,7 @@ onMounted(() => {
           <ElCol :span="12">
             <div class="flex items-center">
               <div class="flex justify-center items-center border-rd-50% bg-#F3F6F8 p-8px mx-8px">
-                <Icon color="5F80EC" :size="26" icon="ant-design:file-search-outlined"
+                <Icon color="5F80EC" :size="26" icon="svg-icon:file"
               /></div>
               <div class="ml-10px">
                 <div class="text-14px mb-4px">拓线目标</div>
@@ -735,7 +735,7 @@ onMounted(() => {
           <ElCol :span="12">
             <div class="flex items-center">
               <div class="flex justify-center items-center border-rd-50% bg-#F3F6F8 p-8px mx-8px">
-                <Icon color="5F80EC" :size="26" icon="ant-design:file-search-outlined"
+                <Icon color="5F80EC" :size="26" icon="svg-icon:file"
               /></div>
               <div class="ml-10px">
                 <div class="text-14px mb-4px">拓线结果</div>
@@ -751,15 +751,15 @@ onMounted(() => {
         </ElRow>
         <div class="flex justify-between items-center">
           <span class="text-14px"
-            >最近一个人工采集完成任务：{{
+            >最近一个人工拓线完成任务：{{
               formatTime(extensionData.lastTime, 'yyyy-mm-dd HH:MM:ss')
             }}</span
           >
-          <ElButton class="mb-4px" type="primary" @click="router.push({ name: 'GatherTask' })"
+          <ElButton class="mb-4px" type="primary" @click="router.push({ name: 'ExtensionTask' })"
             >去添加任务</ElButton
           >
         </div>
-        <el-table :data="[taskMessageData]" border style="width: 100%">
+        <el-table :data="[extensionData]" border show-overflow-tooltip style="width: 100%">
           <el-table-column prop="taskName" label="任务名称" />
           <el-table-column prop="taskType" label="探测类型" />
           <el-table-column prop="traceResult" label="探测内容">
@@ -784,7 +784,7 @@ onMounted(() => {
             <div
               class="text-blue select-none cursor-pointer"
               @click="
-                router.push({ name: 'GatherResult', query: { taskID: taskMessageData.taskID } })
+                router.push({ name: 'ExtensionResult', query: { taskID: extensionData.taskID } })
               "
               >查看数据</div
             >
