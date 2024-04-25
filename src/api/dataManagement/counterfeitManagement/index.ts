@@ -5,3 +5,4 @@ export const getListApi = (params: any) => {
 export const statisticsApi = (params: any) => {
   return request.get({ url: '/api/v1/counterfeit/statistics', params })
 }
+
