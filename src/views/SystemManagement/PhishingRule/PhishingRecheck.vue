@@ -211,6 +211,7 @@ const recheckOrViewFn = async (data, title) => {
     <Table
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"
+      :max-height="446"
       stripe
       row-key="taskID"
       :reserve-selection="true"

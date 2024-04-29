@@ -273,12 +273,14 @@ const resetClick = async () => {
   elFormExpose?.resetFields()
 }
 // 查询
+const loading = ref(false)
 const confirmClick = async () => {
   const elFormExpose = await getElFormExpose()
   const formData = await getFormData()
   delete formData.inputType
   elFormExpose?.validate(async (isValid) => {
     if (isValid) {
+      loading.value = true
       if (formData.exploreAimFile) {
         formData.exploreAimFile = formData.exploreAimFile[0].raw
       } else {
@@ -286,6 +288,7 @@ const confirmClick = async () => {
       }
       const res = await addApi(formData)
       if (res.code == 0) {
+        loading.value = false
         close()
         ElMessage.success('添加任务成功')
       }
@@ -305,7 +308,7 @@ const confirmClick = async () => {
     <template #footer>
       <div style="margin-right: 20px">
         <BaseButton type="default" @click="resetClick">重 置</BaseButton>
-        <BaseButton type="primary" @click="confirmClick">确 定</BaseButton>
+        <BaseButton type="primary" :loading="loading" @click="confirmClick">确 定</BaseButton>
       </div>
     </template>
   </ElDrawer>

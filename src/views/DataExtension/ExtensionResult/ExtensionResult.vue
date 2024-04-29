@@ -208,6 +208,7 @@ onBeforeMount(() => {
       </template>
     </TableTop>
     <Table
+      :max-height="446"
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"
       stripe

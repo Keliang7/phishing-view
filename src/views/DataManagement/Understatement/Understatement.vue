@@ -10,6 +10,8 @@ import { exportApi } from '@/api/dataManagement'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
+import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
+import DataSource from '@/components/DataSource/DataSource.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import DataExtension from '@/components/DataExtension/DataExtension.vue'
 import { useRouter } from 'vue-router'
@@ -42,7 +44,7 @@ const columns: TableColumn[] = [
     align: 'center',
     formatter(data) {
       return (
-        <ElButton type="primary" link>
+        <ElButton type="primary" link onClick={() => dataSource(data)}>
           {data.dataSources.length}
         </ElButton>
       )
@@ -102,15 +104,15 @@ const columns: TableColumn[] = [
     label: '匹配特征'
   },
   {
-    field: 'info',
+    field: 'webInfo',
     label: '网页信息',
     headerAlign: 'center',
     align: 'center',
     width: 100,
     slots: {
-      default: () => {
+      default: (data) => {
         return (
-          <ElButton type="primary" link>
+          <ElButton onClick={() => openDrawerInfo(data.row)} type="primary" link>
             查看
           </ElButton>
         )
@@ -235,7 +237,7 @@ const tabSideColumns = ref()
 const activeNameS = ref()
 const setTableSide = async () => {
   const res = await statisticsApi()
-  tabSideColumns.value = res.data.list
+  tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
   activeNameS.value = tabSideColumns.value[0].name
   getList()
 }
@@ -330,6 +332,31 @@ const isDataExtension = ref(false)
 const extensionFn = () => {
   isDataExtension.value = true
 }
+// 查看网页信息
+const isDrawerInfo = ref(false)
+const titleDrawer = ref('')
+const bodyInfo = ref([{}])
+const openDrawerInfo = async (data) => {
+  isDrawerInfo.value = true
+  titleDrawer.value = '查看网页信息'
+  bodyInfo.value = [
+    {
+      value: data.webInfo.request,
+      name: '请求体'
+    },
+    {
+      value: data.webInfo.response,
+      name: '响应体'
+    }
+  ]
+}
+//数据源
+const isDataSource = ref(false)
+const dataSourceData = ref()
+const dataSource = (data) => {
+  isDataSource.value = true
+  dataSourceData.value = data.dataSource
+}
 </script>
 <template>
   <AdvancedSearch
@@ -357,6 +384,7 @@ const extensionFn = () => {
       </ElCol>
       <ElCol :span="21">
         <Table
+          :max-height="446"
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"
           stripe
@@ -375,6 +403,8 @@ const extensionFn = () => {
     </ElRow>
   </ContentWrap>
   <DataExtension v-model:isDrawer="isDataExtension" :title="'创建任务'" />
+  <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="titleDrawer" :bodyInfo="bodyInfo" />
+  <DataSource v-model:isDrawer="isDataSource" :dataSourceData="dataSourceData" />
   <ExportFile
     v-model:isDrawer="isDrawerExportFile"
     title="拓线任务管理"

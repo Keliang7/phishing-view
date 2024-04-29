@@ -9,8 +9,7 @@ import {
   getDomainListApi,
   getURLListApi,
   getTLSListApi,
-  getExtListApi,
-  getBwDetailApi
+  getExtListApi
 } from '@/api/dataManagement/pendUrl'
 import { exportApi, backtrackApi } from '@/api/dataManagement'
 import { useTable } from '@/hooks/web/useTable'
@@ -34,12 +33,6 @@ const { tableRegister, tableMethods, tableState } = useTable({
 })
 const { loading, total, dataList, currentPage, pageSize } = tableState
 const { setProps, getElTableExpose, getList } = tableMethods
-// 查看网页信息
-const isDrawerInfo = ref(false)
-// 查看网页信息-弹窗标题
-const titleDrawer = ref('')
-// 查看网页信息-弹窗内容
-const bodyInfo = ref([{}])
 //tableTop
 const tabColumns = [
   {
@@ -135,7 +128,7 @@ const BWColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton link type="primary" onClick={() => openDrawerInfo(data)}>
+          <ElButton link type="primary" onClick={() => openDrawerInfo(data.row)}>
             查看
           </ElButton>
         )
@@ -314,7 +307,7 @@ const URLColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton onClick={() => openDrawerInfo(data)} type="primary" link>
+          <ElButton onClick={() => openDrawerInfo(data.row)} type="primary" link>
             查看
           </ElButton>
         )
@@ -409,13 +402,13 @@ const TLSColumns: TableColumn[] = [
     width: 120
   },
   {
-    field: 'certInfo',
-    label: t('tableDemo.certInfo'),
+    field: 'webInfo',
+    label: '网页信息',
     width: 120,
     slots: {
       default: (data) => {
         return (
-          <ElButton onClick={() => openDrawerInfo(data)} type="primary" link>
+          <ElButton onClick={() => openDrawerInfo(data.row)} type="primary" link>
             查看
           </ElButton>
         )
@@ -509,13 +502,13 @@ const ExtColumns: TableColumn[] = [
     width: 120
   },
   {
-    field: 'certInfo',
-    label: t('tableDemo.certInfo'),
+    field: 'webInfo',
+    label: '网页信息',
     width: 120,
     slots: {
       default: (data) => {
         return (
-          <ElButton onClick={() => openDrawerInfo(data)} type="primary" link>
+          <ElButton onClick={() => openDrawerInfo(data.row)} type="primary" link>
             查看
           </ElButton>
         )
@@ -612,48 +605,23 @@ const backtrackFn = async (data) => {
   backtrackData.value = res
   isBacktrack.value = true
 }
-// 表格查看信息事件
-const openDrawerInfo = async (data: TableSlotDefault) => {
-  let res
-  if (activeName.value == 'bw') {
-    isDrawerInfo.value = true
-    titleDrawer.value = '查看网页信息'
-    res = await getBwDetailApi(data.row.dataID)
-    bodyInfo.value = [
-      {
-        value: res.data.webInfo.request,
-        name: '请求体'
-      },
-      {
-        value: res.data.webInfo.response,
-        name: '响应体'
-      }
-    ]
-  } else if (activeName.value == 'urlLog') {
-    isDrawerInfo.value = true
-    titleDrawer.value = '查看网页信息'
-    res = await getBwDetailApi(data.row.dataID)
-    bodyInfo.value = [
-      {
-        value: res.data.webInfo.request,
-        name: '请求体'
-      },
-      {
-        value: res.data.webInfo.response,
-        name: '响应体'
-      }
-    ]
-  } else {
-    isDrawerInfo.value = true
-    titleDrawer.value = '查看证书信息'
-    res = await getBwDetailApi(data.row.dataID)
-    bodyInfo.value = [
-      {
-        value: res.data.webInfo.request,
-        name: '证书信息'
-      }
-    ]
-  }
+// 查看网页信息
+const isDrawerInfo = ref(false)
+const titleDrawer = ref('')
+const bodyInfo = ref([{}])
+const openDrawerInfo = async (data) => {
+  isDrawerInfo.value = true
+  titleDrawer.value = '查看网页信息'
+  bodyInfo.value = [
+    {
+      value: data.webInfo.request,
+      name: '请求体'
+    },
+    {
+      value: data.webInfo.response,
+      name: '响应体'
+    }
+  ]
 }
 // 选择全部
 const isCheckedAll = ref(false)
@@ -753,6 +721,7 @@ const getSelections = () => {
       </template>
     </TableTop>
     <Table
+      :max-height="446"
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"
       stripe
@@ -784,11 +753,6 @@ const getSelections = () => {
       }
     "
   />
-  <Backtrack
-    v-model:isDrawer="isBacktrack"
-    :title="'数据回溯'"
-    :backtrackData="backtrackData"
-    :dataSourceInfo="{ name: 'wangdao' }"
-  />
+  <Backtrack v-model:isDrawer="isBacktrack" :title="'数据回溯'" :backtrackData="backtrackData" />
 </template>
 <style lang="less" scoped></style>
