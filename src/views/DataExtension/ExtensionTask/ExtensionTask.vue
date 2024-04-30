@@ -14,7 +14,7 @@ import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import DataExtension from '@/components/DataExtension/DataExtension.vue'
 import { useRouter } from 'vue-router'
 const { t } = useI18n()
-const dataArray = ref(['taskID', 'taskName', 'createdBy', 'createdTime', 'taskType'])
+const dataArray = ref(['taskID', 'taskName', 'createdBy', 'createdTime', 'distributeTypeExt'])
 const { tableRegister, tableMethods, tableState } = useTable({
   immediate: false,
   fetchDataApi: async () => {
@@ -56,7 +56,7 @@ const columns: TableColumn[] = [
   {
     field: 'distributeType',
     width: 90,
-    label: '任务状态'
+    label: '下发方式'
   },
   {
     field: 'extensionResult',
@@ -147,8 +147,8 @@ const columns: TableColumn[] = [
 const tabSideColumns = ref()
 const setTableSide = async () => {
   const res = await statisticsApi()
-  activeNameS.value = res.data.list[0].name
-  tabSideColumns.value = res.data.list
+  tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
+  activeNameS.value = tabSideColumns.value[0].name
 }
 const activeNameS = ref()
 const setActiveNameS = (name) => {
@@ -269,6 +269,7 @@ const extensionFn = () => {
       </ElCol>
       <ElCol :span="21">
         <Table
+          :max-height="446"
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"
           stripe

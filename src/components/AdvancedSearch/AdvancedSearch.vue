@@ -285,11 +285,11 @@ let schema = ref<FormSchema[]>([
     }
   },
   {
-    field: 'taskType',
-    label: '任务类型',
+    field: 'distributeTypeExt',
+    label: '下发方式',
     component: 'Select',
     componentProps: {
-      placeholder: '请选择任务类型',
+      placeholder: '请选下发方式',
       options: [
         {
           label: '系统自动拓线',

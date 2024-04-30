@@ -298,6 +298,7 @@ const fieldName = resultColumns
     <Table
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"
+      :max-height="446"
       stripe
       :image-preview="['screenshot']"
       row-key="dataID"

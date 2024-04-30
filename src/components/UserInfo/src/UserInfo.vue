@@ -30,10 +30,6 @@ const dialogVisible = ref<boolean>(false)
 const lockScreen = () => {
   dialogVisible.value = true
 }
-
-const toDocument = () => {
-  window.open('https://element-plus-admin-doc.cn/')
-}
 </script>
 
 <template>
@@ -50,9 +46,6 @@ const toDocument = () => {
     </div>
     <template #dropdown>
       <ElDropdownMenu>
-        <ElDropdownItem>
-          <div @click="toDocument">{{ t('common.document') }}</div>
-        </ElDropdownItem>
         <ElDropdownItem>
           <router-link :to="{ path: '/downloadCenter' }">下载中心</router-link>
         </ElDropdownItem>

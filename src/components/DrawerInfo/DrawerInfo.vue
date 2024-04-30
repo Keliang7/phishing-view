@@ -1,12 +1,7 @@
 <script setup lang="tsx">
 import { ElDrawer, ElInput } from 'element-plus'
-// import { ElDrawer, ElInput, ElTimeline, ElTimelineItem } from 'element-plus'
 
 defineProps({
-  title: {
-    type: String,
-    default: ''
-  },
   isDrawer: {
     type: Boolean,
     default: false
@@ -14,10 +9,6 @@ defineProps({
   bodyInfo: {
     type: Object,
     default: null
-  },
-  placeholder: {
-    type: String,
-    default: '暂无内容'
   }
 })
 const emit = defineEmits(['update:isDrawer'])
@@ -31,21 +22,21 @@ const open = () => {
 </script>
 <template>
   <ElDrawer
-    :title="title"
+    :title="'查看网页信息'"
     :modelValue="isDrawer"
     :before-close="close"
     custom-class="drawerWidth"
     @open="open"
   >
     <div v-for="(item, index) in bodyInfo" :key="index">
-      <p>{{ item.name }}：</p>
+      <p>{{ item.name }}</p>
       <ElInput
         :modelValue="item.value"
         type="textarea"
         :autosize="{ minRows: 11, maxRows: 16 }"
         :disabled="true"
         resize="none"
-        :placeholder="placeholder"
+        :placeholder="'暂无内容'"
       />
     </div>
   </ElDrawer>

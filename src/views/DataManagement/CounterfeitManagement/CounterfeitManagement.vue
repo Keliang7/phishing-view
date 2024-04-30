@@ -111,11 +111,6 @@ const Columns: TableColumn[] = [
     width: 130
   },
   {
-    field: 'hitRule',
-    label: t('tableDemo.hitRule'),
-    width: 130
-  },
-  {
     field: 'featureNumber',
     label: t('tableDemo.featureNumber'),
     align: 'center',
@@ -286,7 +281,7 @@ const activeNameS = ref()
 
 const setTableSide = async (tableName) => {
   const res = await statisticsApi({ tableName })
-  tabSideColumns.value = res.data.list
+  tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
   activeNameS.value = tabSideColumns.value[0].name
   getList()
 }
@@ -505,6 +500,7 @@ const getSelections = () => {
       </ElCol>
       <ElCol :span="21">
         <Table
+          :max-height="446"
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"
           stripe
