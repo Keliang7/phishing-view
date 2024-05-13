@@ -6,7 +6,6 @@ import { useForm } from '@/hooks/web/useForm'
 import { Form, FormSchema } from '@/components/Form'
 import { formatTime, Timestamp } from '@/utils'
 import { BaseButton } from '@/components/Button'
-import { ElRow, ElCol } from 'element-plus'
 const props = defineProps({
   dataArray: {
     type: Array,
@@ -659,29 +658,25 @@ const searchFn = async () => {
 </script>
 <template>
   <ContentWrap class="advance-search" style="margin-bottom: 20px">
-    <ElRow class="mb-1rem">
-      <ElCol :span="8">
-        <div class="title flex">
-          <h3 class="m-0">{{ title }}</h3>
-          <span
-            v-if="total"
-            class="bg-#0B56FA text-white font-size-12px ml-8px px-6px border-rounded-2px flex items-center"
-            >{{ total }}</span
+    <div class="flex mb-14px">
+      <div class="title flex">
+        <h3 class="flex justify-center items-center m-0">{{ title }}</h3>
+        <span
+          v-if="total"
+          class="bg-#0B56FA text-white font-size-12px ml-8px px-6px border-rounded-2px flex items-center"
+          >{{ total }}</span
+        >
+      </div>
+      <div class="ml-16px flex justify-center items-center h-100%">
+        <div class="bg-#D3DEFE font-size-12px p-8px flex items-center border-rounded-4px">
+          <div
+            class="border-rounded-2 bg-#0B56FA w-16px h-16px flex justify-center items-center text-white ml-4px mr-4px"
+            >i</div
           >
+          温馨提示：{{ tipTitle }}
         </div>
-      </ElCol>
-      <ElCol :span="8" v-if="tipTitle">
-        <div class="flex justify-center items-center h-100%">
-          <div class="bg-#D3DEFE font-size-12px p-8px flex items-center border-rounded-4px">
-            <div
-              class="border-rounded-2 bg-#0B56FA w-16px h-16px flex justify-center items-center text-white ml-4px mr-4px"
-              >i</div
-            >
-            温馨提示：{{ tipTitle }}
-          </div>
-        </div>
-      </ElCol>
-    </ElRow>
+      </div>
+    </div>
     <Form :autoSetPlaceholder="false" :schema="schemaCopy" @register="formRegister" />
     <div class="height-32px float-right p-10px">
       <BaseButton type="default" @click="verifyReset"> 重置 </BaseButton>

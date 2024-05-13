@@ -228,7 +228,6 @@ const isDrawerExportFile = ref(false)
     :title="`白名单管理`"
     :total="total"
     :dataArray="dataArray"
-    :tip-title="'系统默认展示当天接入数据，最多可查看7天内数据，超出7天数据不会留存'"
     @search-data="searchTable"
   />
   <ContentWrap>

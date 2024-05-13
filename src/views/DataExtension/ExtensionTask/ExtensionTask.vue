@@ -248,7 +248,7 @@ const extensionFn = () => {
     :dataArray="dataArray"
     :total="total"
     :title="'拓线任务管理'"
-    tip-title="温馨提示：系统默认展示当天拓线任务，最多可查看XX天内任务，超出XX天任务不会留存。"
+    tip-title="系统默认展示当天拓线任务，最多可查看30天内任务，超出30天任务不会留存。"
     @search-data="searchTable"
   />
   <ContentWrap>

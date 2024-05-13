@@ -64,10 +64,10 @@ const columns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="danger" size="small" onClick={() => editData(data)}>
+            <ElButton type="primary" link onClick={() => editData(data)}>
               编辑
             </ElButton>
-            <ElButton type="danger" size="small" onClick={() => resetPassword(data)}>
+            <ElButton type="primary" link onClick={() => resetPassword(data)}>
               重置密码
             </ElButton>
             <ElButton type="danger" size="small" onClick={() => delData(data)}>

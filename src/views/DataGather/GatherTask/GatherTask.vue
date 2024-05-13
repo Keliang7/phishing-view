@@ -319,6 +319,7 @@ const canShowPagination = ref(true)
   <AdvancedSearch
     :total="total"
     :dataArray="dataArray"
+    :tipTitle="'系统默认展示当天拓线数据，最多可查看30天内数据，超出30天数据不会留存。'"
     @search-data="searchTable"
     :title="`任务采集管理`"
   />
