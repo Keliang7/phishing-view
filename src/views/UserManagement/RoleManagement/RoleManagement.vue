@@ -57,10 +57,10 @@ const columns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="danger" size="small" onClick={() => editData(data)}>
+            <ElButton type="primary" link onClick={() => editData(data)}>
               编辑
             </ElButton>
-            <ElButton type="danger" size="small" onClick={() => delData(data)}>
+            <ElButton type="primary" link onClick={() => delData(data)}>
               删除
             </ElButton>
           </div>
