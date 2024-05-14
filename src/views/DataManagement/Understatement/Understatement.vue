@@ -406,6 +406,7 @@ const dataSource = (data) => {
   <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="titleDrawer" :bodyInfo="bodyInfo" />
   <DataSource v-model:isDrawer="isDataSource" :dataSourceData="dataSourceData" />
   <ExportFile
+    v-if="isDrawerExportFile"
     v-model:isDrawer="isDrawerExportFile"
     title="拓线任务管理"
     :data="initExportDate"

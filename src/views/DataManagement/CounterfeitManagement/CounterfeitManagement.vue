@@ -431,6 +431,13 @@ watch(isCheckedAll, () => {
   }
 })
 //导出数据
+const fieldName = ref()
+fieldName.value = Columns.map((i) => {
+  return {
+    label: i.label,
+    value: i.field
+  }
+}).slice(1, -1)
 const isDrawerExportFile = ref(false)
 const initExportDate = ref({})
 const getSelections = () => {
@@ -530,6 +537,8 @@ const getSelections = () => {
   />
   <DataExtension v-model:isDrawer="isDataExtension" :title="'创建任务'" />
   <ExportFile
+    v-if="isDrawerExportFile"
+    :fieldName="fieldName"
     v-model:isDrawer="isDrawerExportFile"
     title="仿冒数据管理"
     :data="initExportDate"

@@ -414,6 +414,7 @@ const dataSource = (data) => {
   <DataSource v-model:isDrawer="isDataSource" :dataSourceData="dataSourceData" />
   <DataExtension v-model:isDrawer="isDataExtension" :title="'创建任务'" />
   <ExportFile
+    v-if="isDrawerExportFile"
     v-model:isDrawer="isDrawerExportFile"
     title="拓线任务管理"
     :data="initExportDate"

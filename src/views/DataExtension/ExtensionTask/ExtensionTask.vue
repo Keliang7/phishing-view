@@ -79,7 +79,6 @@ const columns: TableColumn[] = [
     width: 90,
     label: '任务耗时',
     formatter: (data) => {
-      console.log(data)
       return (
         <div style={{ display: 'flex' }}>
           <span style={{ display: data.useTime / 1000 > 86400 ? 'block' : 'none' }}>

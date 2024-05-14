@@ -7,7 +7,8 @@ import { ref, computed } from 'vue'
 import LockPage from './components/LockPage.vue'
 import { useLockStore } from '@/store/modules/lock'
 import { useUserStore } from '@/store/modules/user'
-
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const userStore = useUserStore()
 
 const lockStore = useLockStore()
@@ -30,6 +31,9 @@ const dialogVisible = ref<boolean>(false)
 const lockScreen = () => {
   dialogVisible.value = true
 }
+const test = async () => {
+  router.push({ name: 'DownloadCenter' })
+}
 </script>
 
 <template>
@@ -47,7 +51,7 @@ const lockScreen = () => {
     <template #dropdown>
       <ElDropdownMenu>
         <ElDropdownItem>
-          <router-link :to="{ path: '/downloadCenter' }">下载中心</router-link>
+          <div @click="test">下载中心</div>
         </ElDropdownItem>
         <ElDropdownItem divided>
           <div @click="lockScreen">{{ t('lock.lockScreen') }}</div>

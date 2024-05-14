@@ -269,7 +269,7 @@ const URLColumns: TableColumn[] = [
     width: 180
   },
   {
-    field: 'protocolType',
+    field: 'protocol',
     label: t('tableDemo.protocolType'),
     width: 120
   },
@@ -371,7 +371,7 @@ const TLSColumns: TableColumn[] = [
     width: 180
   },
   {
-    field: 'protocolType',
+    field: 'protocol',
     label: t('tableDemo.protocolType'),
     width: 120
   },
@@ -471,7 +471,7 @@ const ExtColumns: TableColumn[] = [
     width: 180
   },
   {
-    field: 'protocolType',
+    field: 'protocol',
     label: t('tableDemo.protocolType'),
     width: 120
   },
@@ -570,6 +570,16 @@ const setTable = async (tableName) => {
     columns: temp[tableName]
   })
   await getList()
+  //然后改一下导出的filedName
+  fieldName.value = temp[tableName]
+    .map((i) => {
+      return {
+        label: i.label,
+        value: i.field
+      }
+    })
+    .slice(1, -1)
+  console.log(fieldName.value)
   loading.value = false
 }
 //高级搜索
@@ -659,7 +669,8 @@ watch(isCheckedAll, () => {
   }
 })
 // 导出多选数据
-const fieldName = BWColumns.map((i) => {
+const fieldName = ref()
+fieldName.value = BWColumns.map((i) => {
   return {
     label: i.label,
     value: i.field
@@ -741,6 +752,7 @@ const getSelections = () => {
   <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="titleDrawer" :bodyInfo="bodyInfo" />
   <SelectData v-model:isDrawer="isSelectData" :title="'添加任务'" :data="selectData" />
   <ExportFile
+    v-if="isDrawerExportFile"
     v-model:isDrawer="isDrawerExportFile"
     title="待处理URL集合"
     :fieldName="fieldName"

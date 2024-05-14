@@ -70,7 +70,7 @@ const columns: TableColumn[] = [
             <ElButton type="primary" link onClick={() => resetPassword(data)}>
               重置密码
             </ElButton>
-            <ElButton type="danger" size="small" onClick={() => delData(data)}>
+            <ElButton type="primary" link onClick={() => delData(data)}>
               删除
             </ElButton>
           </div>
