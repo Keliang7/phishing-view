@@ -4,7 +4,7 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { reactive, ref, onMounted, watch, defineEmits } from 'vue'
 import { useForm } from '@/hooks/web/useForm'
 import { Form, FormSchema } from '@/components/Form'
-import { formatTime, Timestamp } from '@/utils'
+import { Timestamp } from '@/utils'
 import { BaseButton } from '@/components/Button'
 const props = defineProps({
   dataArray: {
@@ -27,7 +27,6 @@ const { formRegister, formMethods } = useForm()
 const { getElFormExpose, getFormData } = formMethods
 const emit = defineEmits(['search-data'])
 // 查询到的表格数据
-let searchData = reactive({})
 let schema = ref<FormSchema[]>([
   //数据管理
   {
@@ -94,12 +93,16 @@ let schema = ref<FormSchema[]>([
     componentProps: {
       options: [
         {
-          value: '拓线完成',
-          label: '拓线完成'
+          value: '未拓线',
+          label: '未完成'
         },
         {
           value: '拓线中',
           label: '拓线中'
+        },
+        {
+          value: '拓线完成',
+          label: '拓线完成'
         },
         {
           value: '拓线失败',
@@ -164,8 +167,7 @@ let schema = ref<FormSchema[]>([
     component: 'DatePicker',
     label: `${t('formDemo.discoveryTime')}：`,
     componentProps: {
-      type: 'date',
-      placeholder: formatTime(new Date(), 'yyyy-MM-dd')
+      type: 'daterange'
     },
     colProps: {
       span: 6
@@ -640,19 +642,23 @@ const verifyReset = async () => {
   elFormExpose?.resetFields()
 }
 // 查询
+let searchData = reactive({})
 const searchFn = async () => {
   const formData = await getFormData()
-  if (formData.discoveryTime) formData.discoveryTime = Timestamp(formData.discoveryTime)
-  let temp = formData.createdTime
-  let startTime = Timestamp(temp?.[0])
-  let endTime = Timestamp(temp?.[1])
-  delete formData.createdTime
-  if (temp) {
+  if (formData.createdTime) {
+    let startTime = Timestamp(formData.createdTime[0])
+    let endTime = Timestamp(formData.createdTime[1]) + 86399999
+    searchData = { ...formData, startTime, endTime }
+    delete formData.createdTime
+  } else if (formData.discoveryTime) {
+    let startTime = Timestamp(formData.discoveryTime[0])
+    let endTime = Timestamp(formData.discoveryTime[1]) + 86399999
+    delete formData.discoveryTime
     searchData = { ...formData, startTime, endTime }
   } else {
     searchData = formData
   }
-  console.log('advanceSearch-searchData', searchData)
+  console.log('searchData', searchData)
   emit('search-data', searchData)
 }
 </script>
@@ -667,7 +673,7 @@ const searchFn = async () => {
           >{{ total }}</span
         >
       </div>
-      <div class="ml-16px flex justify-center items-center h-100%">
+      <div v-if="tipTitle" class="ml-16px flex justify-center items-center h-100%">
         <div class="bg-#D3DEFE font-size-12px p-8px flex items-center border-rounded-4px">
           <div
             class="border-rounded-2 bg-#0B56FA w-16px h-16px flex justify-center items-center text-white ml-4px mr-4px"

@@ -4,6 +4,7 @@ import { useForm } from '@/hooks/web/useForm'
 import { Form, FormSchema } from '@/components/Form'
 import { reactive } from 'vue'
 import { formatToDateTimeSimple } from '@/utils/dateUtil'
+import { h } from 'vue'
 
 const { formRegister, formMethods } = useForm()
 const { getFormData, setValues, delSchema } = formMethods
@@ -50,7 +51,14 @@ const schema = reactive<FormSchema[]>([
           label: 'CSV',
           value: 'CSV'
         }
-      ]
+      ],
+      slots: {
+        footer: () => (
+          <div class="text-size-12px text-gray">
+            <span class="text-red">提示</span>:CSV导出不支持导出图片
+          </div>
+        )
+      }
     }
   },
   {
@@ -87,11 +95,25 @@ const confirmClick = async () => {
       close()
       emit('clear-selection')
       emit('is-checked-all', false)
-      ElMessage.success('导出数据成功，请前往下载中心')
+      // ElMessage.success(`导出数据成功，请前往下载中心`)
+      ElMessage.success({
+        message: h('p', { style: 'line-height: 1; font-size: 14px' }, [
+          h('span', null, '导出数据成功，请前往 '),
+          h(
+            'i',
+            {
+              style: 'color: #409EFF;cursor: pointer',
+              onClick: () => {
+                window.location.hash = '/downloadCenter'
+              }
+            },
+            '下载中心'
+          )
+        ])
+      })
     }
   }
 }
-//取消
 </script>
 <template>
   <ElDrawer :title="title" :model-value="isDrawer" @open="open" :before-close="close">
@@ -104,7 +126,7 @@ const confirmClick = async () => {
     <Form :schema="schema" label-width="fitcontent" :isCol="false" @register="formRegister" />
     <template #footer>
       <div style="margin-right: 20px">
-        <BaseButton type="default" @click="confirmClick">取 消</BaseButton>
+        <BaseButton type="default" @click="close">取 消</BaseButton>
         <BaseButton type="primary" :disabled="data.count == 0" @click="confirmClick"
           >确 定</BaseButton
         >

@@ -1,7 +1,7 @@
 <script lang="tsx">
 import { defineComponent, computed } from 'vue'
 import { Collapse } from '@/components/Collapse'
-// import { LocaleDropdown } from '@/components/LocaleDropdown'
+import { LocaleDropdown } from '@/components/LocaleDropdown'
 import { SizeDropdown } from '@/components/SizeDropdown'
 import { UserInfo } from '@/components/UserInfo'
 import { Screenfull } from '@/components/Screenfull'
@@ -59,14 +59,12 @@ export default defineComponent({
           {size.value ? (
             <SizeDropdown class="custom-hover" color="var(--top-header-text-color)"></SizeDropdown>
           ) : undefined}
-          {locale.value
-            ? {
-                /* <LocaleDropdown
+          {locale.value ? (
+            <LocaleDropdown
               class="custom-hover"
               color="var(--top-header-text-color)"
-            ></LocaleDropdown> */
-              }
-            : undefined}
+            ></LocaleDropdown>
+          ) : undefined}
           <UserInfo></UserInfo>
         </div>
       </div>
