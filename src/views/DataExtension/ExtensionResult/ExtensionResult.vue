@@ -131,16 +131,15 @@ const toggleSelection = async () => {
   elTableRef?.toggleAllSelection()
 }
 const handleSelectionChange = (selected: any[]) => {
-  selectedData.value = selected.map((i) => i.ruleContent)
-  if (temp.value.length > selectedData.value.length) {
+  selectedData.value = selected.map((i) => i.dataID)
+  if (temp.value.length >= selectedData.value.length) {
     cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
-    console.log(cancelData.value)
   }
 }
 watch(dataList, (newV) => {
-  temp.value.push(...newV.map((i) => i.ruleContent))
+  temp.value.push(...newV.map((i) => i.dataID))
   temp.value = [...new Set(temp.value)]
-  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.ruleContent))) {
+  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.dataID))) {
     toggleSelection()
   }
 })
@@ -148,11 +147,13 @@ const clearSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
-watch(isCheckedAll, () => {
-  if (isCheckedAll.value) {
+watch(isCheckedAll, (newV) => {
+  clearSelection()
+  if (newV) {
     toggleSelection()
   } else {
-    clearSelection()
+    cancelData.value = []
+    temp.value = dataList.value.map((i) => i.dataID)
   }
 })
 //导出数据
@@ -212,7 +213,7 @@ onBeforeMount(() => {
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"
       stripe
-      row-key="ruleContent"
+      row-key="dataID"
       :reserve-selection="true"
       :columns="columns"
       :data="dataList"

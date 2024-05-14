@@ -448,7 +448,7 @@ const toggleSelection = async () => {
 }
 const handleSelectionChange = (selected: any[]) => {
   selectedData.value = selected.map((i) => i.featureID)
-  if (temp.value.length > selectedData.value.length) {
+  if (temp.value.length >= selectedData.value.length) {
     cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
   }
 }
@@ -463,11 +463,13 @@ const clearSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
-watch(isCheckedAll, () => {
-  if (isCheckedAll.value) {
+watch(isCheckedAll, (newV) => {
+  clearSelection()
+  if (newV) {
     toggleSelection()
   } else {
-    clearSelection()
+    cancelData.value = []
+    temp.value = dataList.value.map((i) => i.featureID)
   }
 })
 //导出

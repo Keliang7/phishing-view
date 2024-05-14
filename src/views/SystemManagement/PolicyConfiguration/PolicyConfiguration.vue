@@ -141,7 +141,7 @@ const placeholderInfo = ref('')
 /**
  * 选择全部
  * selectedData 选中的id
- * temp 翻页的时候记录
+ * temp 记录翻页，你浏览过哪些数据
  * cancelData 全选状态下，取消的id
  */
 const selectedData = ref<TableColumn[]>([])
@@ -151,9 +151,11 @@ const toggleSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.toggleAllSelection()
 }
+
+//每次选项改变执行的函数
 const handleSelectionChange = (selected: any[]) => {
   selectedData.value = selected.map((i) => i.ruleContent)
-  if (temp.value.length > selectedData.value.length) {
+  if (temp.value.length >= selectedData.value.length) {
     cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
   }
 }
@@ -168,14 +170,13 @@ const clearSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
-watch(isCheckedAll, () => {
-  if (isCheckedAll.value) {
+watch(isCheckedAll, (newV) => {
+  clearSelection()
+  if (newV) {
     toggleSelection()
   } else {
-    clearSelection()
     cancelData.value = []
-    selectedData.value = []
-    temp.value = []
+    temp.value = dataList.value.map((i) => i.ruleContent)
   }
 })
 
