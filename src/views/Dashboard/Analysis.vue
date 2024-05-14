@@ -418,9 +418,6 @@ const handleClick2 = async () => {
 }
 //任务统计
 const router = useRouter()
-// const goToPage = () = {
-//   router.
-// }
 const taskMessageData = ref<any>({})
 const getTaskMessageData = async () => {
   let res = await getTaskMessageApi(timeObj)
@@ -662,7 +659,7 @@ onMounted(() => {
               <el-popover
                 placement="top-start"
                 title="探测内容"
-                :width="200"
+                width="200"
                 trigger="hover"
                 :content="row.traceResult"
               >
@@ -767,7 +764,7 @@ onMounted(() => {
               <el-popover
                 placement="top-start"
                 title="探测内容"
-                :width="200"
+                width="200"
                 trigger="hover"
                 :content="row.traceResult"
               >

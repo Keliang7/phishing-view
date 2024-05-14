@@ -64,22 +64,6 @@ export const constantRouterMap: AppRouteRecordRaw[] = [
       noTagsView: true
     }
   }
-  // {
-  //   path: '/downloadCenter',
-  //   component: () => import('@/views/DownloadCenter/DownloadCenter.vue'),
-  //   name: 'DownloadCenter',
-  //   meta: {
-  //     hidden: true
-  //   }
-  // },
-  // {
-  //   path: '/ViewDetails',
-  //   name: 'ViewDetails',
-  //   component: () => import('@/views/ViewDetails/ViewDetails.vue'),
-  //   meta: {
-  //     hidden: true
-  //   }
-  // }
 ]
 
 export const asyncRouterMap: AppRouteRecordRaw[] = []

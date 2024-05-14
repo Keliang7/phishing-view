@@ -3,15 +3,11 @@ variables:
   SOFT_VERSION: $SOFT_VERSION
   DOCK_HUB: 10.10.11.145:8082
   DOCK_HUB_USER: admin
-  DOCK_HUB_PASSWD: "gqYXy2cPEAgAJ8W"
+  DOCK_HUB_PASSWD: 'gqYXy2cPEAgAJ8W'
   HUB_GROUP_PASSWD: 1234QWERasdf
   LAY_OUT_URL: ${DOCK_HUB}/phishing-system
-
 stages:
-  # - test
   - build
-  # - test-deploy
-  # - prod-deploy
 
 # 缓存
 cache:
@@ -36,10 +32,6 @@ build:
       when: manual
     - if: $CI_COMMIT_BRANCH == "release" && $CI_PIPELINE_SOURCE == "schedule"
       when: on_success
-  # artifacts:
-  #   expire_in: 1 week
-  #   paths:
-  #     - build/deploy_on_k8s/infra_all.yaml
   script:
     - docker build --force-rm -t ${LAY_OUT_URL}/phishing-view:${TAG} -f ./Dockerfile .
     - docker push ${LAY_OUT_URL}/phishing-view:${TAG}
