@@ -250,7 +250,6 @@ const confirmClick = async () => {
     //获取form数据
     let formData = await getFormData()
     if (props.operateType === 'Add') {
-      console.log('zheli')
       let res = await addApi({ ...formData, createBy: 'user' })
       if (res.code == 0) {
         isValid.value = false
@@ -261,8 +260,8 @@ const confirmClick = async () => {
       }
     }
     if (props.operateType === 'Edit') {
-      let temp = props.data?.featureID
-      let res = await editApi({ ...formData, featureID: +temp })
+      let temp = props.data?.id
+      let res = await editApi({ ...formData, id: +temp })
       if (res.code == 0) {
         isValid.value = false
         resetClick()
@@ -272,10 +271,10 @@ const confirmClick = async () => {
       }
     }
     if (props.operateType === 'Delete') {
-      let featureID = +props.data?.featureID
+      let id = +props.data?.id
       let deleteReason = formData.deleteReason
       let reviewer = formData.reviewer
-      let res = await deleteApi({ featureID, deleteReason, reviewer })
+      let res = await deleteApi({ id, deleteReason, reviewer })
       if (res.code == 0) {
         isValid.value = false
         resetClick()

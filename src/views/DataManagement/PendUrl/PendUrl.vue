@@ -645,7 +645,7 @@ const toggleSelection = async () => {
 }
 const handleSelectionChange = (selected: any[]) => {
   selectedId.value = selected.map((i) => i.dataID)
-  if (temp.value.length > selectedId.value.length) {
+  if (temp.value.length >= selectedId.value.length) {
     cancelData.value = temp.value.filter((i) => !selectedId.value.includes(i))
   }
   selectedData.value = selected
@@ -661,11 +661,13 @@ const clearSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
-watch(isCheckedAll, () => {
-  if (isCheckedAll.value) {
+watch(isCheckedAll, (newV) => {
+  clearSelection()
+  if (newV) {
     toggleSelection()
   } else {
-    clearSelection()
+    cancelData.value = []
+    temp.value = dataList.value.map((i) => i.dataID)
   }
 })
 // 导出多选数据

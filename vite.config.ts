@@ -152,6 +152,10 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           target: 'http://10.10.11.131:32085',
           changeOrigin: true
         },
+        '/api/v1/visual_analysis': {
+          target: 'http://10.10.11.131:32085',
+          changeOrigin: true
+        },
         '/api/v1/data_extension': {
           target: 'http://10.10.11.131:32089',
           changeOrigin: true

@@ -1,5 +1,5 @@
 import request from '@/axios'
-export const getListApi = (params: any) => {
+export const getRuleApi = (params: any) => {
   return request.get({ url: '/api/v1/phishing_rule', params })
 }
 export const addApi = (params: any) => {
@@ -18,4 +18,12 @@ export const exportApi = (params: any) => {
 }
 export const importApi = (params: any) => {
   return request.post({ url: '/api/v1/phishing_rule/import', data: params })
+}
+//视觉分析库管理
+export const getVisualApi = (params: any) => {
+  return request.get({ url: '/api/v1/visual_analysis', params })
+}
+//仿冒样本库管理
+export const getSamplelApi = (params: any) => {
+  return request.get({ url: '/api/v1/phishing_sample', params })
 }
