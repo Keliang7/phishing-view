@@ -238,7 +238,12 @@ const Columns: TableColumn[] = [
             <ElButton type="primary" link onClick={() => backtrackFn(data)}>
               {t('tableDemo.recall')}
             </ElButton>
-            <ElButton type="primary" link onClick={() => addCounterfeitFn(data.row.dataID)}>
+            <ElButton
+              disabled
+              type="primary"
+              link
+              onClick={() => addCounterfeitFn(data.row.dataID)}
+            >
               {t('tableDemo.addCounterfeitSample')}
             </ElButton>
           </div>

@@ -590,6 +590,7 @@ onMounted(() => {
             :key="item.name"
             :label="item.label"
             :name="item.name"
+            :disabled="item.name !== 'ruleColumns'"
           />
         </ElTabs>
       </template>
