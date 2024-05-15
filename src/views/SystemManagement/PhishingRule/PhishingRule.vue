@@ -2,13 +2,16 @@
 import { ref, reactive, unref, watch, onMounted } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
+import { ElTabs, ElTabPane, ElButton, ElCheckbox, ElMessage, ElMessageBox } from 'element-plus'
 import { Table, TableColumn } from '@/components/Table'
 import {
   getRuleApi,
   getVisualApi,
   getSamplelApi,
-  exportApi
+  exportApi,
+  deleteSampleApi,
+  deleteVisualApi,
+  intoVisualLabApi
 } from '@/api/systemManagement/PhishingRule'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
@@ -17,6 +20,7 @@ import TableTop from '@/components/TableTop/TableTop.vue'
 import UploadFile from './PhishingRuleComponent/UploadFile.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import PhishingRuleOperate from '@/components/PhishingRuleOperate/PhishingRuleOperate.vue'
+import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
 const { t } = useI18n()
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
@@ -164,12 +168,35 @@ const visualColumns: TableColumn[] = [
     type: 'selection'
   },
   {
-    field: 'webName',
-    label: t('tableDemo.webName'),
-    width: 240
+    field: 'id',
+    label: '视觉检测规则ID',
+    width: 140,
+    headerAlign: 'center',
+    align: 'center'
   },
   {
-    field: 'webPicture',
+    field: 'name',
+    label: '视觉检测规则名称',
+    width: 140,
+    headerAlign: 'center',
+    align: 'center'
+  },
+  {
+    field: 'phishingCount',
+    label: '疑似仿冒数据量',
+    width: 140,
+    headerAlign: 'center',
+    align: 'center'
+  },
+  {
+    field: 'address',
+    label: '网站地址',
+    width: 200,
+    headerAlign: 'center',
+    align: 'center'
+  },
+  {
+    field: 'webScreenshot',
     label: t('tableDemo.webPicture'),
     width: 240
   },
@@ -184,7 +211,7 @@ const visualColumns: TableColumn[] = [
     width: 240
   },
   {
-    field: 'addType',
+    field: 'insertType',
     label: t('tableDemo.addType'),
     width: 240
   },
@@ -210,10 +237,7 @@ const visualColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="primary" link onClick={() => editFn(data)}>
-              {t('tableDemo.edit')}
-            </ElButton>
-            <ElButton type="danger" link onClick={() => deleteFn(data)}>
+            <ElButton type="danger" link onClick={() => delFn(data.row.id)}>
               {t('tableDemo.delete')}
             </ElButton>
           </div>
@@ -229,7 +253,7 @@ const sampleColumns: TableColumn[] = [
     type: 'selection'
   },
   {
-    field: 'dataID',
+    field: 'id',
     label: t('tableDemo.dataID'),
     width: 240
   },
@@ -254,7 +278,7 @@ const sampleColumns: TableColumn[] = [
     width: 240
   },
   {
-    field: 'intention',
+    field: 'intent',
     label: t('tableDemo.intention'),
     width: 240
   },
@@ -269,17 +293,18 @@ const sampleColumns: TableColumn[] = [
     width: 240
   },
   {
-    field: 'FID',
+    field: 'fid',
     label: 'FID',
     width: 240
   },
   {
-    field: 'ICON',
+    field: 'icon',
     label: 'ICON',
-    width: 240
+    width: 240,
+    formatter: (data) => <img class="max-w-18px" src={data.icon}></img>
   },
   {
-    field: 'ICON_hash',
+    field: 'iconHash',
     label: 'ICON_hash',
     width: 240
   },
@@ -303,12 +328,12 @@ const sampleColumns: TableColumn[] = [
     width: 240
   },
   {
-    field: 'state',
+    field: 'UsageStatus',
     label: t('tableDemo.state'),
     width: 240
   },
   {
-    field: 'extractor',
+    field: 'createdBy',
     label: t('tableDemo.extractor'),
     width: 240
   },
@@ -318,15 +343,21 @@ const sampleColumns: TableColumn[] = [
     width: 240
   },
   {
-    field: 'extractedTime',
+    field: 'createdTime',
     label: t('tableDemo.extractedTime'),
     width: 300,
-    formatter: (data) => formatTime(data.extractedTime, 'yyyy-MM-dd HH:mm:ss')
+    formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
-    field: 'operator',
+    field: 'updateBy',
     label: t('tableDemo.operator'),
     width: 240
+  },
+  {
+    field: 'updateTime',
+    label: '更新时间',
+    width: 300,
+    formatter: (data) => formatTime(data.updateTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
     field: 'action',
@@ -339,13 +370,13 @@ const sampleColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div class={'operate-box'}>
-            <ElButton type="primary" link onClick={() => editFn(data)}>
+            <ElButton type="primary" link onClick={() => intoVisualLab(data.row.id)}>
               放入视觉分析库
             </ElButton>
-            <ElButton type="primary" link onClick={() => editFn(data)}>
+            <ElButton type="primary" link onClick={() => addFn()}>
               {t('tableDemo.addDetectionRules')}
             </ElButton>
-            <ElButton type="danger" link onClick={() => deleteFn(data)}>
+            <ElButton type="danger" link onClick={() => delFn(data.row.id)}>
               {t('tableDemo.delete')}
             </ElButton>
           </div>
@@ -379,8 +410,11 @@ const setTable = async (tableName) => {
   await getList()
   loading.value = false
 }
+const isDrawerInfo = ref(false)
+const bodyInfo = ref()
 const openDrawerInfo = (data) => {
-  console.log(data)
+  isDrawerInfo.value = true
+  bodyInfo.value = [{ name: '网页信息', value: data.row.webInfo }]
 }
 // 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
 const searchData = ref({})
@@ -473,7 +507,7 @@ const getSelections = () => {
 }
 //导入
 const isUploadFileDrawer = ref(false)
-//增删改
+//仿冒检测特征增删改
 const operateTitle = ref('')
 const isOperateDrawer = ref(false)
 const operateType = ref('')
@@ -501,6 +535,37 @@ const operateFn = (type) => {
     operateType.value = 'Delete'
   }
   isOperateDrawer.value = true
+}
+//放入视觉分析库
+const intoVisualLab = async (id) => {
+  const res = await intoVisualLabApi({ sampleID: id })
+  if (res.code == 0) {
+    ElMessage.success({
+      message: '截图添加成功'
+    })
+  }
+}
+//视觉分析库和仿冒样本库删除
+const delFn = async (ids) => {
+  let deleteApi
+  ElMessageBox.confirm(t('common.delMessage'), t('common.delWarning'), {
+    confirmButtonText: t('common.delOk'),
+    cancelButtonText: t('common.delCancel'),
+    type: 'warning'
+  }).then(async () => {
+    if (activeName.value == 'visualColumns') {
+      deleteApi = deleteVisualApi
+    } else {
+      deleteApi = deleteSampleApi
+    }
+    const res = await deleteApi({ IDs: [ids] })
+    if (res.code == 0) {
+      ElMessage.success(t('common.delSuccess'))
+      isCheckedAll.value = false
+      clearSelection()
+      getList()
+    }
+  })
 }
 onMounted(() => {
   setProps({
@@ -533,20 +598,17 @@ onMounted(() => {
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
         <ElButton type="primary" @click="addFn"> 添加 </ElButton>
-        <ElButton
-          type="primary"
-          @click="isUploadFileDrawer = !isUploadFileDrawer"
-          v-show="activeName === 'phishingDetectionFeature'"
-        >
-          导入数据
+        <ElButton type="danger" @click="addFn" v-show="activeName !== 'ruleColumns'">
+          批量删除
         </ElButton>
         <ElButton
           type="primary"
-          @click="getSelections"
-          v-show="
-            activeName === 'phishingDetectionFeature' || activeName === 'phishingSampleManagement'
-          "
+          @click="isUploadFileDrawer = !isUploadFileDrawer"
+          v-show="activeName === 'ruleColumns'"
         >
+          导入数据
+        </ElButton>
+        <ElButton type="primary" @click="getSelections" v-show="activeName !== 'visualColumns'">
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
       </template>
@@ -595,5 +657,6 @@ onMounted(() => {
       }
     "
   />
+  <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="'网页信息查看'" :bodyInfo="bodyInfo" />
 </template>
 <style lang="less"></style>
