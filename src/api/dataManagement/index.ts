@@ -9,7 +9,7 @@ export const sourceApi = (params: any) => {
 }
 //加入样本库
 export const joinSampApi = (params: any) => {
-  return request.get({ url: '/api/v1/join_samp_lab', params })
+  return request.post({ url: '/api/v1/phishing_sample', data: params })
 }
 //采集
 export const selectApi = (params: any) => {

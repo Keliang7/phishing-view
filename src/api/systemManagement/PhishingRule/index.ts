@@ -6,11 +6,9 @@ export const addApi = (params: any) => {
   return request.post({ url: '/api/v1/phishing_rule', data: params })
 }
 export const deleteApi = (params: any) => {
-  console.log(params)
   return request.delete({ url: '/api/v1/phishing_rule', data: params })
 }
 export const editApi = (params: any) => {
-  console.log(params)
   return request.put({ url: '/api/v1/phishing_rule', data: params })
 }
 export const exportApi = (params: any) => {
@@ -23,7 +21,16 @@ export const importApi = (params: any) => {
 export const getVisualApi = (params: any) => {
   return request.get({ url: '/api/v1/visual_analysis', params })
 }
+export const deleteVisualApi = (params: any) => {
+  return request.delete({ url: '/api/v1/visual_analysis', data: params })
+}
 //仿冒样本库管理
 export const getSamplelApi = (params: any) => {
   return request.get({ url: '/api/v1/phishing_sample', params })
+}
+export const deleteSampleApi = (params: any) => {
+  return request.delete({ url: '/api/v1/phishing_sample', data: params })
+}
+export const intoVisualLabApi = (params: any) => {
+  return request.post({ url: '/api/v1/visual_analysis', data: params })
 }

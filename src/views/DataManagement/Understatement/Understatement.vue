@@ -280,15 +280,15 @@ const toggleSelection = async () => {
   elTableRef?.toggleAllSelection()
 }
 const handleSelectionChange = (selected: any[]) => {
-  selectedData.value = selected.map((i) => i.ruleContent)
+  selectedData.value = selected.map((i) => i.dataID)
   if (temp.value.length >= selectedData.value.length) {
     cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
   }
 }
 watch(dataList, (newV) => {
-  temp.value.push(...newV.map((i) => i.ruleContent))
+  temp.value.push(...newV.map((i) => i.dataID))
   temp.value = [...new Set(temp.value)]
-  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.ruleContent))) {
+  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.dataID))) {
     toggleSelection()
   }
 })
@@ -328,6 +328,14 @@ const getSelections = () => {
   }
   isDrawerExportFile.value = true
 }
+const fieldName = columns
+  .map((i) => {
+    return {
+      label: i.label,
+      value: i.field
+    }
+  })
+  .slice(1, -1)
 //创建任务
 const isDataExtension = ref(false)
 const extensionFn = () => {
@@ -389,7 +397,7 @@ const dataSource = (data) => {
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"
           stripe
-          row-key="taskID"
+          row-key="dataID"
           :reserve-selection="true"
           :columns="columns"
           :data="dataList"
@@ -409,7 +417,8 @@ const dataSource = (data) => {
   <ExportFile
     v-if="isDrawerExportFile"
     v-model:isDrawer="isDrawerExportFile"
-    title="拓线任务管理"
+    title="漏报数据管理"
+    :fieldName="fieldName"
     :data="initExportDate"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"

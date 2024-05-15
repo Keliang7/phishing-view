@@ -201,7 +201,7 @@ const schema = reactive<FormSchema[]>([
       rules: [required()]
     },
     componentProps: {
-      placeholder: '请输入受害方'
+      placeholder: '请输入意图'
     }
   },
 
