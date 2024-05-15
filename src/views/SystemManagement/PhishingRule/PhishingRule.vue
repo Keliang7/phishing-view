@@ -1,36 +1,32 @@
 <script setup lang="tsx">
-import { ref, reactive, unref, onMounted, watch } from 'vue'
+import { ref, reactive, unref, watch, onMounted } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
 import { Table, TableColumn } from '@/components/Table'
-import { getListApi, exportApi } from '@/api/systemManagement/PhishingRule'
+import {
+  getRuleApi,
+  getVisualApi,
+  getSamplelApi,
+  exportApi
+} from '@/api/systemManagement/PhishingRule'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import UploadFile from './PhishingRuleComponent/UploadFile.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
-// import DeleteData from './PhishingRuleComponent/DeleteData.vue'
 import PhishingRuleOperate from '@/components/PhishingRuleOperate/PhishingRuleOperate.vue'
-// 使用useI18n钩子函数获取国际化相关数据和方法
 const { t } = useI18n()
-// 使用useTable钩子函数获取table相关数据和方法
 const { tableRegister, tableMethods, tableState } = useTable({
-  // fetchDataApi方法用于异步获取表格数据
   fetchDataApi: async () => {
     let res = await getTableData(activeName.value)
-    console.log(res)
     return {
-      list: res.list,
-      total: res.total
+      list: res?.data.list,
+      total: res?.data.total
     }
   }
 })
-// 高级搜索的数据
-const searchData = ref({})
-// 定义canShowPagination变量，用于控制是否显示分页
-const canShowPagination = ref(true)
 const dataArray = ref([
   'checkStatus',
   'featureContent',
@@ -41,37 +37,33 @@ const dataArray = ref([
   'victim',
   'victimType'
 ])
-// 获取tableState中的数据和方法
 let { loading, total, dataList, currentPage, pageSize } = tableState
 const { getList, setProps, getElTableExpose } = tableMethods
-// 定义表格切换器内容
+// tableTop
 const tabColumns = [
   {
     label: t('tableDemo.phishingDetectionFeature'),
-    name: 'phishingDetectionFeature'
+    name: 'ruleColumns'
   },
   {
     label: t('tableDemo.visualAnalysisManagement'),
-    name: 'visualAnalysisManagement'
+    name: 'visualColumns'
   },
   {
     label: t('tableDemo.phishingSampleManagement'),
-    name: 'phishingSampleManagement'
+    name: 'sampleColumns'
   }
 ]
 const activeName = ref(tabColumns[0].name)
-// 定义分页器展示的内容
-const layout = 'prev, pager, next, sizes,jumper,->, total'
-// 定义columns变量，用于存储表格的列配置
 let columns = reactive<TableColumn[]>([])
 // 仿冒检测规则表格列表
-const DetectionColumns: TableColumn[] = [
+const ruleColumns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection'
   },
   {
-    field: 'featureID',
+    field: 'id',
     label: t('tableDemo.featureID'),
     width: 90
   },
@@ -166,7 +158,7 @@ const DetectionColumns: TableColumn[] = [
   }
 ]
 // 视觉分析库管理表格列表
-const VisualColumns: TableColumn[] = [
+const visualColumns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection'
@@ -231,7 +223,7 @@ const VisualColumns: TableColumn[] = [
   }
 ]
 // 仿冒特征库管理表格列表
-const SignatureColumns: TableColumn[] = [
+const sampleColumns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection'
@@ -362,80 +354,64 @@ const SignatureColumns: TableColumn[] = [
     }
   }
 ]
-// 在页面加载完成后，设置columns的值
-onMounted(() => {
-  // 设置columns的值为一个包含列配置的数组
-  setProps({
-    columns: DetectionColumns
-  })
-})
 const getTableData = async (params) => {
-  console.log('chaxuntiaojian', searchData.value)
-  loading.value = true
-  if (params === 'phishingDetectionFeature') {
-    dataArray.value = [
-      'featureContent',
-      'addType',
-      'createdBy',
-      'createdTime',
-      'featureID',
-      'victim',
-      'victimType',
-      'checkStatus'
-    ]
-    setProps({
-      columns: DetectionColumns
-    })
-    const res = await getListApi({
+  let handler = new Map([
+    ['ruleColumns', getRuleApi],
+    ['visualColumns', getVisualApi],
+    ['sampleColumns', getSamplelApi]
+  ]).get(params)
+  if (handler) {
+    const res = await handler({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
       ...searchData.value
     })
-    dataList.value = res.data.list
-    total.value = res.data.total
-  } else if (params === 'visualAnalysisManagement') {
-    dataArray.value = ['websiteName', 'addType', 'victim', 'victimType', 'createdBy', 'createdTime']
-    setProps({
-      columns: VisualColumns
-    })
-  } else if (params === 'phishingSampleManagement') {
-    dataArray.value = [
-      'domain',
-      'ip',
-      'victim',
-      'victimType',
-      'addType',
-      'title',
-      'FID',
-      'ICON_hash',
-      'createdBy',
-      'createdTime'
-    ]
-    setProps({
-      columns: SignatureColumns
-    })
+    return res
   }
+}
+const setTable = async (tableName) => {
+  loading.value = true
+  const temp = { ruleColumns, visualColumns, sampleColumns }
+  setProps({
+    columns: temp[tableName]
+  })
+  dataArray.value = dataArrayMap[tableName] || []
+  await getList()
   loading.value = false
-  return {
-    list: dataList.value,
-    total: total.value
-  }
 }
-const handleClick = async (tab) => {
-  currentPage.value = 1
-  pageSize.value = 10
-  await getTableData(tab.props.name)
-}
-
 const openDrawerInfo = (data) => {
   console.log(data)
 }
 // 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
+const searchData = ref({})
+const dataArrayMap = {
+  ruleColumns: [
+    'featureContent',
+    'addType',
+    'createdBy',
+    'createdTime',
+    'featureID',
+    'victim',
+    'victimType',
+    'checkStatus'
+  ],
+  visualColumns: ['websiteName', 'addType', 'victim', 'victimType', 'createdBy', 'createdTime'],
+  sampleColumns: [
+    'domain',
+    'ip',
+    'victim',
+    'victimType',
+    'addType',
+    'title',
+    'FID',
+    'ICON_hash',
+    'createdBy',
+    'createdTime'
+  ]
+}
 const searchTable = async (value) => {
   searchData.value = value
-  currentPage.value = 1
-  pageSize.value = 10
-  await getTableData(activeName.value)
+  getList()
 }
 //选择全部
 const isCheckedAll = ref(false)
@@ -447,15 +423,15 @@ const toggleSelection = async () => {
   elTableRef?.toggleAllSelection()
 }
 const handleSelectionChange = (selected: any[]) => {
-  selectedData.value = selected.map((i) => i.featureID)
+  selectedData.value = selected.map((i) => i.id)
   if (temp.value.length >= selectedData.value.length) {
     cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
   }
 }
 watch(dataList, (newV) => {
-  temp.value.push(...newV.map((i) => i.featureID))
+  temp.value.push(...newV.map((i) => i.id))
   temp.value = [...new Set(temp.value)]
-  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.featureID))) {
+  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.id))) {
     toggleSelection()
   }
 })
@@ -469,7 +445,7 @@ watch(isCheckedAll, (newV) => {
     toggleSelection()
   } else {
     cancelData.value = []
-    temp.value = dataList.value.map((i) => i.featureID)
+    temp.value = dataList.value.map((i) => i.id)
   }
 })
 //导出
@@ -497,7 +473,6 @@ const getSelections = () => {
 }
 //导入
 const isUploadFileDrawer = ref(false)
-
 //增删改
 const operateTitle = ref('')
 const isOperateDrawer = ref(false)
@@ -527,6 +502,11 @@ const operateFn = (type) => {
   }
   isOperateDrawer.value = true
 }
+onMounted(() => {
+  setProps({
+    columns: ruleColumns
+  })
+})
 </script>
 <template>
   <AdvancedSearch
@@ -539,7 +519,7 @@ const operateFn = (type) => {
   <ContentWrap>
     <TableTop>
       <template #left>
-        <ElTabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
+        <ElTabs v-model="activeName" class="demo-tabs" @tab-change="setTable">
           <ElTabPane
             v-for="item in tabColumns"
             :key="item.name"
@@ -576,19 +556,16 @@ const operateFn = (type) => {
       v-model:currentPage="currentPage"
       :max-height="446"
       stripe
-      row-key="featureID"
+      row-key="id"
       :reserve-selection="true"
+      :image-preview="['webScreenshot']"
       :columns="columns"
       :data="dataList"
       :loading="loading"
-      :pagination="
-        canShowPagination
-          ? {
-              total: total,
-              layout: layout
-            }
-          : undefined
-      "
+      :pagination="{
+        total: total,
+        layout: 'prev, pager, next, sizes,jumper,->, total'
+      }"
       @register="tableRegister"
       @selection-change="handleSelectionChange"
     />

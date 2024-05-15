@@ -6,9 +6,12 @@ variables:
   DOCK_HUB_PASSWD: 'gqYXy2cPEAgAJ8W'
   HUB_GROUP_PASSWD: 1234QWERasdf
   LAY_OUT_URL: ${DOCK_HUB}/phishing-system
+  SSH_PASSWORD: Zzz.1997
+  SSH_USERNAME: zhouchengfei
+
 stages:
   - build
-
+  - deploy
 # 缓存
 cache:
   paths:
@@ -36,26 +39,15 @@ build:
     - docker build --force-rm -t ${LAY_OUT_URL}/phishing-view:${TAG} -f ./Dockerfile .
     - docker push ${LAY_OUT_URL}/phishing-view:${TAG}
     - docker rmi ${LAY_OUT_URL}/phishing-view:${TAG}
-# test环境部署微服务
-# test_infra_service_deploy:
-#   stage: test-deploy
-#   tags:
-#     - test-env
-#   rules:
-#     - if: $CI_PIPELINE_SOURCE != "schedule"
-#       when: manual
-#     - if: $CI_COMMIT_BRANCH == "release" && $CI_PIPELINE_SOURCE == "schedule"
-#       when: on_success
-#   script:
-#     - kubectl apply -f build/deploy_on_k8s/infra_all.yaml -n ${TEST_INFRA_NAMESPACE}
-# MARK: @zcf 注释掉原本计划但是没有被使用的"部署预发版环境"
-# # prod环境部署微服务
-# prod_infra_service_deploy:
-#   stage: prod-deploy
-#   tags:
-#     - prod-env
-#   when: manual
-#   # only:
-#   #   - main
-#   script:
-#     - kubectl apply -f build/deploy_on_k8s/infra_all.yaml -n ${PROD_INFRA_NAMESPACE}
+    
+deploy:
+  stage: deploy
+  tags:
+    - baler
+  script:
+    # 使用SSH连接到目标服务器
+    - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USERNAME@172.16.20.30 \
+      'cd Document/docker/phishing/phising-view && \
+      docker-compose down && \
+      sed -i "s|image:.*|image: ${LAY_OUT_URL}/phishing-view:${TAG}|g" docker-compose.yml && \
+      docker-compose up -d'
