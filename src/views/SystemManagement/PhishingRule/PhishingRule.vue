@@ -558,7 +558,12 @@ const delFn = async (ids) => {
     } else {
       deleteApi = deleteSampleApi
     }
-    const res = await deleteApi({ IDs: [ids] })
+    let res
+    if (ids) {
+      res = await deleteApi({ IDs: [ids] })
+    } else {
+      res = await deleteApi({ IDs: [...unref(selectedData)] })
+    }
     if (res.code == 0) {
       ElMessage.success(t('common.delSuccess'))
       isCheckedAll.value = false
@@ -590,7 +595,6 @@ onMounted(() => {
             :key="item.name"
             :label="item.label"
             :name="item.name"
-            :disabled="item.name !== 'ruleColumns'"
           />
         </ElTabs>
       </template>
@@ -599,7 +603,7 @@ onMounted(() => {
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
         <ElButton type="primary" @click="addFn"> 添加 </ElButton>
-        <ElButton type="danger" @click="addFn" v-show="activeName !== 'ruleColumns'">
+        <ElButton type="danger" @click="delFn(null)" v-show="activeName !== 'ruleColumns'">
           批量删除
         </ElButton>
         <ElButton

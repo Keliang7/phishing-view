@@ -210,13 +210,12 @@ const Columns: TableColumn[] = [
     field: 'analyseAffirmTime',
     label: t('tableDemo.analyseAffirmTime'),
     width: 180,
-    formatter: (data) => formatTime(data.pushTime, 'yyyy-MM-dd HH:mm:ss')
+    formatter: (data) => formatTime(data.analyseAffirmTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
     field: 'analyseAffirmState',
     label: t('tableDemo.analyseAffirmState'),
-    width: 180,
-    formatter: (data) => formatTime(data.pushTime, 'yyyy-MM-dd HH:mm:ss')
+    width: 180
   },
   {
     field: 'action',
@@ -238,12 +237,7 @@ const Columns: TableColumn[] = [
             <ElButton type="primary" link onClick={() => backtrackFn(data)}>
               {t('tableDemo.recall')}
             </ElButton>
-            <ElButton
-              disabled
-              type="primary"
-              link
-              onClick={() => addCounterfeitFn(data.row.dataID)}
-            >
+            <ElButton type="primary" link onClick={() => addCounterfeitFn(data.row.dataID)}>
               {t('tableDemo.addCounterfeitSample')}
             </ElButton>
           </div>
@@ -327,30 +321,37 @@ const sourceMap = {
 
 // 定义表格内操作函数，用于处理点击表格列时的操作
 const addCounterfeitFn = async (id) => {
-  await joinSampApi({ phishingID: id }).then(() => {
-    ElMessageBox({
-      title: '提示',
-      message: h('p', null, [
-        h(Icon, {
-          icon: 'ep:warning-filled',
-          size: 25,
-          style: 'font-size:25px; color:#ffba00; margin-right:10px; top:5px'
-        }),
-        h('span', null, '特征提取成功 '),
-        h(
-          'i',
-          {
-            style: 'color: #32AA9F;cursor:pointer',
-            onClick: () => {
-              router.push({ path: '/system_management/phishing_rule' })
-              // 页面跳转成功之后，关闭提示窗口
-              ElMessageBox.close()
-            }
-          },
-          '去查看'
-        )
-      ])
-    })
+  await joinSampApi({ phishingID: id }).then((res) => {
+    if (res.code == 0) {
+      ElMessageBox({
+        title: '提示',
+        message: h('p', null, [
+          h(Icon, {
+            icon: 'ep:warning-filled',
+            size: 25,
+            style: 'font-size:25px; color:#ffba00; margin-right:10px; top:5px'
+          }),
+          h('span', null, '特征提取成功 '),
+          h(
+            'i',
+            {
+              style: 'color: #32AA9F;cursor:pointer',
+              onClick: () => {
+                router.push({ path: '/system_management/phishing_rule' })
+                // 页面跳转成功之后，关闭提示窗口
+                ElMessageBox.close()
+              }
+            },
+            '去查看'
+          )
+        ])
+      })
+    } else {
+      ElMessageBox({
+        title: '提示',
+        message: '添加失败'
+      })
+    }
   })
 }
 //采集

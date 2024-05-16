@@ -8,3 +8,10 @@
 .el-alert .el-alert__content p.el-alert__description {
   margin-top: 0;
 }
+.el-checkbox__input.is-disabled span.el-checkbox__inner:after {
+  border-width: 0 1px 1px 0;
+  border-style: solid;
+  border-color: var(--el-checkbox-disabled-icon-color);
+  cursor: not-allowed;
+  transform: rotate(45deg) scaleY(1);
+}
