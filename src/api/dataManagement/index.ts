@@ -15,10 +15,6 @@ export const joinSampApi = (params: any) => {
 export const selectApi = (params: any) => {
   return request.post({ url: 'api/v1/gather_task', data: params })
 }
-//导出
-export const exportApi = (params: any) => {
-  return request.post({ url: 'api/v1/data_management/export', data: params })
-}
 //拓线
 export const extensionApi = (params: any) => {
   return request.post({ url: 'api/v1/extension', data: params })

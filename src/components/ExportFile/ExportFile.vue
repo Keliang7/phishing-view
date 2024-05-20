@@ -4,7 +4,7 @@ import { useForm } from '@/hooks/web/useForm'
 import { Form, FormSchema } from '@/components/Form'
 import { reactive } from 'vue'
 import { formatToDateTimeSimple } from '@/utils/dateUtil'
-import { h } from 'vue'
+import { h, ref } from 'vue'
 
 const { formRegister, formMethods } = useForm()
 const { getFormData, setValues, delSchema } = formMethods
@@ -18,15 +18,20 @@ const props = defineProps({
     type: String,
     default: '未命名'
   },
-  data: {
-    type: Object,
-    default: null
-  },
   axiosFn: {
     type: Function
   },
+  ids: {
+    type: Array
+  },
   fieldName: {
     type: Array
+  },
+  conditions: {
+    type: Object
+  },
+  total: {
+    type: Number
   }
 })
 const schema = reactive<FormSchema[]>([
@@ -52,12 +57,12 @@ const schema = reactive<FormSchema[]>([
           value: 'CSV'
         }
       ],
-      slots: {
-        footer: () => (
-          <div class="text-size-12px text-gray">
-            <span class="text-red">提示</span>:CSV导出不支持导出图片
-          </div>
-        )
+      on: {
+        change(v) {
+          if (v === 'CSV') {
+            ElMessage.warning('CSV 文件不支持图片的导出')
+          }
+        }
       }
     }
   },
@@ -77,7 +82,6 @@ const close = () => {
 }
 
 const open = () => {
-  console.log('fieldName', props.fieldName)
   if (!props.fieldName) {
     delSchema('fieldName')
   }
@@ -86,16 +90,22 @@ const open = () => {
   })
 }
 //确认
+const loading = ref(false)
 const confirmClick = async () => {
   let formData = await getFormData()
-  let temp = props.data.exportDate
   if (props.axiosFn) {
-    let res = await props.axiosFn({ ...formData, ...temp })
+    loading.value = true
+    let res = await props
+      .axiosFn({
+        conditions: props.conditions,
+        IDs: props.ids,
+        ...formData
+      })
+      .then(() => (loading.value = false))
     if (res.code == 0) {
       close()
       emit('clear-selection')
       emit('is-checked-all', false)
-      // ElMessage.success(`导出数据成功，请前往下载中心`)
       ElMessage.success({
         message: h('p', { style: 'line-height: 1; font-size: 14px' }, [
           h('span', null, '导出数据成功，请前往 '),
@@ -122,14 +132,13 @@ const confirmClick = async () => {
       :description="'导出数据，一次最多导出5万条数据，多余数据不会导出。导出成功后请前往系统设置—下载中心，下载文件。 如需导出大批量数据，请您使用API导出结果。'"
       :closable="false"
     />
-    <p style="font-size: 12px; color: gray">已选中数据：{{ data.count }}条</p>
+    <p style="font-size: 12px; color: gray">已选中数据：{{ ids?.length || total }}条</p>
     <Form :schema="schema" label-width="fitcontent" :isCol="false" @register="formRegister" />
+    <div>{{ conditions }}</div>
     <template #footer>
       <div style="margin-right: 20px">
         <BaseButton type="default" @click="close">取 消</BaseButton>
-        <BaseButton type="primary" :disabled="data.count == 0" @click="confirmClick"
-          >确 定</BaseButton
-        >
+        <BaseButton :loading="loading" type="primary" @click="confirmClick">确 定</BaseButton>
       </div>
     </template>
   </ElDrawer>

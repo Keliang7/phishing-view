@@ -1,12 +1,11 @@
 <script setup lang="tsx">
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import { ref, unref, watch, onMounted } from 'vue'
-import { ElButton, ElCheckbox, ElRow, ElCol } from 'element-plus'
+import { ElButton, ElCheckbox, ElRow, ElCol, ElMessage } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
-import { getListApi, statisticsApi } from '@/api/dataManagement/understatement'
-import { exportApi } from '@/api/dataManagement'
+import { getListApi, statisticsApi, exportApi } from '@/api/dataManagement/understatement'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
@@ -35,7 +34,10 @@ const { getList, getElTableExpose } = tableMethods
 const columns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => {
+      return !isCheckedAll.value
+    }
   },
   {
     field: 'dataCount',
@@ -182,7 +184,7 @@ const columns: TableColumn[] = [
     width: 180,
     headerAlign: 'center',
     label: '拓线时间',
-    formatter: (data) => formatTime(data.ExtTime, 'yyyy-MM-dd HH:mm:ss')
+    formatter: (data) => formatTime(data.extensionTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
     field: 'extensionStatus',
@@ -270,64 +272,21 @@ const editData = (data) => {
   extensionFn()
 }
 //是否全选
+const ids = ref([])
 const isCheckedAll = ref(false)
-// 选择全部
-const selectedData = ref<TableColumn[]>([])
-const temp = ref<any[]>([])
-const cancelData = ref<any[]>([])
-const toggleSelection = async () => {
-  const elTableRef = await getElTableExpose()
-  elTableRef?.toggleAllSelection()
-}
-const handleSelectionChange = (selected: any[]) => {
-  selectedData.value = selected.map((i) => i.dataID)
-  if (temp.value.length >= selectedData.value.length) {
-    cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
-  }
-}
-watch(dataList, (newV) => {
-  temp.value.push(...newV.map((i) => i.dataID))
-  temp.value = [...new Set(temp.value)]
-  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.dataID))) {
-    toggleSelection()
-  }
-})
 const clearSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
-watch(isCheckedAll, (newV) => {
+const getSelectedIds = async () => {
+  const elTableRef = await getElTableExpose()
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.dataID)
+}
+watch(isCheckedAll, () => {
   clearSelection()
-  if (newV) {
-    toggleSelection()
-  } else {
-    cancelData.value = []
-    temp.value = dataList.value.map((i) => i.dataID)
-  }
 })
 //导出数据
-const isDrawerExportFile = ref(false)
-const initExportDate = ref({})
-const getSelections = () => {
-  if (isCheckedAll.value) {
-    initExportDate.value = {
-      count: unref(total) - cancelData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        arrayNot: cancelData.value
-      }
-    }
-  } else {
-    initExportDate.value = {
-      count: selectedData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        ruleContents: selectedData.value
-      }
-    }
-  }
-  isDrawerExportFile.value = true
-}
+const isExport = ref(false)
 const fieldName = columns
   .map((i) => {
     return {
@@ -336,6 +295,14 @@ const fieldName = columns
     }
   })
   .slice(1, -1)
+const exportFn = async () => {
+  await getSelectedIds()
+  if (ids.value.length || isCheckedAll.value) {
+    isExport.value = true
+  } else {
+    ElMessage.warning('请选择需要导出的数据')
+  }
+}
 //创建任务
 const isDataExtension = ref(false)
 const extensionFn = () => {
@@ -382,7 +349,7 @@ const dataSource = (data) => {
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
         <ElButton type="primary" @click="extensionFn"> 创建任务 </ElButton>
-        <ElButton type="primary" @click="getSelections">
+        <ElButton type="primary" @click="exportFn">
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
       </template>
@@ -398,6 +365,7 @@ const dataSource = (data) => {
           v-model:currentPage="currentPage"
           stripe
           row-key="dataID"
+          :image-preview="['screenshot']"
           :reserve-selection="true"
           :columns="columns"
           :data="dataList"
@@ -406,7 +374,6 @@ const dataSource = (data) => {
             total: total
           }"
           @register="tableRegister"
-          @selection-change="handleSelectionChange"
         />
       </ElCol>
     </ElRow>
@@ -415,11 +382,13 @@ const dataSource = (data) => {
   <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="titleDrawer" :bodyInfo="bodyInfo" />
   <DataSource v-model:isDrawer="isDataSource" :dataSourceData="dataSourceData" />
   <ExportFile
-    v-if="isDrawerExportFile"
-    v-model:isDrawer="isDrawerExportFile"
+    v-if="isExport"
+    v-model:isDrawer="isExport"
     title="漏报数据管理"
     :fieldName="fieldName"
-    :data="initExportDate"
+    :ids="ids"
+    :conditions="{ ...searchData }"
+    :total="total"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
     @is-checked-all="

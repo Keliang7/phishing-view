@@ -12,13 +12,14 @@ import {
   ElDropdownItem,
   ElMessageBox,
   ElRow,
-  ElCol
+  ElCol,
+  ElMessage
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
 import { FormSchema } from '@/components/Form'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
-import { getListApi, statisticsApi } from '@/api/dataManagement/counterfeitManagement'
-import { backtrackApi, exportApi, joinSampApi } from '@/api/dataManagement'
+import { getListApi, statisticsApi, exportApi } from '@/api/dataManagement/counterfeitManagement'
+import { backtrackApi, joinSampApi } from '@/api/dataManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
@@ -53,7 +54,10 @@ const { getElTableExpose, getList } = tableMethods
 const Columns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => {
+      return !isCheckedAll.value
+    }
   },
   {
     field: 'count',
@@ -271,7 +275,6 @@ const tabHeadColumns = [
 ]
 const activeNameH = ref(tabHeadColumns[0].name)
 const setActiveNameH = async (name) => {
-  console.log('这里的name', name)
   activeNameH.value = name
   await setTableSide(name)
 }
@@ -364,7 +367,7 @@ const gatherFn = (data: TableSlotDefault) => {
 // 批量采集
 const gatherAllFn = () => {
   isSelectData.value = true
-  selectData.value = selectedData.value
+  selectData.value = ids.value
 }
 //回溯
 const isBacktrack = ref(false)
@@ -405,40 +408,20 @@ const openDrawerInfo = async (data: TableSlotDefault) => {
 }
 
 // 选择全部
+const ids = ref([])
 const isCheckedAll = ref(false)
-const selectedData = ref<TableColumn[]>([])
-const temp = ref<any[]>([])
-const cancelData = ref<any[]>([])
-const toggleSelection = async () => {
-  const elTableRef = await getElTableExpose()
-  elTableRef?.toggleAllSelection()
-}
-const handleSelectionChange = (selected: any[]) => {
-  selectedData.value = selected.map((i) => i.dataID)
-  if (temp.value.length >= selectedData.value.length) {
-    cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
-  }
-}
-watch(dataList, (newV) => {
-  temp.value.push(...newV.map((i) => i.dataID))
-  temp.value = [...new Set(temp.value)]
-  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.dataID))) {
-    toggleSelection()
-  }
-})
 const clearSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
-watch(isCheckedAll, (newV) => {
+const getSelectedIds = async () => {
+  const elTableRef = await getElTableExpose()
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.dataID)
+}
+watch(isCheckedAll, () => {
   clearSelection()
-  if (newV) {
-    toggleSelection()
-  } else {
-    cancelData.value = []
-    temp.value = dataList.value.map((i) => i.dataID)
-  }
 })
+
 //导出数据
 const fieldName = ref()
 fieldName.value = Columns.map((i) => {
@@ -447,28 +430,14 @@ fieldName.value = Columns.map((i) => {
     value: i.field
   }
 }).slice(1, -1)
-const isDrawerExportFile = ref(false)
-const initExportDate = ref({})
-const getSelections = () => {
-  if (isCheckedAll.value) {
-    initExportDate.value = {
-      count: unref(total) - cancelData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        arrayNot: cancelData.value
-      }
-    }
+const isExport = ref(false)
+const exportFn = async () => {
+  await getSelectedIds()
+  if (ids.value.length || isCheckedAll.value) {
+    isExport.value = true
   } else {
-    initExportDate.value = {
-      count: selectedData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        ruleContents: selectedData.value
-      }
-    }
+    ElMessage.warning('请选择需要导出的数据')
   }
-  titleDrawer.value = '导出数据'
-  isDrawerExportFile.value = true
 }
 </script>
 <template>
@@ -491,7 +460,7 @@ const getSelections = () => {
         </ElTabs>
       </template>
       <template #right>
-        <ElButton type="default" @click="toggleSelection()">
+        <ElButton type="default">
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
         <ElDropdown class="mx-12px">
@@ -499,13 +468,13 @@ const getSelections = () => {
           <template #dropdown>
             <ElDropdownMenu>
               <ElDropdownItem @click="gatherAllFn()">{{ t('tableDemo.gather') }}</ElDropdownItem>
-              <ElDropdownItem @click="extensionFn(selectedData)">{{
+              <ElDropdownItem @click="extensionFn(ids)">{{
                 t('tableDemo.extension')
               }}</ElDropdownItem>
             </ElDropdownMenu>
           </template>
         </ElDropdown>
-        <ElButton type="primary" @click="getSelections">
+        <ElButton type="primary" @click="exportFn">
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
       </template>
@@ -519,19 +488,17 @@ const getSelections = () => {
           :max-height="446"
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"
-          stripe
+          :image-preview="['webScreenshot']"
           row-key="dataID"
-          :reserve-selection="true"
           :columns="Columns"
           :data="dataList"
           :loading="loading"
-          :image-preview="['webScreenshot']"
           :pagination="{
             total: total,
             layout: 'prev, pager, next, sizes,jumper,->, total'
           }"
           @register="tableRegister"
-          @selection-change="handleSelectionChange"
+          :reserve-selection="true"
         />
       </ElCol>
     </ElRow>
@@ -546,11 +513,13 @@ const getSelections = () => {
   />
   <DataExtension v-model:isDrawer="isDataExtension" :title="'创建任务'" />
   <ExportFile
-    v-if="isDrawerExportFile"
-    :fieldName="fieldName"
-    v-model:isDrawer="isDrawerExportFile"
+    v-if="isExport"
+    v-model:isDrawer="isExport"
     title="仿冒数据管理"
-    :data="initExportDate"
+    :fieldName="fieldName"
+    :ids="ids"
+    :conditions="{ ...searchData, tableName: activeNameH }"
+    :total="total"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
     @is-checked-all="
