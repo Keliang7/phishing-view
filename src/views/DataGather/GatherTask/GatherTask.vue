@@ -13,11 +13,8 @@ import SelectData from '@/components/SelectData/SelectData.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import TableTop from '@/components/TableTop/TableTop.vue'
 
-// 使用useI18n钩子函数获取国际化相关数据和方法
 const { t } = useI18n()
-// 使用useTable钩子函数获取table相关数据和方法
 const { tableRegister, tableMethods, tableState } = useTable({
-  // fetchDataApi方法用于异步获取表格数据
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
     const res = await getListApi({
@@ -45,24 +42,12 @@ const searchTable = async (value) => {
   searchData.value = value
   await getList()
 }
-const dataArray = ref([
-  'taskID',
-  'taskName',
-  'createdBy',
-  'createdTime',
-  'finishTime',
-  'distributeType',
-  'probeType',
-  'taskStatus'
-])
-
-// 定义分页器展示的内容
-const layout = 'prev, pager, next, sizes,jumper,->, total'
 // 定义columns变量，用于存储表格的列配置
 const tableColumns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'taskID',
@@ -203,45 +188,43 @@ const stopTask = async (data) => {
   console.log(res)
 }
 
-//是否全选
+//多选
+const ids = ref([])
 const isCheckedAll = ref(false)
-const selectedId = ref<any>([])
-const selectedData = ref()
-const temp = ref<any[]>([])
-const cancelData = ref<any[]>([])
-const toggleSelection = async () => {
-  const elTableRef = await getElTableExpose()
-  elTableRef?.toggleAllSelection()
-}
-const handleSelectionChange = (selected: any[]) => {
-  selectedId.value = selected.map((i) => i.taskID)
-  if (temp.value.length >= selectedId.value.length) {
-    cancelData.value = temp.value.filter((i) => !selectedId.value.includes(i))
-  }
-  selectedData.value = selected
-}
-watch(dataList, (newV) => {
-  temp.value.push(...newV.map((i) => i.taskID))
-  temp.value = [...new Set(temp.value)]
-  if (isCheckedAll.value && !newV.some((i) => selectedId.value.includes(i.taskID))) {
-    toggleSelection()
-  }
-})
 const clearSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
+const getSelectedIds = async () => {
+  const elTableRef = await getElTableExpose()
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.taskID)
+}
 watch(isCheckedAll, (newV) => {
   clearSelection()
-  if (newV) {
-    toggleSelection()
-  } else {
-    cancelData.value = []
-    temp.value = dataList.value.map((i) => i.dataID)
-  }
+  const dom = document.querySelector('.cell .el-checkbox span')
+  if (newV) dom?.classList.add('is-disabled')
+  if (!newV) dom?.classList.remove('is-disabled')
 })
+// 导出多选数据
+const fieldName = ref()
+fieldName.value = tableColumns
+  .map((i) => {
+    return {
+      label: i.label,
+      value: i.field
+    }
+  })
+  .slice(1, -1)
+const isExport = ref(false)
+const exportFn = async () => {
+  await getSelectedIds()
+  if (ids.value.length || isCheckedAll.value) {
+    isExport.value = true
+  } else {
+    ElMessage.warning('请选择需要导出的数据')
+  }
+}
 //删除
-const ids = ref<string[]>([])
 const delLoading = ref(false)
 const delData = async (data) => {
   const elTableExpose = await getElTableExpose()
@@ -255,18 +238,16 @@ const delData = async (data) => {
 }
 //批量删除
 const deleteAllFn = async () => {
-  const temp = cancelData.value
   if (isCheckedAll.value) {
     ElMessageBox.confirm(t('common.delMessage'), t('common.delWarning'), {
       confirmButtonText: t('common.delOk'),
       cancelButtonText: t('common.delCancel'),
       type: 'warning'
     }).then(async () => {
-      const res = await deleteApi({ isCheckedAll: true, temp })
+      const res = await deleteApi({ isCheckedAll: true })
       if (res.code == 0) {
         ElMessage.success(t('common.delSuccess'))
         isCheckedAll.value = false
-        toggleSelection()
         getList()
       }
     })
@@ -274,53 +255,25 @@ const deleteAllFn = async () => {
     delData(null)
   }
 }
-
-// 添加
-
-// 导出多选数据
-const fieldName = tableColumns
-  .map((i) => {
-    return {
-      label: i.label,
-      value: i.field
-    }
-  })
-  .slice(1, -1)
-const isDrawerExportFile = ref(false)
-const initExportDate = ref({})
-const getSelections = () => {
-  if (isCheckedAll.value) {
-    initExportDate.value = {
-      count: unref(total) - cancelData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        arrayNot: cancelData.value
-      }
-    }
-  } else {
-    initExportDate.value = {
-      count: selectedId.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        ruleContents: selectedId.value
-      }
-    }
-  }
-  isDrawerExportFile.value = true
-}
-
 //创建任务
 const isSelectData = ref(false)
 const buildTaskFn = () => {
   isSelectData.value = true
 }
-// 定义canShowPagination变量，用于控制是否显示分页
-const canShowPagination = ref(true)
 </script>
 <template>
   <AdvancedSearch
     :total="total"
-    :dataArray="dataArray"
+    :dataArray="[
+      'taskID',
+      'taskName',
+      'createdBy',
+      'createdTime',
+      'finishTime',
+      'distributeType',
+      'probeType',
+      'taskStatus'
+    ]"
     :tipTitle="'系统默认展示当天拓线数据，最多可查看30天内数据，超出30天数据不会留存。'"
     @search-data="searchTable"
     :title="`任务采集管理`"
@@ -333,7 +286,7 @@ const canShowPagination = ref(true)
         </ElButton>
         <ElButton type="default" @click="deleteAllFn"> 批量删除 </ElButton>
         <ElButton type="primary" @click="buildTaskFn">创建任务</ElButton>
-        <ElButton type="primary" @click="getSelections">
+        <ElButton type="primary" @click="exportFn">
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
       </template>
@@ -349,24 +302,22 @@ const canShowPagination = ref(true)
       :columns="tableColumns"
       :data="dataList"
       :loading="loading"
-      :pagination="
-        canShowPagination
-          ? {
-              total: total,
-              layout: layout
-            }
-          : undefined
-      "
+      :pagination="{
+        total: total,
+        layout: 'prev, pager, next, sizes,jumper,->, total'
+      }"
       @register="tableRegister"
-      @selection-change="handleSelectionChange"
     />
   </ContentWrap>
   <SelectData :isFile="true" v-model:isDrawer="isSelectData" :title="'添加任务'" />
   <ExportFile
-    v-model:isDrawer="isDrawerExportFile"
-    title="数据采集任务"
+    v-if="isExport"
+    v-model:isDrawer="isExport"
+    title="采集任务管理"
     :fieldName="fieldName"
-    :data="initExportDate"
+    :ids="ids"
+    :conditions="{ ...searchData }"
+    :total="total"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
     @is-checked-all="

@@ -80,11 +80,8 @@ const emit = defineEmits(['update:isDrawer', 'clear-selection', 'is-checked-all'
 const close = () => {
   emit('update:isDrawer', false)
 }
-
 const open = () => {
-  if (!props.fieldName) {
-    delSchema('fieldName')
-  }
+  if (!props.fieldName) delSchema('fieldName')
   setValues({
     fileName: `${props.title}_${formatToDateTimeSimple(Date.now())}`
   })
@@ -134,7 +131,6 @@ const confirmClick = async () => {
     />
     <p style="font-size: 12px; color: gray">已选中数据：{{ ids?.length || total }}条</p>
     <Form :schema="schema" label-width="fitcontent" :isCol="false" @register="formRegister" />
-    <div>{{ conditions }}</div>
     <template #footer>
       <div style="margin-right: 20px">
         <BaseButton type="default" @click="close">取 消</BaseButton>

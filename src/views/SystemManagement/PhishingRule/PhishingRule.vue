@@ -64,7 +64,8 @@ let columns = reactive<TableColumn[]>([])
 const ruleColumns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'id',
@@ -165,7 +166,8 @@ const ruleColumns: TableColumn[] = [
 const visualColumns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'id',
@@ -250,7 +252,8 @@ const visualColumns: TableColumn[] = [
 const sampleColumns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'id',
@@ -402,6 +405,7 @@ const getTableData = async (params) => {
 }
 const setTable = async (tableName) => {
   loading.value = true
+  isCheckedAll.value = false
   const temp = { ruleColumns, visualColumns, sampleColumns }
   setProps({
     columns: temp[tableName]
@@ -448,62 +452,31 @@ const searchTable = async (value) => {
   getList()
 }
 //选择全部
+const ids = ref([])
 const isCheckedAll = ref(false)
-const selectedData = ref<TableColumn[]>([])
-const temp = ref<any[]>([])
-const cancelData = ref<any[]>([])
-const toggleSelection = async () => {
-  const elTableRef = await getElTableExpose()
-  elTableRef?.toggleAllSelection()
-}
-const handleSelectionChange = (selected: any[]) => {
-  selectedData.value = selected.map((i) => i.id)
-  if (temp.value.length >= selectedData.value.length) {
-    cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
-  }
-}
-watch(dataList, (newV) => {
-  temp.value.push(...newV.map((i) => i.id))
-  temp.value = [...new Set(temp.value)]
-  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.id))) {
-    toggleSelection()
-  }
-})
 const clearSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
+const getSelectedIds = async () => {
+  const elTableRef = await getElTableExpose()
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.ruleContent)
+}
 watch(isCheckedAll, (newV) => {
   clearSelection()
-  if (newV) {
-    toggleSelection()
-  } else {
-    cancelData.value = []
-    temp.value = dataList.value.map((i) => i.id)
-  }
+  const dom = document.querySelector('.cell .el-checkbox span')
+  if (newV) dom?.classList.add('is-disabled')
+  if (!newV) dom?.classList.remove('is-disabled')
 })
 //导出
-const isDrawerExportFile = ref(false)
-const initExportDate = ref({})
-const getSelections = () => {
-  if (isCheckedAll.value) {
-    initExportDate.value = {
-      count: unref(total) - cancelData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        arrayNot: cancelData.value.map((i) => Number(i))
-      }
-    }
+const isExport = ref(false)
+const exportFn = async () => {
+  await getSelectedIds()
+  if (ids.value.length || isCheckedAll.value) {
+    isExport.value = true
   } else {
-    initExportDate.value = {
-      count: selectedData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        ruleContents: selectedData.value.map((i) => Number(i))
-      }
-    }
+    ElMessage.warning('请选择需要导出的数据')
   }
-  isDrawerExportFile.value = true
 }
 //导入
 const isUploadFileDrawer = ref(false)
@@ -562,7 +535,7 @@ const delFn = async (ids) => {
     if (ids) {
       res = await deleteApi({ IDs: [ids] })
     } else {
-      res = await deleteApi({ IDs: [...unref(selectedData)] })
+      res = await deleteApi({ IDs: [...ids.value] })
     }
     if (res.code == 0) {
       ElMessage.success(t('common.delSuccess'))
@@ -613,7 +586,7 @@ onMounted(() => {
         >
           导入数据
         </ElButton>
-        <ElButton type="primary" @click="getSelections" v-show="activeName !== 'visualColumns'">
+        <ElButton type="primary" @click="exportFn" v-show="activeName !== 'visualColumns'">
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
       </template>
@@ -634,14 +607,15 @@ onMounted(() => {
         layout: 'prev, pager, next, sizes,jumper,->, total'
       }"
       @register="tableRegister"
-      @selection-change="handleSelectionChange"
     />
   </ContentWrap>
   <UploadFile v-model:isDrawer="isUploadFileDrawer" :title="'上传数据'" @get-data="getList" />
   <ExportFile
-    v-model:isDrawer="isDrawerExportFile"
+    v-model:isDrawer="isExport"
     title="仿冒规则检查"
-    :data="initExportDate"
+    :ids="ids"
+    :conditions="{ ...searchData }"
+    :total="total"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
     @is-checked-all="

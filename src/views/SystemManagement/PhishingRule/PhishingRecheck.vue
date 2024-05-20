@@ -37,7 +37,7 @@ const columns: TableColumn[] = [
     type: 'selection'
   },
   {
-    field: 'featureID',
+    field: 'id',
     label: '特征ID'
   },
   {
@@ -213,7 +213,7 @@ const recheckOrViewFn = async (data, title) => {
       v-model:currentPage="currentPage"
       :max-height="446"
       stripe
-      row-key="taskID"
+      row-key="id"
       :reserve-selection="true"
       :columns="columns"
       :data="dataList"
