@@ -63,9 +63,7 @@ const BWColumns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection',
-    selectable: () => {
-      return !isCheckedAll.value
-    }
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'dataID',
@@ -177,9 +175,7 @@ const DomainColumns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection',
-    selectable: () => {
-      return !isCheckedAll.value
-    }
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'dataID',
@@ -246,9 +242,7 @@ const URLColumns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection',
-    selectable: () => {
-      return !isCheckedAll.value
-    }
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'dataID',
@@ -355,9 +349,7 @@ const TLSColumns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection',
-    selectable: () => {
-      return !isCheckedAll.value
-    }
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'dataID',
@@ -458,9 +450,7 @@ const ExtColumns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection',
-    selectable: () => {
-      return !isCheckedAll.value
-    }
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'dataID',
@@ -581,6 +571,7 @@ const getTableData = async (params) => {
 }
 const setTable = async (tableName) => {
   loading.value = true
+  isCheckedAll.value = false
   const temp = { BWColumns, DomainColumns, URLColumns, TLSColumns, ExtColumns }
   setProps({
     columns: temp[tableName]
@@ -595,7 +586,6 @@ const setTable = async (tableName) => {
       }
     })
     .slice(1, -1)
-  console.log(fieldName.value)
   loading.value = false
 }
 //search
@@ -650,8 +640,11 @@ const getSelectedIds = async () => {
   const elTableRef = await getElTableExpose()
   ids.value = elTableRef?.getSelectionRows().map((i) => i.dataID)
 }
-watch(isCheckedAll, () => {
+watch(isCheckedAll, (newV) => {
   clearSelection()
+  const dom = document.querySelector('.cell .el-checkbox span')
+  if (newV) dom?.classList.add('is-disabled')
+  if (!newV) dom?.classList.remove('is-disabled')
 })
 // 导出多选数据
 const fieldName = ref()

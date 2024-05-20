@@ -2,7 +2,7 @@
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import { ref, unref, watch, onBeforeMount } from 'vue'
 import { Table, TableColumn } from '@/components/Table'
-import { ElButton, ElCheckbox } from 'element-plus'
+import { ElButton, ElCheckbox, ElMessage } from 'element-plus'
 import { useTable } from '@/hooks/web/useTable'
 import { getListApi, exportApi } from '@/api/dataExtension/extensionResult'
 import { formatTime } from '@/utils/index'
@@ -41,7 +41,8 @@ const { getList, getElTableExpose } = tableMethods
 const columns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'dataID',
@@ -121,63 +122,41 @@ const searchTable = async (value) => {
   searchData.value = value
   await getList()
 }
-// 选择全部
+// 多选
+const ids = ref([])
 const isCheckedAll = ref(false)
-const selectedData = ref<TableColumn[]>([])
-const temp = ref<any[]>([])
-const cancelData = ref<any[]>([])
-const toggleSelection = async () => {
-  const elTableRef = await getElTableExpose()
-  elTableRef?.toggleAllSelection()
-}
-const handleSelectionChange = (selected: any[]) => {
-  selectedData.value = selected.map((i) => i.dataID)
-  if (temp.value.length >= selectedData.value.length) {
-    cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
-  }
-}
-watch(dataList, (newV) => {
-  temp.value.push(...newV.map((i) => i.dataID))
-  temp.value = [...new Set(temp.value)]
-  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.dataID))) {
-    toggleSelection()
-  }
-})
 const clearSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
+const getSelectedIds = async () => {
+  const elTableRef = await getElTableExpose()
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.dataID)
+}
 watch(isCheckedAll, (newV) => {
   clearSelection()
-  if (newV) {
-    toggleSelection()
-  } else {
-    cancelData.value = []
-    temp.value = dataList.value.map((i) => i.dataID)
-  }
+  const dom = document.querySelector('.cell .el-checkbox span')
+  if (newV) dom?.classList.add('is-disabled')
+  if (!newV) dom?.classList.remove('is-disabled')
 })
-//导出数据
-const isDrawerExportFile = ref(false)
-const initExportDate = ref({})
-const getSelections = () => {
-  if (isCheckedAll.value) {
-    initExportDate.value = {
-      count: unref(total) - cancelData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        arrayNot: cancelData.value
-      }
+// 导出多选数据
+const fieldName = ref()
+fieldName.value = columns
+  .map((i) => {
+    return {
+      label: i.label,
+      value: i.field
     }
+  })
+  .slice(1, -1)
+const isExport = ref(false)
+const exportFn = async () => {
+  await getSelectedIds()
+  if (ids.value.length || isCheckedAll.value) {
+    isExport.value = true
   } else {
-    initExportDate.value = {
-      count: selectedData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        ruleContents: selectedData.value
-      }
-    }
+    ElMessage.warning('请选择需要导出的数据')
   }
-  isDrawerExportFile.value = true
 }
 onBeforeMount(() => {
   // 在组件挂载之前执行的逻辑
@@ -203,7 +182,7 @@ onBeforeMount(() => {
         <ElButton type="default">
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
-        <ElButton type="primary" @click="getSelections">
+        <ElButton type="primary" @click="exportFn">
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
       </template>
@@ -222,12 +201,15 @@ onBeforeMount(() => {
         total: total
       }"
       @register="tableRegister"
-      @selection-change="handleSelectionChange"
     />
     <ExportFile
-      v-model:isDrawer="isDrawerExportFile"
+      v-if="isExport"
+      v-model:isDrawer="isExport"
       title="拓线结果管理"
-      :data="initExportDate"
+      :fieldName="fieldName"
+      :ids="ids"
+      :conditions="{ ...searchData }"
+      :total="total"
       :axiosFn="exportApi"
       @clear-selection="clearSelection"
       @is-checked-all="

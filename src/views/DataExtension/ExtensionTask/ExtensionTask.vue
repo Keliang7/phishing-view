@@ -2,7 +2,7 @@
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import { onMounted, ref, unref, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
-import { ElButton, ElCheckbox, ElRow, ElCol } from 'element-plus'
+import { ElButton, ElCheckbox, ElRow, ElCol, ElMessage } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
@@ -36,7 +36,8 @@ const { getList, getElTableExpose } = tableMethods
 const columns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'taskID',
@@ -178,64 +179,41 @@ const editData = (data) => {
   console.log(data)
   extensionFn()
 }
-//是否全选
+//多选
+const ids = ref([])
 const isCheckedAll = ref(false)
-// 选择全部
-const selectedData = ref<TableColumn[]>([])
-const temp = ref<any[]>([])
-const cancelData = ref<any[]>([])
-const toggleSelection = async () => {
-  const elTableRef = await getElTableExpose()
-  elTableRef?.toggleAllSelection()
-}
-const handleSelectionChange = (selected: any[]) => {
-  selectedData.value = selected.map((i) => i.taskID)
-  if (temp.value.length >= selectedData.value.length) {
-    cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
-  }
-}
-watch(dataList, (newV) => {
-  temp.value.push(...newV.map((i) => i.taskID))
-  temp.value = [...new Set(temp.value)]
-  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.taskID))) {
-    toggleSelection()
-  }
-})
 const clearSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
+const getSelectedIds = async () => {
+  const elTableRef = await getElTableExpose()
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.taskID)
+}
 watch(isCheckedAll, (newV) => {
   clearSelection()
-  if (newV) {
-    toggleSelection()
-  } else {
-    cancelData.value = []
-    temp.value = dataList.value.map((i) => i.dataID)
-  }
+  const dom = document.querySelector('.cell .el-checkbox span')
+  if (newV) dom?.classList.add('is-disabled')
+  if (!newV) dom?.classList.remove('is-disabled')
 })
-//导出数据
-const isDrawerExportFile = ref(false)
-const initExportDate = ref({})
-const getSelections = () => {
-  if (isCheckedAll.value) {
-    initExportDate.value = {
-      count: unref(total) - cancelData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        arrayNot: cancelData.value
-      }
+// 导出多选数据
+const fieldName = ref()
+fieldName.value = columns
+  .map((i) => {
+    return {
+      label: i.label,
+      value: i.field
     }
+  })
+  .slice(1, -1)
+const isExport = ref(false)
+const exportFn = async () => {
+  await getSelectedIds()
+  if (ids.value.length || isCheckedAll.value) {
+    isExport.value = true
   } else {
-    initExportDate.value = {
-      count: selectedData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        ruleContents: selectedData.value
-      }
-    }
+    ElMessage.warning('请选择需要导出的数据')
   }
-  isDrawerExportFile.value = true
 }
 //创建任务
 const isDataExtension = ref(false)
@@ -258,7 +236,7 @@ const extensionFn = () => {
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
         <ElButton type="primary" @click="extensionFn"> 创建任务 </ElButton>
-        <ElButton type="primary" @click="getSelections">
+        <ElButton type="primary" @click="exportFn">
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
       </template>
@@ -282,16 +260,19 @@ const extensionFn = () => {
             total: total
           }"
           @register="tableRegister"
-          @selection-change="handleSelectionChange"
         />
       </ElCol>
     </ElRow>
   </ContentWrap>
   <DataExtension v-model:isDrawer="isDataExtension" :title="'创建任务'" />
   <ExportFile
-    v-model:isDrawer="isDrawerExportFile"
+    v-if="isExport"
+    v-model:isDrawer="isExport"
     title="拓线任务管理"
-    :data="initExportDate"
+    :fieldName="fieldName"
+    :ids="ids"
+    :conditions="{ ...searchData }"
+    :total="total"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
     @is-checked-all="

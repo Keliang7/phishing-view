@@ -55,9 +55,7 @@ const Columns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection',
-    selectable: () => {
-      return !isCheckedAll.value
-    }
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'count',

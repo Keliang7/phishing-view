@@ -1,7 +1,7 @@
 <script setup lang="tsx">
-import { ref, unref, onMounted, watch, onBeforeMount } from 'vue'
+import { ref, unref, watch, onBeforeMount } from 'vue'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElButton, ElCheckbox } from 'element-plus'
+import { ElButton, ElCheckbox, ElMessage } from 'element-plus'
 import { Table, TableColumn } from '@/components/Table'
 import { getListApi, exportApi } from '@/api/dataGather/gatherResult'
 import { useTable } from '@/hooks/web/useTable'
@@ -14,11 +14,7 @@ import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-
-// 使用useI18n钩子函数获取国际化相关数据和方法
-// 使用useTable钩子函数获取table相关数据和方法
 const { tableRegister, tableMethods, tableState } = useTable({
-  // fetchDataApi方法用于异步获取表格数据
   immediate: true,
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
@@ -33,35 +29,20 @@ const { tableRegister, tableMethods, tableState } = useTable({
     }
   }
 })
-// 获取tableState中的数据和方法
 let { loading, total, dataList, currentPage, pageSize } = tableState
 const { getList, getElTableExpose } = tableMethods
 // 高级搜索的数据
 const searchData = ref({})
 const searchTable = async (value) => {
-  console.log('这边的搜索也执行了')
   searchData.value = value
   await getList()
 }
-const dataArray = ref([
-  'taskID',
-  'taskName',
-  'createdBy',
-  'title',
-  'discoveryTime',
-  'domain',
-  'ip',
-  'FID',
-  'netStatusCode',
-  'icon'
-])
-// 定义分页器展示的内容
-const layout = 'prev, pager, next, sizes,jumper,->, total'
 // 定义columns变量，用于存储表格的列配置
 const resultColumns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => !isCheckedAll.value
   },
   {
     field: 'dataID',
@@ -187,7 +168,6 @@ const resultColumns: TableColumn[] = [
     label: '创建人'
   }
 ]
-
 const action = (data) => {
   const url = router.resolve({ path: '/ViewDetails', query: { IP: data.IP, dataID: data.dataID } })
   window.open(url.href, '_blank')
@@ -198,78 +178,34 @@ const openDrawerInfo = (data) => {
   isDrawerInfo.value = true
   bodyInfo.value = [{ name: '网页信息', value: data.row.webInfo }]
 }
-
-// 在页面加载完成后，设置columns的值
-
 onBeforeMount(() => {
   // 在组件挂载之前执行的逻辑
   const route = useRoute()
   if (route.query && route.query.taskID) {
-    console.log('我确定我执行了')
     const taskID = route.query.taskID
     searchData.value = { taskID }
   }
 })
-onMounted(() => {})
-//是否全选
+//多选
+const ids = ref([])
 const isCheckedAll = ref(false)
-const selectedData = ref<TableColumn[]>([])
-const temp = ref<any[]>([])
-const cancelData = ref<any[]>([])
-const toggleSelection = async () => {
-  const elTableRef = await getElTableExpose()
-  elTableRef?.toggleAllSelection()
-}
-const handleSelectionChange = (selected: any[]) => {
-  selectedData.value = selected.map((i) => i.dataID)
-  if (temp.value.length >= selectedData.value.length) {
-    cancelData.value = temp.value.filter((i) => !selectedData.value.includes(i))
-  }
-}
-watch(dataList, (newV) => {
-  temp.value.push(...newV.map((i) => i.dataID))
-  temp.value = [...new Set(temp.value)]
-  if (isCheckedAll.value && !newV.some((i) => selectedData.value.includes(i.dataID))) {
-    toggleSelection()
-  }
-})
 const clearSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
+const getSelectedIds = async () => {
+  const elTableRef = await getElTableExpose()
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.dataID)
+}
 watch(isCheckedAll, (newV) => {
   clearSelection()
-  if (newV) {
-    toggleSelection()
-  } else {
-    cancelData.value = []
-    temp.value = dataList.value.map((i) => i.dataID)
-  }
+  const dom = document.querySelector('.cell .el-checkbox span')
+  if (newV) dom?.classList.add('is-disabled')
+  if (!newV) dom?.classList.remove('is-disabled')
 })
-//导出数据
-const isDrawerExportFile = ref(false)
-const initExportDate = ref({})
-const getSelections = () => {
-  if (isCheckedAll.value) {
-    initExportDate.value = {
-      count: unref(total) - cancelData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        arrayNot: cancelData.value
-      }
-    }
-  } else {
-    initExportDate.value = {
-      count: selectedData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        ruleContents: selectedData.value
-      }
-    }
-  }
-  isDrawerExportFile.value = true
-}
-const fieldName = resultColumns
+// 导出多选数据
+const fieldName = ref()
+fieldName.value = resultColumns
   .map((i) => {
     return {
       label: i.label,
@@ -277,13 +213,33 @@ const fieldName = resultColumns
     }
   })
   .slice(1, -1)
+const isExport = ref(false)
+const exportFn = async () => {
+  await getSelectedIds()
+  if (ids.value.length || isCheckedAll.value) {
+    isExport.value = true
+  } else {
+    ElMessage.warning('请选择需要导出的数据')
+  }
+}
 </script>
 <template>
   <AdvancedSearch
     :total="total"
     :title="`采集结果查看`"
     :tipTitle="'系统默认展示当天拓线数据，最多可查看30天内数据，超出30天数据不会留存。'"
-    :dataArray="dataArray"
+    :dataArray="[
+      'taskID',
+      'taskName',
+      'createdBy',
+      'title',
+      'discoveryTime',
+      'domain',
+      'ip',
+      'FID',
+      'netStatusCode',
+      'icon'
+    ]"
     @search-data="searchTable"
   />
   <ContentWrap class="table-box">
@@ -292,7 +248,7 @@ const fieldName = resultColumns
         <ElButton type="default">
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
-        <ElButton type="primary" @click="getSelections">
+        <ElButton type="primary" @click="exportFn">
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
       </template>
@@ -310,17 +266,18 @@ const fieldName = resultColumns
       :loading="loading"
       :pagination="{
         total: total,
-        layout: layout
+        layout: 'prev, pager, next, sizes,jumper,->, total'
       }"
       @register="tableRegister"
-      @selection-change="handleSelectionChange"
     />
   </ContentWrap>
   <ExportFile
-    v-model:isDrawer="isDrawerExportFile"
-    title="采集结果管理"
-    :data="initExportDate"
+    v-model:isDrawer="isExport"
+    title="采集结果查看"
     :fieldName="fieldName"
+    :ids="ids"
+    :conditions="{ ...searchData }"
+    :total="total"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
     @is-checked-all="
