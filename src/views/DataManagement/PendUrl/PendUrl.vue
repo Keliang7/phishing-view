@@ -2,16 +2,17 @@
 import { ref, reactive, unref, onMounted, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElTabs, ElTabPane, ElButton, ElCheckbox } from 'element-plus'
+import { ElTabs, ElTabPane, ElButton, ElCheckbox, ElMessage } from 'element-plus'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
 import {
   getBwListApi,
   getDomainListApi,
   getURLListApi,
   getTLSListApi,
-  getExtListApi
+  getExtListApi,
+  exportApi
 } from '@/api/dataManagement/pendUrl'
-import { exportApi, backtrackApi } from '@/api/dataManagement'
+import { backtrackApi } from '@/api/dataManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
@@ -33,7 +34,7 @@ const { tableRegister, tableMethods, tableState } = useTable({
 })
 const { loading, total, dataList, currentPage, pageSize } = tableState
 const { setProps, getElTableExpose, getList } = tableMethods
-//tableTop
+//table
 const tabColumns = [
   {
     label: t('tableDemo.bw'),
@@ -58,11 +59,13 @@ const tabColumns = [
 ]
 const activeName = ref(tabColumns[0].name)
 const columns = reactive<TableColumn[]>([])
-// BW监测子系统表头内容
 const BWColumns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => {
+      return !isCheckedAll.value
+    }
   },
   {
     field: 'dataID',
@@ -170,11 +173,13 @@ const BWColumns: TableColumn[] = [
     }
   }
 ]
-// 对比BW只有域名
 const DomainColumns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => {
+      return !isCheckedAll.value
+    }
   },
   {
     field: 'dataID',
@@ -237,11 +242,13 @@ const DomainColumns: TableColumn[] = [
     }
   }
 ]
-// URL对比BW没有 规则ID
 const URLColumns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => {
+      return !isCheckedAll.value
+    }
   },
   {
     field: 'dataID',
@@ -344,11 +351,13 @@ const URLColumns: TableColumn[] = [
     }
   }
 ]
-// TSL和EXT没有url 对比URL
 const TLSColumns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => {
+      return !isCheckedAll.value
+    }
   },
   {
     field: 'dataID',
@@ -448,7 +457,10 @@ const TLSColumns: TableColumn[] = [
 const ExtColumns: TableColumn[] = [
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
+    selectable: () => {
+      return !isCheckedAll.value
+    }
   },
   {
     field: 'dataID',
@@ -545,6 +557,11 @@ const ExtColumns: TableColumn[] = [
     }
   }
 ]
+onMounted(() => {
+  setProps({
+    columns: BWColumns
+  })
+})
 const getTableData = async (params) => {
   let handler = new Map([
     ['BWColumns', getBwListApi],
@@ -562,7 +579,6 @@ const getTableData = async (params) => {
     return res
   }
 }
-//给我表名，我帮你设置table
 const setTable = async (tableName) => {
   loading.value = true
   const temp = { BWColumns, DomainColumns, URLColumns, TLSColumns, ExtColumns }
@@ -582,18 +598,13 @@ const setTable = async (tableName) => {
   console.log(fieldName.value)
   loading.value = false
 }
-//高级搜索
+//search
 const dataArray = ref(['url', 'domain', 'ip', 'collectStatus', 'discoveryTime'])
 const searchData = ref({})
 const searchTable = async (value) => {
   searchData.value = value
   getList()
 }
-onMounted(() => {
-  setProps({
-    columns: BWColumns
-  })
-})
 // 采集任务事件
 const isSelectData = ref(false)
 const selectData = ref()
@@ -601,12 +612,7 @@ const gatherFn = (data: TableSlotDefault) => {
   isSelectData.value = true
   selectData.value = [data.row]
 }
-//批量采集
-const gatherAllFn = () => {
-  isSelectData.value = true
-  selectData.value = selectedData.value
-}
-//回溯
+//backtrack
 const isBacktrack = ref(false)
 const backtrackData = ref()
 const backtrackFn = async (data) => {
@@ -633,42 +639,19 @@ const openDrawerInfo = async (data) => {
     }
   ]
 }
-// 选择全部
+// 选择
+const ids = ref([])
 const isCheckedAll = ref(false)
-const selectedId = ref<any[]>([])
-const selectedData = ref()
-const temp = ref<any[]>([])
-const cancelData = ref<any[]>([])
-const toggleSelection = async () => {
-  const elTableRef = await getElTableExpose()
-  elTableRef?.toggleAllSelection()
-}
-const handleSelectionChange = (selected: any[]) => {
-  selectedId.value = selected.map((i) => i.dataID)
-  if (temp.value.length >= selectedId.value.length) {
-    cancelData.value = temp.value.filter((i) => !selectedId.value.includes(i))
-  }
-  selectedData.value = selected
-}
-watch(dataList, (newV) => {
-  temp.value.push(...newV.map((i) => i.dataID))
-  temp.value = [...new Set(temp.value)]
-  if (isCheckedAll.value && !newV.some((i) => selectedId.value.includes(i.dataID))) {
-    toggleSelection()
-  }
-})
 const clearSelection = async () => {
   const elTableRef = await getElTableExpose()
   elTableRef?.clearSelection()
 }
-watch(isCheckedAll, (newV) => {
+const getSelectedIds = async () => {
+  const elTableRef = await getElTableExpose()
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.dataID)
+}
+watch(isCheckedAll, () => {
   clearSelection()
-  if (newV) {
-    toggleSelection()
-  } else {
-    cancelData.value = []
-    temp.value = dataList.value.map((i) => i.dataID)
-  }
 })
 // 导出多选数据
 const fieldName = ref()
@@ -678,28 +661,14 @@ fieldName.value = BWColumns.map((i) => {
     value: i.field
   }
 }).slice(1, -1)
-const isDrawerExportFile = ref(false)
-const initExportDate = ref({})
-const getSelections = () => {
-  if (isCheckedAll.value) {
-    initExportDate.value = {
-      count: unref(total) - cancelData.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        arrayNot: cancelData.value
-      }
-    }
+const isExport = ref(false)
+const exportFn = async () => {
+  await getSelectedIds()
+  if (ids.value.length || isCheckedAll.value) {
+    isExport.value = true
   } else {
-    initExportDate.value = {
-      count: selectedId.value.length,
-      exportDate: {
-        exportAll: isCheckedAll.value,
-        ruleContents: selectedId.value
-      }
-    }
+    ElMessage.warning('请选择需要导出的数据')
   }
-  titleDrawer.value = '导出数据'
-  isDrawerExportFile.value = true
 }
 </script>
 <template>
@@ -725,10 +694,8 @@ const getSelections = () => {
         <ElButton type="default">
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
-        <ElButton type="default" @click="gatherAllFn">
-          <Icon icon="ep:operation" /> 批量采集
-        </ElButton>
-        <ElButton type="primary" @click="getSelections">
+        <ElButton type="default"> <Icon icon="ep:operation" /> 批量采集 </ElButton>
+        <ElButton type="primary" @click="exportFn">
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
       </template>
@@ -748,17 +715,18 @@ const getSelections = () => {
       }"
       @register="tableRegister"
       :reserve-selection="true"
-      @selection-change="handleSelectionChange"
     />
   </ContentWrap>
   <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="titleDrawer" :bodyInfo="bodyInfo" />
   <SelectData v-model:isDrawer="isSelectData" :title="'添加任务'" :data="selectData" />
   <ExportFile
-    v-if="isDrawerExportFile"
-    v-model:isDrawer="isDrawerExportFile"
+    v-if="isExport"
+    v-model:isDrawer="isExport"
     title="待处理URL集合"
     :fieldName="fieldName"
-    :data="initExportDate"
+    :ids="ids"
+    :conditions="{ ...searchData, tableName: activeName }"
+    :total="total"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"
     @is-checked-all="

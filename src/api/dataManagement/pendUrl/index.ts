@@ -14,6 +14,6 @@ export const getTLSListApi = (params: any) => {
 export const getExtListApi = (params: any) => {
   return request.get({ url: '/api/v1/pendingURL/Ext', params })
 }
-// export const getBwDetailApi = (params: any) => {
-//   return request.get({ url: `/api/v1/pendingURL/bw/details/${params}` })
-// }
+export const exportApi = (params: any) => {
+  return request.post({ url: '/api/v1/pendingURL/export', data: params })
+}
