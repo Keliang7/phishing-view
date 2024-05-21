@@ -8,10 +8,19 @@
 .el-alert .el-alert__content p.el-alert__description {
   margin-top: 0;
 }
-.el-checkbox__input.is-disabled span.el-checkbox__inner:after {
-  border-width: 0 1px 1px 0;
-  border-style: solid;
-  border-color: var(--el-checkbox-disabled-icon-color);
-  cursor: not-allowed;
-  transform: rotate(45deg) scaleY(1);
+.is-checked-all {
+  th {
+    .el-checkbox.is-checked span.el-checkbox__inner {
+      background-color: var(--el-checkbox-disabled-input-fill);
+      border-color: var(--el-checkbox-disabled-border-color);
+      cursor: not-allowed;
+    }
+  }
+  .el-checkbox span.el-checkbox__inner:after {
+    border-width: 0 1px 1px 0;
+    border-style: solid;
+    border-color: var(--el-checkbox-disabled-icon-color);
+    cursor: not-allowed;
+    transform: rotate(45deg) scaleY(1);
+  }
 }
