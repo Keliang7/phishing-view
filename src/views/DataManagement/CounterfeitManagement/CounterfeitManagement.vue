@@ -483,6 +483,7 @@ const exportFn = async () => {
       </ElCol>
       <ElCol :span="21">
         <Table
+          :class="{ 'is-checked-all': isCheckedAll }"
           :max-height="446"
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"
@@ -516,7 +517,7 @@ const exportFn = async () => {
     title="仿冒数据管理"
     :fieldName="fieldName"
     :ids="ids"
-    :conditions="{ ...searchData, tableName: activeNameH }"
+    :conditions="{ ...searchData, tableName: activeNameH, victimType: activeNameS }"
     :total="total"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"

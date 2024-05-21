@@ -247,6 +247,7 @@ const extensionFn = () => {
       </ElCol>
       <ElCol :span="21">
         <Table
+          :class="{ 'is-checked-all': isCheckedAll }"
           :max-height="446"
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"
