@@ -95,10 +95,10 @@ const confirmClick = async () => {
     let res = await props
       .axiosFn({
         conditions: props.conditions,
-        IDs: props.ids,
+        ids: props.ids,
         ...formData
       })
-      .then(() => (loading.value = false))
+      .finally(() => (loading.value = false))
     if (res.code == 0) {
       close()
       emit('clear-selection')

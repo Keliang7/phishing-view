@@ -592,6 +592,7 @@ onMounted(() => {
       </template>
     </TableTop>
     <Table
+      :class="{ 'is-checked-all': isCheckedAll }"
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"
       :max-height="446"
