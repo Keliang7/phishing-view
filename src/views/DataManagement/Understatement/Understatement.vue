@@ -360,6 +360,7 @@ const dataSource = (data) => {
       </ElCol>
       <ElCol :span="21">
         <Table
+          :class="{ 'is-checked-all': isCheckedAll }"
           :max-height="446"
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"
@@ -387,7 +388,7 @@ const dataSource = (data) => {
     title="漏报数据管理"
     :fieldName="fieldName"
     :ids="ids"
-    :conditions="{ ...searchData }"
+    :conditions="{ ...searchData, victimType: activeNameS }"
     :total="total"
     :axiosFn="exportApi"
     @clear-selection="clearSelection"

@@ -38,23 +38,23 @@ const { setProps, getElTableExpose, getList } = tableMethods
 const tabColumns = [
   {
     label: t('tableDemo.bw'),
-    name: 'BWColumns'
+    name: 'bw'
   },
   {
     label: t('tableDemo.domainMonitor'),
-    name: 'DomainColumns'
+    name: 'domain'
   },
   {
     label: t('tableDemo.urlLog'),
-    name: 'URLColumns'
+    name: 'URL'
   },
   {
     label: t('tableDemo.tlsLog'),
-    name: 'TLSColumns'
+    name: 'TLS'
   },
   {
     label: t('tableDemo.extensionData'),
-    name: 'ExtColumns'
+    name: 'Ext'
   }
 ]
 const activeName = ref(tabColumns[0].name)
@@ -554,11 +554,11 @@ onMounted(() => {
 })
 const getTableData = async (params) => {
   let handler = new Map([
-    ['BWColumns', getBwListApi],
-    ['DomainColumns', getDomainListApi],
-    ['URLColumns', getURLListApi],
-    ['TLSColumns', getTLSListApi],
-    ['ExtColumns', getExtListApi]
+    ['bw', getBwListApi],
+    ['domain', getDomainListApi],
+    ['URL', getURLListApi],
+    ['TLS', getTLSListApi],
+    ['Ext', getExtListApi]
   ]).get(params)
   if (handler) {
     const res = await handler({
@@ -642,9 +642,6 @@ const getSelectedIds = async () => {
 }
 watch(isCheckedAll, () => {
   clearSelection()
-  // const dom = document.querySelector('.cell .el-checkbox span')
-  // if (newV) dom?.classList.add('is-disabled')
-  // if (!newV) dom?.classList.remove('is-disabled')
 })
 // 导出多选数据
 const fieldName = ref()
@@ -674,7 +671,7 @@ const exportFn = async () => {
   <ContentWrap class="table-box">
     <TableTop>
       <template #left>
-        <ElTabs type="card" v-model="activeName" @tab-change="setTable">
+        <ElTabs v-model="activeName" @tab-change="setTable">
           <ElTabPane
             v-for="item in tabColumns"
             :key="item.name"
