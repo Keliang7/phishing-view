@@ -63,7 +63,8 @@ export default [
           hasUser = true
           return {
             code: SUCCESS_CODE,
-            data: user
+            data: user,
+            token: '123321'
           }
         }
       }

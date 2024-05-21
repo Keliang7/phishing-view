@@ -157,10 +157,8 @@ const signIn = async () => {
     if (isValid) {
       loading.value = true
       const formData = await getFormData<UserType>()
-
       try {
         const res = await loginApi(formData)
-
         if (res) {
           // 是否记住我
           if (unref(remember)) {
@@ -168,6 +166,7 @@ const signIn = async () => {
               username: formData.username,
               password: formData.password
             })
+            userStore.setToken(res.token)
           } else {
             userStore.setLoginInfo(undefined)
           }

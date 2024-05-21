@@ -640,11 +640,11 @@ const getSelectedIds = async () => {
   const elTableRef = await getElTableExpose()
   ids.value = elTableRef?.getSelectionRows().map((i) => i.dataID)
 }
-watch(isCheckedAll, (newV) => {
+watch(isCheckedAll, () => {
   clearSelection()
-  const dom = document.querySelector('.cell .el-checkbox span')
-  if (newV) dom?.classList.add('is-disabled')
-  if (!newV) dom?.classList.remove('is-disabled')
+  // const dom = document.querySelector('.cell .el-checkbox span')
+  // if (newV) dom?.classList.add('is-disabled')
+  // if (!newV) dom?.classList.remove('is-disabled')
 })
 // 导出多选数据
 const fieldName = ref()
@@ -694,6 +694,7 @@ const exportFn = async () => {
       </template>
     </TableTop>
     <Table
+      :class="{ 'is-checked-all': isCheckedAll }"
       :max-height="446"
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"
