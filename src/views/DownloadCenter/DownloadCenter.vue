@@ -79,7 +79,7 @@ const actionFn = async (data: TableSlotDefault) => {
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${data.row.fileName}.xlsx`
+  a.download = `${data.row.fileName}.zip`
   document.body.appendChild(a)
   a.click()
   window.URL.revokeObjectURL(url)
