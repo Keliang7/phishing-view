@@ -460,7 +460,7 @@ const clearSelection = async () => {
 }
 const getSelectedIds = async () => {
   const elTableRef = await getElTableExpose()
-  ids.value = elTableRef?.getSelectionRows().map((i) => i.ruleContent)
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.id)
 }
 watch(isCheckedAll, (newV) => {
   clearSelection()
