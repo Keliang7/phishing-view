@@ -82,10 +82,10 @@ export const useSystemConstantsStore = defineStore({
         label
       }))
       // 漏报原因【接口暂无此字段】
-      this.omissionReason = Object.entries(res.data.omissionReason).map(([value, label]) => ({
-        value,
-        label
-      }))
+      // this.omissionReason = Object.entries(res.data.omissionReason).map(([value, label]) => ({
+      //   value,
+      //   label
+      // }))
     }
   }
 })
