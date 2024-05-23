@@ -648,8 +648,8 @@ const searchFn = async () => {
   if (formData.createdTime) {
     let startTime = Timestamp(formData.createdTime[0])
     let endTime = Timestamp(formData.createdTime[1]) + 86399999
-    searchData = { ...formData, startTime, endTime }
     delete formData.createdTime
+    searchData = { ...formData, startTime, endTime }
   } else if (formData.discoveryTime) {
     let startTime = Timestamp(formData.discoveryTime[0])
     let endTime = Timestamp(formData.discoveryTime[1]) + 86399999
@@ -658,7 +658,6 @@ const searchFn = async () => {
   } else {
     searchData = formData
   }
-  console.log('searchData', searchData)
   emit('search-data', searchData)
 }
 </script>

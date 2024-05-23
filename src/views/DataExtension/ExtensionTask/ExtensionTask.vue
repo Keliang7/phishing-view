@@ -145,24 +145,24 @@ const columns: TableColumn[] = [
 ]
 //tableSide
 const tabSideColumns = ref()
-const setTableSide = async () => {
-  const res = await statisticsApi()
-  tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
-  activeNameS.value = tabSideColumns.value[0].name
-}
 const activeNameS = ref()
+const setTableSide = async (searchParams) => {
+  const res = await statisticsApi(searchParams)
+  tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
+  setActiveNameS(tabSideColumns.value[0].name)
+}
 const setActiveNameS = (name) => {
   activeNameS.value = name
   getList()
 }
 onMounted(async () => {
-  await setTableSide()
-  getList()
+  await setTableSide(null)
 })
 // 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
 const searchData = ref({})
 const searchTable = async (value) => {
   searchData.value = value
+  await setTableSide(value)
   await getList()
 }
 //查看数据

@@ -217,6 +217,13 @@ const columns: TableColumn[] = [
     formatter: (data) => formatTime(data.fxczGetTime, 'yyyy-MM-dd HH:mm:ss')
   }
 ]
+// 高级搜索
+const dataArray = ref(['url', 'domain', 'ip', 'discoveryTime', 'victim'])
+const searchData = ref({})
+const searchTable = async (value) => {
+  searchData.value = value
+}
+//tableTop
 const tabHeadColumns = [
   {
     label: t('tableDemo.bw'),
@@ -242,30 +249,25 @@ const tabHeadColumns = [
 const activeNameH = ref(tabHeadColumns[0].name)
 const setActiveNameH = async (name) => {
   activeNameH.value = name
-  await setTableSide(name)
 }
+//tableSide
 const tabSideColumns = ref()
 const activeNameS = ref()
-const setTableSide = async (tableName) => {
-  const res = await statisticsApi({ tableName })
+const setTableSide = async (params) => {
+  const res = await statisticsApi(params)
   tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
-  activeNameS.value = tabSideColumns.value[0].name
-  getList()
+  setActiveNameS(tabSideColumns.value[0].name)
 }
+watch([searchData, activeNameH], ([newSearchData, newActiveNameH]) =>
+  setTableSide({ ...newSearchData, tableName: newActiveNameH })
+)
 const setActiveNameS = (name) => {
   activeNameS.value = name
   getList()
 }
 onMounted(async () => {
-  await setTableSide(activeNameH.value)
+  await setTableSide({ tableName: unref(activeNameH) })
 })
-// 高级搜索
-const dataArray = ref(['url', 'domain', 'ip', 'discoveryTime', 'victim'])
-const searchData = ref({})
-const searchTable = async (value) => {
-  searchData.value = value
-  await getList()
-}
 //是否全选
 const ids = ref([])
 const isCheckedAll = ref(false)
