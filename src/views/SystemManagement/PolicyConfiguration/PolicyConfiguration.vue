@@ -102,11 +102,8 @@ const getSelectedIds = async () => {
   const elTableRef = await getElTableExpose()
   ids.value = elTableRef?.getSelectionRows().map((i) => i.ruleContent)
 }
-watch(isCheckedAll, (newV) => {
+watch(isCheckedAll, () => {
   clearSelection()
-  const dom = document.querySelector('.cell .el-checkbox span')
-  if (newV) dom?.classList.add('is-disabled')
-  if (!newV) dom?.classList.remove('is-disabled')
 })
 // 导出多选数据
 const isExport = ref(false)

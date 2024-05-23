@@ -570,7 +570,6 @@ const getTableData = async (params) => {
   }
 }
 const setTable = async (tableName) => {
-  console.log('执行了吗')
   loading.value = true
   isCheckedAll.value = false
   const temp = {

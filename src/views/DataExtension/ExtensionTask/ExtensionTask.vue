@@ -163,7 +163,6 @@ const searchData = ref({})
 const searchTable = async (value) => {
   searchData.value = value
   await setTableSide(value)
-  await getList()
 }
 //查看数据
 const router = useRouter()
@@ -190,11 +189,8 @@ const getSelectedIds = async () => {
   const elTableRef = await getElTableExpose()
   ids.value = elTableRef?.getSelectionRows().map((i) => i.taskID)
 }
-watch(isCheckedAll, (newV) => {
+watch(isCheckedAll, () => {
   clearSelection()
-  const dom = document.querySelector('.cell .el-checkbox span')
-  if (newV) dom?.classList.add('is-disabled')
-  if (!newV) dom?.classList.remove('is-disabled')
 })
 // 导出多选数据
 const fieldName = ref()

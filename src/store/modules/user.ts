@@ -59,6 +59,7 @@ export const useUserStore = defineStore('user', {
       this.userInfo = userInfo
     },
     setRoleRouters(roleRouters: string[] | AppCustomRouteRecordRaw[]) {
+      console.log('调用了setRoleRouters')
       this.roleRouters = roleRouters
     },
     logoutConfirm() {
@@ -70,7 +71,9 @@ export const useUserStore = defineStore('user', {
       })
         .then(async () => {
           const res = await loginOutApi().catch(() => {})
+          console.log('执行到了这里')
           if (res) {
+            console.log(res)
             this.reset()
           }
         })

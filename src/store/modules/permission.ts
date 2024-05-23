@@ -37,6 +37,7 @@ export const usePermissionStore = defineStore('permission', {
     }
   },
   actions: {
+    //服务端，前端，静态
     generateRoutes(
       type: 'server' | 'frontEnd' | 'static',
       routers?: AppCustomRouteRecordRaw[] | string[]
