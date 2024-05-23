@@ -102,9 +102,11 @@ export const generateRoutesByServer = (routes: AppCustomRouteRecordRaw[]): AppRo
       redirect: route.redirect,
       meta: route.meta
     }
+    //如果是component就添加
     if (route.component) {
       const comModule = modules[`../${route.component}.vue`] || modules[`../${route.component}.tsx`]
       const component = route.component as string
+      //如果component找不到切不包含#
       if (!comModule && !component.includes('#')) {
         console.error(`未找到${route.component}.vue文件或${route.component}.tsx文件，请创建`)
       } else {
@@ -113,7 +115,7 @@ export const generateRoutesByServer = (routes: AppCustomRouteRecordRaw[]): AppRo
           component === '#' ? Layout : component.includes('##') ? getParentLayout() : comModule
       }
     }
-    // recursive child routes
+    // recursive child routes  如果有child就递归
     if (route.children) {
       data.children = generateRoutesByServer(route.children)
     }

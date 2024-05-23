@@ -4,7 +4,7 @@ import { Form, FormSchema } from '@/components/Form'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElCheckbox } from 'element-plus'
 import { useForm } from '@/hooks/web/useForm'
-import { loginApi, getTestRoleApi, getAdminRoleApi } from '@/api/login'
+import { loginApi, getMenuApi, getAdminRoleApi } from '@/api/login'
 import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
 import { useRouter } from 'vue-router'
@@ -166,7 +166,7 @@ const signIn = async () => {
               username: formData.username,
               password: formData.password
             })
-            userStore.setToken(res.token)
+            userStore.setToken('Bearer ' + res.data.token)
           } else {
             userStore.setLoginInfo(undefined)
           }
@@ -181,8 +181,8 @@ const signIn = async () => {
               addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
             })
             permissionStore.setIsAddRouters(true)
-            push({ path: redirect.value || permissionStore.addRouters[0].path })
           }
+          push({ path: redirect.value || permissionStore.addRouters[0].path })
         }
       } finally {
         loading.value = false
@@ -197,13 +197,26 @@ const getRole = async () => {
   const params = {
     roleName: formData.username
   }
+  console.log('这里获取你输入的用户名', params)
+
+  // const res =
+  //   appStore.getDynamicRouter && appStore.getServerDynamicRouter
+  //     ? await getAdminRoleApi(params)
+  //     : await getTestRoleApi(params)
   const res =
     appStore.getDynamicRouter && appStore.getServerDynamicRouter
       ? await getAdminRoleApi(params)
-      : await getTestRoleApi(params)
+      : await getMenuApi()
+
+  //这里的if做的事：拿到了res就去分析路由。上面代码只负责拿res，结果怎么样他不管
   if (res) {
+    //如果identity ===admin && !memu 就拿前端的所有路由 我要做所有的路由
+    //否则就去分析menu
     const routers = res.data || []
+
+    //他这里是记录router，下一次就直接去取
     userStore.setRoleRouters(routers)
+
     appStore.getDynamicRouter && appStore.getServerDynamicRouter
       ? await permissionStore.generateRoutes('server', routers).catch(() => {})
       : await permissionStore.generateRoutes('frontEnd', routers).catch(() => {})
@@ -212,7 +225,6 @@ const getRole = async () => {
       addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
     })
     permissionStore.setIsAddRouters(true)
-    push({ path: redirect.value || permissionStore.addRouters[0].path })
   }
 }
 </script>

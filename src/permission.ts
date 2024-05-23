@@ -27,7 +27,7 @@ router.beforeEach(async (to, from, next) => {
         return
       }
 
-      // 开发者可根据实际情况进行修改
+      // 开发者可根据实际情况进行修改，这里是取上一次记录的
       const roleRouters = userStore.getRoleRouters || []
 
       // 是否使用动态路由

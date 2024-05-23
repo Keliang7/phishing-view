@@ -254,7 +254,7 @@ const dataArray = ref(['url', 'domain', 'ip', 'status', 'discoveryTime', 'victim
 const searchData = ref({})
 const searchTable = async (value) => {
   searchData.value = value
-  await getList()
+  await setTableSide(value)
 }
 //查看数据
 const router = useRouter()

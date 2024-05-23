@@ -249,14 +249,6 @@ const menus = [
             title: 'router.pend_url'
           }
         },
-        // {
-        //   path: 'suspect_counterfeit',
-        //   component: 'views/DataManagement/SuspectCounterfeit/SuspectCounterfeit',
-        //   name: 'SuspectCounterfeit',
-        //   meta: {
-        //     title: 'router.suspect_counterfeit'
-        //   }
-        // },
         {
           path: 'counterfeit_management',
           component: 'views/DataManagement/CounterfeitManagement/CounterfeitManagement',
@@ -290,7 +282,6 @@ for (let i = 0; i < 4; i++) {
   List.push(
     Mock.mock({
       id: toAnyString(),
-      // timestamp: +Mock.Random.date('T'),
       roleName: roleNames[i],
       role: '@first',
       status: Mock.Random.integer(0, 1),
