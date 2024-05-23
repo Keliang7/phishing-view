@@ -248,7 +248,13 @@ const Columns: TableColumn[] = [
     }
   }
 ]
-//tableTop,tableSide逻辑
+//高级查询
+const dataArray = ref(['url', 'domain', 'ip', 'extstatus', 'victim', 'discoveryTime'])
+const searchData = ref({})
+const searchTable = async (value) => {
+  searchData.value = value
+}
+//tableTop
 const tabHeadColumns = [
   {
     label: t('tableDemo.bw'),
@@ -274,31 +280,25 @@ const tabHeadColumns = [
 const activeNameH = ref(tabHeadColumns[0].name)
 const setActiveNameH = async (name) => {
   activeNameH.value = name
-  await setTableSide(name)
 }
+//tableSide
 const tabSideColumns = ref()
 const activeNameS = ref()
-
-const setTableSide = async (tableName) => {
-  const res = await statisticsApi({ tableName })
+const setTableSide = async (params) => {
+  const res = await statisticsApi(params)
   tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
-  activeNameS.value = tabSideColumns.value[0].name
-  getList()
+  setActiveNameS(tabSideColumns.value[0].name)
 }
+watch([searchData, activeNameH], ([newSearchData, newActiveNameH]) =>
+  setTableSide({ ...newSearchData, tableName: newActiveNameH })
+)
 const setActiveNameS = (name) => {
   activeNameS.value = name
   getList()
 }
 onMounted(async () => {
-  await setTableSide(activeNameH.value)
+  await setTableSide({ tableName: unref(activeNameH) })
 })
-//搜索逻辑
-const dataArray = ref(['url', 'domain', 'ip', 'extstatus', 'victim', 'discoveryTime'])
-const searchData = ref({})
-const searchTable = async (value) => {
-  searchData.value = value
-  await getList()
-}
 // 右侧弹窗信息
 const isDrawerInfo = ref(false)
 const isDrawerTimeLine = ref(false)
