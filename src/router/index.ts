@@ -87,5 +87,4 @@ export const resetRouter = (): void => {
 export const setupRouter = (app: App<Element>) => {
   app.use(router)
 }
-
 export default router
