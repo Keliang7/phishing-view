@@ -14,6 +14,27 @@ import { useValidator } from '@/hooks/web/useValidator'
 import { useUserStore } from '@/store/modules/user'
 import { BaseButton } from '@/components/Button'
 
+//中心sessionToken登录
+onBeforeMount(async () => {
+  if (useRoute().query.SESSION_DATA) {
+    const res = await loginApi({ sessionData: useRoute().query.SESSION_DATA })
+    userStore.setUserInfo(res.data)
+    if (res) {
+      userStore.setToken('Bearer ' + res.data.token)
+      if (appStore.getDynamicRouter) {
+        getRole({ roleName: 'admin' })
+      } else {
+        await permissionStore.generateRoutes('static').catch(() => {})
+        permissionStore.getAddRouters.forEach((route) => {
+          addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
+        })
+        permissionStore.setIsAddRouters(true)
+      }
+      push({ path: '/dashboard' })
+    }
+  }
+})
+
 const { required } = useValidator()
 
 const emit = defineEmits(['to-register'])
@@ -151,26 +172,6 @@ watch(
   }
 )
 
-//中心sessionToken登录
-onBeforeMount(async () => {
-  if (useRoute().query.SESSION_DATA) {
-    const res = await loginApi({ sessionData: useRoute().query.SESSION_DATA })
-    userStore.setUserInfo(res.data)
-    if (res) {
-      userStore.setToken('Bearer ' + res.data.token)
-      if (appStore.getDynamicRouter) {
-        getRole({ roleName: 'admin' })
-      } else {
-        await permissionStore.generateRoutes('static').catch(() => {})
-        permissionStore.getAddRouters.forEach((route) => {
-          addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
-        })
-        permissionStore.setIsAddRouters(true)
-      }
-      push({ path: '/dashboard' })
-    }
-  }
-})
 // 登录
 const signIn = async () => {
   const formRef = await getElFormExpose()
