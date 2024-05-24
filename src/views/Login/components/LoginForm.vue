@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { reactive, ref, watch, onMounted, unref } from 'vue'
+import { reactive, ref, watch, onMounted, unref, onBeforeMount } from 'vue'
 import { Form, FormSchema } from '@/components/Form'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElCheckbox } from 'element-plus'
@@ -7,7 +7,7 @@ import { useForm } from '@/hooks/web/useForm'
 import { loginApi, getMenuApi, getAdminRoleApi } from '@/api/login'
 import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
 import { UserType } from '@/api/login/types'
 import { useValidator } from '@/hooks/web/useValidator'
@@ -129,6 +129,7 @@ const initLoginInfo = () => {
     setValues({ username, password })
   }
 }
+
 onMounted(() => {
   initLoginInfo()
 })
@@ -150,6 +151,26 @@ watch(
   }
 )
 
+//中心sessionToken登录
+onBeforeMount(async () => {
+  if (useRoute().query.SESSION_DATA) {
+    const res = await loginApi({ sessionData: useRoute().query.SESSION_DATA })
+    userStore.setUserInfo(res.data)
+    if (res) {
+      userStore.setToken('Bearer ' + res.data.token)
+      if (appStore.getDynamicRouter) {
+        getRole({ roleName: 'admin' })
+      } else {
+        await permissionStore.generateRoutes('static').catch(() => {})
+        permissionStore.getAddRouters.forEach((route) => {
+          addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
+        })
+        permissionStore.setIsAddRouters(true)
+      }
+      push({ path: '/dashboard' })
+    }
+  }
+})
 // 登录
 const signIn = async () => {
   const formRef = await getElFormExpose()
@@ -174,7 +195,7 @@ const signIn = async () => {
           userStore.setUserInfo(res.data)
           // 是否使用动态路由
           if (appStore.getDynamicRouter) {
-            getRole()
+            getRole({ roleName: 'admin' })
           } else {
             await permissionStore.generateRoutes('static').catch(() => {})
             permissionStore.getAddRouters.forEach((route) => {
@@ -192,11 +213,11 @@ const signIn = async () => {
 }
 
 // 获取角色信息
-const getRole = async () => {
-  const formData = await getFormData<UserType>()
-  const params = {
-    roleName: formData.username
-  }
+const getRole = async (params) => {
+  // const formData = await getFormData<UserType>()
+  // const params = {
+  //   roleName: formData.username
+  // }
   console.log('这里获取你输入的用户名', params)
 
   // const res =
