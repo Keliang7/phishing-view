@@ -1,7 +1,55 @@
 <script setup lang="ts">
 import { LoginForm, RegisterForm } from './components'
-import { ref } from 'vue'
+import { ref, onBeforeMount } from 'vue'
+import { loginApi, getMenuApi, getAdminRoleApi } from '@/api/login'
 import { ElScrollbar } from 'element-plus'
+import { useRouter, useRoute } from 'vue-router'
+import { useUserStore } from '@/store/modules/user'
+import { useAppStore } from '@/store/modules/app'
+import { usePermissionStore } from '@/store/modules/permission'
+import type { RouteRecordRaw } from 'vue-router'
+//中心sessionToken登录
+const userStore = useUserStore()
+const appStore = useAppStore()
+const permissionStore = usePermissionStore()
+const { addRoute, push } = useRouter()
+onBeforeMount(async () => {
+  if (useRoute().query.SESSION_DATA) {
+    const res = await loginApi({ sessionData: useRoute().query.SESSION_DATA })
+    userStore.setUserInfo(res.data)
+    if (res) {
+      userStore.setToken('Bearer ' + res.data.token)
+      if (appStore.getDynamicRouter) {
+        getRole({ roleName: 'admin' })
+      } else {
+        await permissionStore.generateRoutes('static').catch(() => {})
+        permissionStore.getAddRouters.forEach((route) => {
+          addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
+        })
+        permissionStore.setIsAddRouters(true)
+      }
+      push({ path: '/dashboard' })
+    }
+  }
+})
+
+const getRole = async (params) => {
+  const res =
+    appStore.getDynamicRouter && appStore.getServerDynamicRouter
+      ? await getAdminRoleApi(params)
+      : await getMenuApi()
+  if (res) {
+    const routers = res.data || []
+    userStore.setRoleRouters(routers)
+    appStore.getDynamicRouter && appStore.getServerDynamicRouter
+      ? await permissionStore.generateRoutes('server', routers).catch(() => {})
+      : await permissionStore.generateRoutes('frontEnd', routers).catch(() => {})
+    permissionStore.getAddRouters.forEach((route) => {
+      addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
+    })
+    permissionStore.setIsAddRouters(true)
+  }
+}
 
 const isLogin = ref(true)
 
