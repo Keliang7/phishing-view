@@ -63,6 +63,24 @@ export const constantRouterMap: AppRouteRecordRaw[] = [
       title: '404',
       noTagsView: true
     }
+  },
+  {
+    path: '/downloadCenter',
+    component: () => import('@/views/DownloadCenter/DownloadCenter.vue'),
+    name: 'DownloadCenter',
+    meta: {
+      hidden: true,
+      title: '下载中心'
+    }
+  },
+  {
+    path: '/viewDetails',
+    name: 'ViewDetails',
+    component: () => import('@/views/ViewDetails/ViewDetails.vue'),
+    meta: {
+      hidden: true,
+      title: '查看详情'
+    }
   }
 ]
 
@@ -266,24 +284,6 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         }
       }
     ]
-  },
-  {
-    path: '/downloadCenter',
-    component: () => import('@/views/DownloadCenter/DownloadCenter.vue'),
-    name: 'DownloadCenter',
-    meta: {
-      hidden: true,
-      title: '下载中心'
-    }
-  },
-  {
-    path: '/viewDetails',
-    name: 'ViewDetails',
-    component: () => import('@/views/ViewDetails/ViewDetails.vue'),
-    meta: {
-      hidden: true,
-      title: '查看详情'
-    }
   }
 ]
 
