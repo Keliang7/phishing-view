@@ -46,6 +46,10 @@ const defaultResponseInterceptors = (response: AxiosResponse) => {
       const userStore = useUserStoreWithOut()
       userStore.logout()
     }
+    if (response?.data?.message === 'Token不匹配' || 'Token不存在') {
+      const userStore = useUserStoreWithOut()
+      userStore.logout()
+    }
   }
 }
 
