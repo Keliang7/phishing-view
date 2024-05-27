@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { LoginForm, RegisterForm } from './components'
 import { ref, onBeforeMount } from 'vue'
-import { loginApi, getMenuApi, getAdminRoleApi } from '@/api/login'
+import { loginApi, getMenuApi } from '@/api/login'
 import { ElScrollbar } from 'element-plus'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
-import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
 import type { RouteRecordRaw } from 'vue-router'
 //中心sessionToken登录
 const userStore = useUserStore()
-const appStore = useAppStore()
 const permissionStore = usePermissionStore()
 const { addRoute, push } = useRouter()
 onBeforeMount(async () => {
@@ -19,35 +17,67 @@ onBeforeMount(async () => {
     userStore.setUserInfo(res.data)
     if (res) {
       userStore.setToken('Bearer ' + res.data.token)
-      if (appStore.getDynamicRouter) {
-        getRole({ roleName: 'admin' })
-      } else {
-        await permissionStore.generateRoutes('static').catch(() => {})
-        permissionStore.getAddRouters.forEach((route) => {
-          addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
-        })
-        permissionStore.setIsAddRouters(true)
-      }
+      getRole()
       push({ path: '/dashboard' })
     }
   }
 })
-
-const getRole = async (params) => {
-  const res =
-    appStore.getDynamicRouter && appStore.getServerDynamicRouter
-      ? await getAdminRoleApi(params)
-      : await getMenuApi()
+const getRole = async () => {
+  let res
+  let temp = await getMenuApi()
+  if (temp.identity === 'user') {
+    const map = {
+      'APP.FM.P.Total': '/data_management',
+      'APP.FM.P.Manger': '/data_management',
+      'APP.FM.P.Manger.Process': '/data_management/pend_url',
+      'APP.FM.P.Manger.Counterfeiting': '/data_management/counterfeit_management',
+      'APP.FM.P.Manger.Mission': '/data_management/understatement',
+      'APP.FM.P.Manger.Error': '/data_management/misinformation',
+      'APP.FM.P.Extension': '/data_extension',
+      'APP.FM.P.Extension.Manger': '/data_extension/extension_task',
+      'APP.FM.P.Results': '/data_extension/extension_result',
+      'APP.FM.P.Collecting': '/data_gather',
+      'APP.FM.P.Collecting.Manger': '/data_gather/gather_task',
+      'APP.FM.P.Collecting.Results': '/data_gather/gather_result',
+      'APP.FM.P.System': '/system_management',
+      'APP.FM.P.System.WhiteList': '/system_management/policy_configuration',
+      'APP.FM.P.System.RuleManger': '/system_management/phishing_rule',
+      'APP.FM.P.System.RuleReview': '/system_management/phishing_recheck'
+    }
+    const data = temp.data.menu.map((i) => (i.privilegeKey = map[i.privilegeKey]))
+    res = { ...temp, data }
+  } else {
+    res = {
+      data: [
+        '/data_management',
+        '/data_management',
+        '/data_management/pend_url',
+        '/data_management/counterfeit_management',
+        '/data_management/understatement',
+        '/data_management/misinformation',
+        '/data_extension',
+        '/data_extension/extension_task',
+        '/data_extension/extension_result',
+        '/data_gather',
+        '/data_gather/gather_task',
+        '/data_gather/gather_result',
+        '/system_management',
+        '/system_management/policy_configuration',
+        '/system_management/phishing_rule',
+        '/system_management/phishing_recheck'
+      ]
+    }
+    res.identity = 'admin'
+  }
   if (res) {
     const routers = res.data || []
     userStore.setRoleRouters(routers)
-    appStore.getDynamicRouter && appStore.getServerDynamicRouter
-      ? await permissionStore.generateRoutes('server', routers).catch(() => {})
-      : await permissionStore.generateRoutes('frontEnd', routers).catch(() => {})
+    await permissionStore.generateRoutes('frontEnd', routers).catch(() => {})
     permissionStore.getAddRouters.forEach((route) => {
       addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
     })
     permissionStore.setIsAddRouters(true)
+    push({ path: '/dashboard' })
   }
 }
 

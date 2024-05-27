@@ -23,15 +23,13 @@ export const loginOutApi = () => {
 //   }>({ url: '/mock/user/list', params })
 // }
 
-export const getAdminRoleApi = (
-  params: RoleParams
-): Promise<IResponse<AppCustomRouteRecordRaw[]>> => {
-  return request.get({ url: '/mock/role/list', params })
-}
-export const getMenuApi = () => {
+export const getAdminRoleApi = (): Promise<IResponse<AppCustomRouteRecordRaw[]>> => {
   return request.get({ url: '/mock/role/list' })
 }
+export const getMenuApi = () => {
+  return request.get({ url: '/api/v1/system/menu' })
+}
 
-export const getTestRoleApi = (params: RoleParams): Promise<IResponse<string[]>> => {
-  return request.get({ url: '/mock/role/list2', params })
+export const getTestRoleApi = (): Promise<IResponse<string[]>> => {
+  return request.get({ url: '/mock/role/list2' })
 }
