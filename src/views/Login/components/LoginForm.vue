@@ -1,45 +1,21 @@
 <script setup lang="tsx">
-import { reactive, ref, watch, onMounted, unref, onBeforeMount } from 'vue'
+import { reactive, ref, watch, onMounted, unref } from 'vue'
 import { Form, FormSchema } from '@/components/Form'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElCheckbox } from 'element-plus'
 import { useForm } from '@/hooks/web/useForm'
-import { loginApi, getMenuApi, getAdminRoleApi } from '@/api/login'
-import { useAppStore } from '@/store/modules/app'
+import { loginApi, getMenuApi } from '@/api/login'
 import { usePermissionStore } from '@/store/modules/permission'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
 import { UserType } from '@/api/login/types'
 import { useValidator } from '@/hooks/web/useValidator'
 import { useUserStore } from '@/store/modules/user'
 import { BaseButton } from '@/components/Button'
 
-//中心sessionToken登录
-onBeforeMount(async () => {
-  if (useRoute().query.SESSION_DATA) {
-    const res = await loginApi({ sessionData: useRoute().query.SESSION_DATA })
-    userStore.setUserInfo(res.data)
-    if (res) {
-      userStore.setToken('Bearer ' + res.data.token)
-      if (appStore.getDynamicRouter) {
-        getRole({ roleName: 'admin' })
-      } else {
-        await permissionStore.generateRoutes('static').catch(() => {})
-        permissionStore.getAddRouters.forEach((route) => {
-          addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
-        })
-        permissionStore.setIsAddRouters(true)
-      }
-      push({ path: '/dashboard' })
-    }
-  }
-})
-
 const { required } = useValidator()
 
 const emit = defineEmits(['to-register'])
-
-const appStore = useAppStore()
 
 const userStore = useUserStore()
 
@@ -194,17 +170,7 @@ const signIn = async () => {
           }
           userStore.setRememberMe(unref(remember))
           userStore.setUserInfo(res.data)
-          // 是否使用动态路由
-          if (appStore.getDynamicRouter) {
-            getRole({ roleName: 'admin' })
-          } else {
-            await permissionStore.generateRoutes('static').catch(() => {})
-            permissionStore.getAddRouters.forEach((route) => {
-              addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
-            })
-            permissionStore.setIsAddRouters(true)
-          }
-          push({ path: redirect.value || permissionStore.addRouters[0].path })
+          getRole()
         }
       } finally {
         loading.value = false
@@ -212,41 +178,35 @@ const signIn = async () => {
     }
   })
 }
-
 // 获取角色信息
-const getRole = async (params) => {
-  // const formData = await getFormData<UserType>()
-  // const params = {
-  //   roleName: formData.username
-  // }
-  console.log('这里获取你输入的用户名', params)
-
-  // const res =
-  //   appStore.getDynamicRouter && appStore.getServerDynamicRouter
-  //     ? await getAdminRoleApi(params)
-  //     : await getTestRoleApi(params)
-  const res =
-    appStore.getDynamicRouter && appStore.getServerDynamicRouter
-      ? await getAdminRoleApi(params)
-      : await getMenuApi()
-
-  //这里的if做的事：拿到了res就去分析路由。上面代码只负责拿res，结果怎么样他不管
+const getRole = async () => {
+  const res = await getMenuApi()
   if (res) {
-    //如果identity ===admin && !memu 就拿前端的所有路由 我要做所有的路由
-    //否则就去分析menu
-    const routers = res.data || []
-
-    //他这里是记录router，下一次就直接去取
+    const routers = [
+      '/data_management',
+      '/data_management',
+      '/data_management/pend_url',
+      '/data_management/counterfeit_management',
+      '/data_management/understatement',
+      '/data_management/misinformation',
+      '/data_extension',
+      '/data_extension/extension_task',
+      '/data_extension/extension_result',
+      '/data_gather',
+      '/data_gather/gather_task',
+      '/data_gather/gather_result',
+      '/system_management',
+      '/system_management/policy_configuration',
+      '/system_management/phishing_rule',
+      '/system_management/phishing_recheck'
+    ]
     userStore.setRoleRouters(routers)
-
-    appStore.getDynamicRouter && appStore.getServerDynamicRouter
-      ? await permissionStore.generateRoutes('server', routers).catch(() => {})
-      : await permissionStore.generateRoutes('frontEnd', routers).catch(() => {})
-
+    await permissionStore.generateRoutes('frontEnd', routers).catch(() => {})
     permissionStore.getAddRouters.forEach((route) => {
       addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
     })
     permissionStore.setIsAddRouters(true)
+    push({ path: '/dashboard' })
   }
 }
 </script>

@@ -48,7 +48,7 @@ export const usePermissionStore = defineStore('permission', {
           // 模拟后端过滤菜单
           routerMap = generateRoutesByServer(routers as AppCustomRouteRecordRaw[])
         } else if (type === 'frontEnd') {
-          // 模拟前端过滤菜单
+          // 模拟前端过滤菜单 我们这个项目是用的前端过滤菜单
           routerMap = generateRoutesByFrontEnd(cloneDeep(asyncRouterMap), routers as string[])
         } else {
           // 直接读取静态路由表
