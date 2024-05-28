@@ -119,6 +119,14 @@ let schema = ref<FormSchema[]>([
         {
           value: '采集失败',
           label: '采集失败'
+        },
+        {
+          value: '未处置',
+          label: '未处置'
+        },
+        {
+          value: '确认仿冒',
+          label: '确认仿冒'
         }
       ]
     },

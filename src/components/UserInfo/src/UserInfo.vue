@@ -50,14 +50,14 @@ const test = async () => {
     </div>
     <template #dropdown>
       <ElDropdownMenu>
-        <ElDropdownItem>
-          <div @click="test">下载中心</div>
+        <ElDropdownItem @click="test">
+          <div>下载中心</div>
         </ElDropdownItem>
-        <ElDropdownItem divided>
-          <div @click="lockScreen">{{ t('lock.lockScreen') }}</div>
+        <ElDropdownItem divided @click="lockScreen">
+          <div>{{ t('lock.lockScreen') }}</div>
         </ElDropdownItem>
-        <ElDropdownItem>
-          <div @click="loginOut">{{ t('common.loginOut') }}</div>
+        <ElDropdownItem @click="loginOut">
+          <div>{{ t('common.loginOut') }}</div>
         </ElDropdownItem>
       </ElDropdownMenu>
     </template>
@@ -71,25 +71,4 @@ const test = async () => {
   </teleport>
 </template>
 
-<style scoped lang="less">
-.fade-bottom-enter-active,
-.fade-bottom-leave-active {
-  transition:
-    opacity 0.25s,
-    transform 0.3s;
-}
-
-.fade-bottom-enter-from {
-  opacity: 0;
-  transform: translateY(-10%);
-}
-
-.fade-bottom-leave-to {
-  opacity: 0;
-  transform: translateY(10%);
-}
-a {
-  color: rgb(96, 98, 102);
-  text-decoration: none;
-}
-</style>
+<style scoped lang="less"></style>

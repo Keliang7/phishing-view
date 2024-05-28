@@ -16,14 +16,12 @@ import {
   ElMessage
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
-import { FormSchema } from '@/components/Form'
 import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
 import { getListApi, statisticsApi, exportApi } from '@/api/dataManagement/counterfeitManagement'
 import { backtrackApi, joinSampApi } from '@/api/dataManagement'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
-import DrawerOperate from '@/components/DrawerOperate/DrawerOperate.vue'
 import DataExtension from '@/components/DataExtension/DataExtension.vue'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import TableTop from '@/components/TableTop/TableTop.vue'
@@ -251,7 +249,6 @@ const Columns: TableColumn[] = [
   }
 ]
 //高级查询
-const dataArray = ref(['url', 'domain', 'ip', 'extstatus', 'victim', 'discoveryTime'])
 const searchData = ref({})
 const searchTable = async (value) => {
   searchData.value = value
@@ -315,28 +312,7 @@ const dataSource = (data) => {
   dataSourceData.value = data.dataSources
 }
 
-// 右侧弹窗信息
-const isDrawerInfo = ref(false)
-const isDrawerTimeLine = ref(false)
-// 右侧弹窗信息-弹窗标题
-const titleDrawer = ref('')
-// 查看网页信息-弹窗内容
-const bodyInfo = ref([{}])
-// 查看回溯信息-弹窗内容
-const dataSourceInfo = ref([{}])
-// 任务弹窗
-const isDrawerOperate = ref(false)
-// 任务弹窗表单数据
-const drawerData = ref<FormSchema[]>()
-// 映射表
-const sourceMap = {
-  bw: '报文监测子系统 获取',
-  domainMonitor: '域名监测子系统 获取',
-  urlLog: 'URL日志系统 获取',
-  tlsLog: 'TLS日志系统 获取'
-}
-
-// 定义表格内操作函数，用于处理点击表格列时的操作
+//加入仿冒样本库
 const addCounterfeitFn = async (id) => {
   await joinSampApi({ phishingID: id }).then((res) => {
     if (res.code == 0) {
@@ -393,31 +369,19 @@ const backtrackFn = async (data) => {
   isBacktrack.value = true
 }
 //拓线
+const titleDrawer = ref('')
 const isDataExtension = ref(false)
 const extensionFn = (data: any) => {
   titleDrawer.value = '创建任务'
   console.log('拓线任务', data)
   isDataExtension.value = true
 }
-// 表格查看信息事件
-const openDrawerInfo = async (data: TableSlotDefault) => {
-  if (data.column.property == 'dataSourcesNum') {
-    isDrawerTimeLine.value = true
-    titleDrawer.value = '数据源'
-    dataSourceInfo.value = data.row.dataSources.map((item) => ({
-      source: sourceMap[item.source],
-      timestamp: formatTime(item.timestamp, 'yyyy-MM-dd HH:mm:ss')
-    }))
-  } else if (data.column.property == 'webInfo') {
-    isDrawerInfo.value = true
-    titleDrawer.value = '查看网页信息'
-    bodyInfo.value = [
-      {
-        value: data.row.webInfo,
-        name: 'HTML'
-      }
-    ]
-  }
+//查看网页信息
+const isDrawerInfo = ref(false)
+const bodyInfo = ref()
+const openDrawerInfo = (data) => {
+  isDrawerInfo.value = true
+  bodyInfo.value = [{ name: '网页信息', value: data.row.webInfo }]
 }
 
 // 选择全部
@@ -456,7 +420,7 @@ const exportFn = async () => {
 <template>
   <AdvancedSearch
     :title="t('tableDemo.CounterfeitManagement')"
-    :dataArray="dataArray"
+    :dataArray="['url', 'domain', 'ip', 'extstatus', 'victim', 'discoveryTime']"
     :tipTitle="'系统默认展示当天接入数据，最多可查看5年内数据，超出5年数据不会留存。'"
     @search-data="searchTable"
   />
@@ -517,14 +481,7 @@ const exportFn = async () => {
       </ElCol>
     </ElRow>
   </ContentWrap>
-  <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="titleDrawer" :bodyInfo="bodyInfo" />
-  <!-- 添加v-if的原因是：为了确保每次打开弹窗都重新渲染了一遍，不受上次打开弹窗的影响 -->
-  <DrawerOperate
-    v-if="isDrawerOperate"
-    v-model:isDrawer="isDrawerOperate"
-    :title="titleDrawer"
-    :drawerData="drawerData"
-  />
+  <DrawerInfo v-model:isDrawer="isDrawerInfo" :bodyInfo="bodyInfo" />
   <DataExtension v-model:isDrawer="isDataExtension" :title="'创建任务'" />
   <DataSource v-model:isDrawer="isDataSource" :dataSourceData="dataSourceData" />
   <ExportFile

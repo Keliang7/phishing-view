@@ -21,6 +21,12 @@ const close = () => {
 const open = () => {
   console.log('打开弹窗')
 }
+// const sourceMap = {
+//   bw: '报文监测子系统 获取',
+//   domainMonitor: '域名监测子系统 获取',
+//   urlLog: 'URL日志系统 获取',
+//   tlsLog: 'TLS日志系统 获取'
+// }
 </script>
 <template>
   <ElDrawer
