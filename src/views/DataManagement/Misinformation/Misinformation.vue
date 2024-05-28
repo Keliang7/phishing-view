@@ -47,7 +47,7 @@ const columns: TableColumn[] = [
     formatter(data) {
       return (
         <ElButton type="primary" link onClick={() => dataSource(data)}>
-          {data.dataSources.length}
+          {data.dataSources.length}个
         </ElButton>
       )
     }
@@ -330,7 +330,7 @@ const dataSourceData = ref()
 const dataSource = (data) => {
   console.log('data', data)
   isDataSource.value = true
-  dataSourceData.value = data.dataSource
+  dataSourceData.value = data.dataSources
 }
 </script>
 <template>

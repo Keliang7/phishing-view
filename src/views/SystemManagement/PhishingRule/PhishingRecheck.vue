@@ -81,7 +81,7 @@ const columns: TableColumn[] = [
   },
   {
     field: 'createdTime',
-    label: '提交时间',
+    label: '创建时间',
     width: 180,
     formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   },
@@ -173,8 +173,8 @@ const operateTitle = ref('')
 const isOperateDrawer = ref(false)
 const operateData = ref()
 const recheckOrViewFn = async (data, title) => {
-  let res = await formApi({ featureID: +data.row.featureID })
-  operateData.value = { featureID: +data.row.featureID, ...res.data }
+  let res = await formApi({ featureID: +data.row.id })
+  operateData.value = { featureID: +data.row.id, ...res.data }
   operateTitle.value = title
   isOperateDrawer.value = true
 }
