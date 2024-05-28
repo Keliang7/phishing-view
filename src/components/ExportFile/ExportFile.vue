@@ -25,7 +25,7 @@ const props = defineProps({
     type: Array
   },
   fieldName: {
-    type: Array
+    type: Array<{ label: string | undefined; value: string }>
   },
   conditions: {
     type: Object
@@ -70,6 +70,9 @@ const schema = reactive<FormSchema[]>([
     field: 'fieldName',
     label: '导出数据字段名',
     component: 'Select',
+    value: props.fieldName
+      ?.map((i) => i.value)
+      .filter((i) => !['webInfo', 'screenshot', 'ICON', 'webScreenshot'].includes(i)),
     componentProps: {
       multiple: true,
       options: props.fieldName
