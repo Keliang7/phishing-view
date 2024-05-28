@@ -88,7 +88,7 @@ let schema = ref<FormSchema[]>([
   },
   {
     field: 'extstatus',
-    label: '拓线状态：',
+    label: '状态：',
     component: 'Select',
     componentProps: {
       options: [
@@ -107,6 +107,18 @@ let schema = ref<FormSchema[]>([
         {
           value: '拓线失败',
           label: '拓线失败'
+        },
+        {
+          value: '采集中',
+          label: '采集中'
+        },
+        {
+          value: '采集完成',
+          label: '采集完成'
+        },
+        {
+          value: '采集失败',
+          label: '采集失败'
         }
       ]
     },
@@ -121,6 +133,10 @@ let schema = ref<FormSchema[]>([
     componentProps: {
       options: [
         {
+          value: '未拓线',
+          label: '未拓线'
+        },
+        {
           value: '拓线中',
           label: '拓线中'
         },
@@ -131,18 +147,6 @@ let schema = ref<FormSchema[]>([
         {
           value: '拓线失败',
           label: '拓线失败'
-        },
-        {
-          value: '更新中',
-          label: '更新中'
-        },
-        {
-          value: '更新完成',
-          label: '更新完成'
-        },
-        {
-          value: '更新失败',
-          label: '更新失败'
         },
         {
           value: '采集中',
@@ -580,7 +584,7 @@ let schema = ref<FormSchema[]>([
   },
   {
     field: 'operationType',
-    label: '操作类型',
+    label: '操作类型：',
     component: 'Select',
     componentProps: {
       options: [

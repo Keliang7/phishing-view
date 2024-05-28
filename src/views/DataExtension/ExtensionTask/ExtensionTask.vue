@@ -261,7 +261,7 @@ const extensionFn = () => {
       </ElCol>
     </ElRow>
   </ContentWrap>
-  <DataExtension v-model:isDrawer="isDataExtension" :title="'创建任务'" />
+  <DataExtension v-if="isDataExtension" v-model:isDrawer="isDataExtension" :title="'创建任务'" />
   <ExportFile
     v-if="isExport"
     v-model:isDrawer="isExport"

@@ -1,11 +1,13 @@
 <script setup lang="tsx">
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
-import { ref, unref, watch, onMounted } from 'vue'
-import { ElButton, ElCheckbox, ElRow, ElCol, ElMessage } from 'element-plus'
+import { ref, unref, watch, onMounted, h } from 'vue'
+import { ElButton, ElCheckbox, ElRow, ElCol, ElMessage, ElMessageBox } from 'element-plus'
+import { Icon } from '@/components/Icon'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
 import { getListApi, statisticsApi, exportApi } from '@/api/dataManagement/understatement'
+import { joinSampApi } from '@/api/dataManagement'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
@@ -47,7 +49,7 @@ const columns: TableColumn[] = [
     formatter(data) {
       return (
         <ElButton type="primary" link onClick={() => dataSource(data)}>
-          {data.dataSources.length}
+          {data.dataSources.length}个
         </ElButton>
       )
     }
@@ -225,7 +227,7 @@ const columns: TableColumn[] = [
             <ElButton type="primary" link onClick={() => viewData(data)}>
               采集
             </ElButton>
-            <ElButton type="primary" link onClick={() => editData(data)}>
+            <ElButton type="primary" link onClick={() => addCounterfeitFn(data.row.dataID)}>
               加入仿冒样本库
             </ElButton>
           </div>
@@ -250,7 +252,6 @@ onMounted(async () => {
   await setTableSide(null)
 })
 // 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
-const dataArray = ref(['url', 'domain', 'ip', 'status', 'discoveryTime', 'victim', 'misReason'])
 const searchData = ref({})
 const searchTable = async (value) => {
   searchData.value = value
@@ -266,10 +267,10 @@ const viewData = (data) => {
   })
 }
 //编辑
-const editData = (data) => {
-  console.log(data)
-  extensionFn()
-}
+// const editData = (data) => {
+//   console.log(data)
+//   extensionFn()
+// }
 //是否全选
 const ids = ref([])
 const isCheckedAll = ref(false)
@@ -329,13 +330,51 @@ const openDrawerInfo = async (data) => {
 const isDataSource = ref(false)
 const dataSourceData = ref()
 const dataSource = (data) => {
+  console.log(data)
+
   isDataSource.value = true
-  dataSourceData.value = data.dataSource
+  dataSourceData.value = data.dataSources
+}
+
+// 加入仿冒样本库
+const addCounterfeitFn = async (id) => {
+  await joinSampApi({ phishingID: id }).then((res) => {
+    if (res.code == 0) {
+      ElMessageBox({
+        title: '提示',
+        message: h('p', null, [
+          h(Icon, {
+            icon: 'ep:warning-filled',
+            size: 25,
+            style: 'font-size:25px; color:#ffba00; margin-right:10px; top:5px'
+          }),
+          h('span', null, '特征提取成功 '),
+          h(
+            'i',
+            {
+              style: 'color: #32AA9F;cursor:pointer',
+              onClick: () => {
+                router.push({ path: '/system_management/phishing_rule' })
+                // 页面跳转成功之后，关闭提示窗口
+                ElMessageBox.close()
+              }
+            },
+            '去查看'
+          )
+        ])
+      })
+    } else {
+      ElMessageBox({
+        title: '提示',
+        message: '添加失败'
+      })
+    }
+  })
 }
 </script>
 <template>
   <AdvancedSearch
-    :dataArray="dataArray"
+    :dataArray="['url', 'domain', 'ip', 'status', 'discoveryTime', 'victim', 'misReason']"
     :total="total"
     :title="'漏报数据管理'"
     tip-title="系统默认展示当天接入数据，最多可查看5年内数据，超出5年数据不会留存。"

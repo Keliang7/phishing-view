@@ -7,7 +7,10 @@ defineProps({
     default: false
   },
   dataSourceData: {
-    type: Object
+    type: Array<{
+      source: string
+      timestamp: number
+    }>
   }
 })
 const emit = defineEmits(['update:isDrawer'])
@@ -29,15 +32,15 @@ const open = () => {
   >
     <ElTimeline>
       <el-timeline-item
-        v-for="(item, index) in dataSourceData?.data.flow"
-        :key="item.content"
+        v-for="(item, index) in dataSourceData"
+        :key="item.source"
         :color="index == 0 ? 'lightBlue' : 'yellowGreen'"
         size="large"
         :hollow="true"
       >
         <div class="pt-20px pl-30px">
-          <div>推送时间：{{ formatTime(item.time, 'yyyy-MM-dd HH:mm:ss') }}</div>
-          <div>{{ item.info }} 获取</div>
+          <div>推送时间：{{ formatTime(item.timestamp, 'yyyy-MM-dd HH:mm:ss') }}</div>
+          <div>{{ item.source }} 获取</div>
         </div>
       </el-timeline-item>
     </ElTimeline>

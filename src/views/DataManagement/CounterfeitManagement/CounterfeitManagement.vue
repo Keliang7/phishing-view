@@ -32,6 +32,7 @@ import router from '@/router'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import Backtrack from '@/components/Backtrack/Backtrack.vue'
 import SelectData from '@/components/SelectData/SelectData.vue'
+import DataSource from '@/components/DataSource/DataSource.vue'
 const { t } = useI18n()
 const { tableRegister, tableMethods, tableState } = useTable({
   immediate: false,
@@ -62,14 +63,12 @@ const Columns: TableColumn[] = [
     label: t('tableDemo.dataSourcesNum'),
     align: 'center',
     width: 120,
-    slots: {
-      default: (data) => {
-        return (
-          <ElButton onClick={() => openDrawerInfo(data)} type="primary" link>
-            {`${data.row.dataSources?.length}个`}
-          </ElButton>
-        )
-      }
+    formatter(data) {
+      return (
+        <ElButton type="primary" link onClick={() => dataSource(data)}>
+          {data.dataSources.length}个
+        </ElButton>
+      )
     }
   },
   {
@@ -212,7 +211,10 @@ const Columns: TableColumn[] = [
     field: 'analyseAffirmTime',
     label: t('tableDemo.analyseAffirmTime'),
     width: 180,
-    formatter: (data) => formatTime(data.analyseAffirmTime, 'yyyy-MM-dd HH:mm:ss')
+    formatter: (data) =>
+      data.analyseAffirmTime
+        ? formatTime(data.analyseAffirmTime, 'yyyy-MM-dd HH:mm:ss')
+        : '暂无时间信息'
   },
   {
     field: 'analyseAffirmState',
@@ -286,8 +288,13 @@ const tabSideColumns = ref()
 const activeNameS = ref()
 const setTableSide = async (params) => {
   const res = await statisticsApi(params)
-  tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
-  setActiveNameS(tabSideColumns.value[0].name)
+  if (res.data.list.length) {
+    tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
+    setActiveNameS(tabSideColumns.value[0].name ?? '1')
+  } else {
+    tabSideColumns.value = []
+    getList()
+  }
 }
 watch([searchData, activeNameH], ([newSearchData, newActiveNameH]) =>
   setTableSide({ ...newSearchData, tableName: newActiveNameH })
@@ -299,6 +306,15 @@ const setActiveNameS = (name) => {
 onMounted(async () => {
   await setTableSide({ tableName: unref(activeNameH) })
 })
+
+//数据源
+const isDataSource = ref(false)
+const dataSourceData = ref()
+const dataSource = (data) => {
+  isDataSource.value = true
+  dataSourceData.value = data.dataSources
+}
+
 // 右侧弹窗信息
 const isDrawerInfo = ref(false)
 const isDrawerTimeLine = ref(false)
@@ -374,7 +390,6 @@ const backtrackFn = async (data) => {
   let temp = data.row.dataID
   const res = await backtrackApi({ id: temp })
   backtrackData.value = res
-  console.log(backtrackData.value)
   isBacktrack.value = true
 }
 //拓线
@@ -511,6 +526,7 @@ const exportFn = async () => {
     :drawerData="drawerData"
   />
   <DataExtension v-model:isDrawer="isDataExtension" :title="'创建任务'" />
+  <DataSource v-model:isDrawer="isDataSource" :dataSourceData="dataSourceData" />
   <ExportFile
     v-if="isExport"
     v-model:isDrawer="isExport"
