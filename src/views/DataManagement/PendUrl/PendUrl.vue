@@ -3,7 +3,7 @@ import { ref, reactive, unref, onMounted, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElTabs, ElTabPane, ElButton, ElCheckbox, ElMessage } from 'element-plus'
-import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
+import { Table, TableColumn } from '@/components/Table'
 import {
   getBwListApi,
   getDomainListApi,
@@ -112,7 +112,7 @@ const BWColumns: TableColumn[] = [
     width: 120
   },
   {
-    field: 'status',
+    field: 'collectionStatus',
     label: '采集状态',
     width: 120
   },
@@ -159,7 +159,7 @@ const BWColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton link type="primary" onClick={() => gatherFn(data)}>
+            <ElButton link type="primary" onClick={() => gatherFn(data.row)}>
               {t('tableDemo.gather')}
             </ElButton>
             <ElButton link type="primary" onClick={() => backtrackFn(data)}>
@@ -199,8 +199,8 @@ const DomainColumns: TableColumn[] = [
     width: 120
   },
   {
-    field: 'state',
-    label: t('tableDemo.state'),
+    field: 'collectionStatus',
+    label: '采集状态',
     width: 120
   },
   {
@@ -230,7 +230,7 @@ const DomainColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton link type="primary" onClick={() => gatherFn(data)}>
+          <ElButton link type="primary" onClick={() => gatherFn(data.row)}>
             {t('tableDemo.gather')}
           </ElButton>
         )
@@ -291,8 +291,8 @@ const URLColumns: TableColumn[] = [
     width: 120
   },
   {
-    field: 'state',
-    label: t('tableDemo.state'),
+    field: 'collectionStatus',
+    label: '采集状态',
     width: 120
   },
   {
@@ -337,7 +337,7 @@ const URLColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton type="primary" link onClick={() => gatherFn(data)}>
+          <ElButton type="primary" link onClick={() => gatherFn(data.row)}>
             {t('tableDemo.gather')}
           </ElButton>
         )
@@ -393,8 +393,8 @@ const TLSColumns: TableColumn[] = [
     width: 120
   },
   {
-    field: 'state',
-    label: t('tableDemo.state'),
+    field: 'collectionStatus',
+    label: '采集状态',
     width: 120
   },
   {
@@ -438,7 +438,7 @@ const TLSColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton type="primary" link onClick={() => gatherFn(data)}>
+          <ElButton type="primary" link onClick={() => gatherFn(data.row)}>
             {t('tableDemo.gather')}
           </ElButton>
         )
@@ -494,8 +494,8 @@ const ExtColumns: TableColumn[] = [
     width: 120
   },
   {
-    field: 'state',
-    label: t('tableDemo.state'),
+    field: 'collectionStatus',
+    label: '采集状态',
     width: 120
   },
   {
@@ -539,7 +539,7 @@ const ExtColumns: TableColumn[] = [
     slots: {
       default: (data) => {
         return (
-          <ElButton type="primary" link onClick={() => gatherFn(data)}>
+          <ElButton type="primary" link onClick={() => gatherFn(data.row)}>
             {t('tableDemo.gather')}
           </ElButton>
         )
@@ -604,9 +604,19 @@ const searchTable = async (value) => {
 // 采集任务事件
 const isSelectData = ref(false)
 const selectData = ref()
-const gatherFn = (data: TableSlotDefault) => {
+const gatherFn = async (data) => {
   isSelectData.value = true
-  selectData.value = [data.row]
+  if (!data) {
+    if (isCheckedAll.value) {
+      selectData.value = []
+    } else {
+      const elTableRef = await getElTableExpose()
+      const res = elTableRef?.getSelectionRows()
+      selectData.value = res
+    }
+  } else {
+    selectData.value = [data]
+  }
 }
 //backtrack
 const isBacktrack = ref(false)
@@ -670,7 +680,7 @@ const exportFn = async () => {
 <template>
   <AdvancedSearch
     :title="t('tableDemo.pendUrl')"
-    :dataArray="['url', 'domain', 'ip', 'collectStatus', 'discoveryTime']"
+    :dataArray="['url', 'domain', 'ip', 'collectionStatus', 'discoveryTime']"
     :tipTitle="'系统默认展示当天接入数据，最多可查看7天内数据，超出7天数据不会留存。'"
     @search-data="searchTable"
   />
@@ -690,7 +700,9 @@ const exportFn = async () => {
         <ElButton type="default">
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
-        <ElButton type="default"> <Icon icon="ep:operation" /> 批量采集 </ElButton>
+        <ElButton type="default" @click="gatherFn(null)">
+          <Icon icon="ep:operation" /> 批量采集
+        </ElButton>
         <ElButton type="primary" @click="exportFn">
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
@@ -715,7 +727,12 @@ const exportFn = async () => {
     />
   </ContentWrap>
   <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="titleDrawer" :bodyInfo="bodyInfo" />
-  <SelectData v-model:isDrawer="isSelectData" :title="'添加任务'" :data="selectData" />
+  <SelectData
+    v-if="isSelectData"
+    v-model:isDrawer="isSelectData"
+    :title="'数据采集'"
+    :data="selectData"
+  />
   <ExportFile
     v-if="isExport"
     v-model:isDrawer="isExport"

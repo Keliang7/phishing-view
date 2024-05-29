@@ -1,7 +1,16 @@
 <script setup lang="tsx">
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import { ref, unref, watch, onMounted, h } from 'vue'
-import { ElButton, ElCheckbox, ElRow, ElCol, ElMessage, ElMessageBox } from 'element-plus'
+import {
+  ElButton,
+  ElCheckbox,
+  ElRow,
+  ElCol,
+  ElMessage,
+  ElMessageBox,
+  ElDropdown,
+  ElDropdownItem
+} from 'element-plus'
 import { Icon } from '@/components/Icon'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
@@ -12,9 +21,9 @@ import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
+import SelectData from '@/components/SelectData/SelectData.vue'
 import DataSource from '@/components/DataSource/DataSource.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
-import DataExtension from '@/components/DataExtension/DataExtension.vue'
 import { useRouter } from 'vue-router'
 const { tableRegister, tableMethods, tableState } = useTable({
   immediate: false,
@@ -224,7 +233,7 @@ const columns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="primary" link onClick={() => viewData(data)}>
+            <ElButton type="primary" link onClick={() => gatherFn(data.row)}>
               采集
             </ElButton>
             <ElButton type="primary" link onClick={() => addCounterfeitFn(data.row.dataID)}>
@@ -257,20 +266,6 @@ const searchTable = async (value) => {
   searchData.value = value
   await setTableSide(value)
 }
-//查看数据
-const router = useRouter()
-const viewData = (data) => {
-  const taskID = data.row.taskID
-  router.push({
-    name: 'ExtensionResult',
-    query: { taskID }
-  })
-}
-//编辑
-// const editData = (data) => {
-//   console.log(data)
-//   extensionFn()
-// }
 //是否全选
 const ids = ref([])
 const isCheckedAll = ref(false)
@@ -303,11 +298,6 @@ const exportFn = async () => {
     ElMessage.warning('请选择需要导出的数据')
   }
 }
-//创建任务
-const isDataExtension = ref(false)
-const extensionFn = () => {
-  isDataExtension.value = true
-}
 // 查看网页信息
 const isDrawerInfo = ref(false)
 const titleDrawer = ref('')
@@ -326,6 +316,23 @@ const openDrawerInfo = async (data) => {
     }
   ]
 }
+// 采集任务事件
+const isSelectData = ref(false)
+const selectData = ref()
+const gatherFn = async (data) => {
+  isSelectData.value = true
+  if (!data) {
+    if (isCheckedAll.value) {
+      selectData.value = []
+    } else {
+      const elTableRef = await getElTableExpose()
+      const res = elTableRef?.getSelectionRows()
+      selectData.value = res
+    }
+  } else {
+    selectData.value = [data]
+  }
+}
 //数据源
 const isDataSource = ref(false)
 const dataSourceData = ref()
@@ -335,8 +342,8 @@ const dataSource = (data) => {
   isDataSource.value = true
   dataSourceData.value = data.dataSources
 }
-
 // 加入仿冒样本库
+const router = useRouter()
 const addCounterfeitFn = async (id) => {
   await joinSampApi({ phishingID: id }).then((res) => {
     if (res.code == 0) {
@@ -386,7 +393,15 @@ const addCounterfeitFn = async (id) => {
         <ElButton type="default">
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
-        <ElButton type="primary" @click="extensionFn"> 创建任务 </ElButton>
+        <ElDropdown class="mx-12px">
+          <ElButton type="default"> 批量设置 </ElButton>
+          <template #dropdown>
+            <ElDropdownMenu>
+              <ElDropdownItem @click="gatherFn(null)">批量采集</ElDropdownItem>
+              <ElDropdownItem @click="addCounterfeitFn(null)">加入仿冒样本库</ElDropdownItem>
+            </ElDropdownMenu>
+          </template>
+        </ElDropdown>
         <ElButton type="primary" @click="exportFn">
           <Icon icon="tdesign:upload" /> 导出数据
         </ElButton>
@@ -417,7 +432,6 @@ const addCounterfeitFn = async (id) => {
       </ElCol>
     </ElRow>
   </ContentWrap>
-  <DataExtension v-model:isDrawer="isDataExtension" :title="'创建任务'" />
   <DrawerInfo v-model:isDrawer="isDrawerInfo" :title="titleDrawer" :bodyInfo="bodyInfo" />
   <DataSource v-model:isDrawer="isDataSource" :dataSourceData="dataSourceData" />
   <ExportFile
@@ -435,6 +449,12 @@ const addCounterfeitFn = async (id) => {
         isCheckedAll = temp
       }
     "
+  />
+  <SelectData
+    v-if="isSelectData"
+    v-model:isDrawer="isSelectData"
+    :title="'采集任务'"
+    :data="selectData"
   />
 </template>
 <style scoped></style>

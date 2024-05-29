@@ -38,11 +38,15 @@ export const useValidator = () => {
       }
     }
   }
-
+  /**
+   * @description 不能包含非ip，url，domain意外的字符
+   * @param message
+   * @returns
+   */
   const notSpecialCharacters = (message?: string): FormItemRule => {
     return {
       validator: (_, val, callback) => {
-        if (/[`~!@#$%^&*()_+<>?:"{},.\/;'[\]]/gi.test(val)) {
+        if (/[!@#$^*()_+\[\]{};'"\\|,<>]+/.test(val)) {
           callback(new Error(message || t('common.notSpecialCharacters')))
         } else {
           callback()
