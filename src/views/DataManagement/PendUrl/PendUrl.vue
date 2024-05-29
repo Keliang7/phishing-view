@@ -607,13 +607,9 @@ const selectData = ref()
 const gatherFn = async (data) => {
   isSelectData.value = true
   if (!data) {
-    if (isCheckedAll.value) {
-      selectData.value = []
-    } else {
-      const elTableRef = await getElTableExpose()
-      const res = elTableRef?.getSelectionRows()
-      selectData.value = res
-    }
+    const elTableRef = await getElTableExpose()
+    const res = elTableRef?.getSelectionRows()
+    selectData.value = res
   } else {
     selectData.value = [data]
   }
@@ -700,7 +696,7 @@ const exportFn = async () => {
         <ElButton type="default">
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
-        <ElButton type="default" @click="gatherFn(null)">
+        <ElButton type="default" @click="gatherFn(null)" :disabled="isCheckedAll">
           <Icon icon="ep:operation" /> 批量采集
         </ElButton>
         <ElButton type="primary" @click="exportFn">
