@@ -1,8 +1,12 @@
 <script setup lang="tsx">
 import { ref } from 'vue'
-import { ElDrawer, ElInput, ElMessage } from 'element-plus'
+import { ElDrawer, ElMessage } from 'element-plus'
+import { Form, FormSchema } from '@/components/Form'
+import { useForm } from '@/hooks/web/useForm'
 import { addApi } from '@/api/systemManagement/PhishingConfiguration'
 import { useUserStore } from '@/store/modules/user'
+import { useValidator } from '@/hooks/web/useValidator'
+const { required } = useValidator()
 defineProps({
   title: {
     type: String,
@@ -22,52 +26,78 @@ defineProps({
   }
 })
 const emit = defineEmits(['update:isDrawer', 'get-data'])
-const close = () => {
-  console.log('关闭弹窗')
+const close = async () => {
   emit('update:isDrawer', false)
 }
-const AddDataValue = ref(``)
-const open = () => {
-  console.log('打开弹窗')
-}
-const confirmClick = async () => {
-  const createdBy = useUserStore().getUserInfo?.username
 
-  let res = await addApi({
-    createdBy,
-    addType: 'user',
-    ruleContents: AddDataValue.value
-  })
-  if (res.message == '插入成功') {
-    resetClick()
-    close()
-    ElMessage.success('添加数据成功')
-    emit('get-data')
+const { formRegister, formMethods } = useForm()
+const { getElFormExpose, getFormData } = formMethods
+const schema = ref<FormSchema[]>([
+  {
+    field: 'ruleContents',
+    label: `规则内容：`,
+    component: 'Input',
+    componentProps: {
+      type: 'textarea',
+      placeholder: `请输入确认非仿冒网站的域名，匹配成功将不会入库。一行一个域名，可输入多行，最多输入1000行。`,
+      autosize: { minRows: 11, maxRows: 16 },
+      resize: 'none'
+    },
+    formItemProps: {
+      rules: [required()]
+    }
+  },
+  {
+    field: 'ruleType',
+    label: `规则类型：`,
+    component: 'Select',
+    componentProps: {
+      options: [
+        {
+          label: '直接匹配',
+          value: 1
+        },
+        {
+          label: '正则匹配',
+          value: 2
+        }
+      ]
+    },
+    formItemProps: {
+      rules: [required()]
+    }
   }
-}
-const resetClick = () => {
-  AddDataValue.value = ''
+])
+// 查询
+const loading = ref(false)
+const confirmClick = async () => {
+  const elFormExpose = await getElFormExpose()
+  elFormExpose?.validate(async (isValid) => {
+    if (isValid) {
+      loading.value = true
+      const formData = await getFormData()
+      if (formData.exploreAimFile) {
+        formData.exploreAimFile = formData.exploreAimFile[0].raw
+      }
+      const createdBy = useUserStore().getUserInfo?.username
+      const res = await addApi({ ...formData, createdBy, addType: 'user' })
+      if (res.code == 0) {
+        loading.value = false
+        close().then(() => {
+          ElMessage.success('添加规则成功')
+        })
+      }
+    }
+  })
 }
 </script>
 <template>
-  <ElDrawer
-    :title="title"
-    :modelValue="isDrawer"
-    :before-close="close"
-    custom-class="drawerWidth"
-    @open="open"
-  >
-    <ElInput
-      v-model="AddDataValue"
-      type="textarea"
-      :autosize="{ minRows: 11, maxRows: 16 }"
-      resize="none"
-      :placeholder="placeholder"
-    />
+  <ElDrawer :title="title" :modelValue="isDrawer" :before-close="close" custom-class="drawerWidth">
+    <Form :autoSetPlaceholder="false" :schema="schema" @register="formRegister" :isCol="false" />
     <template #footer>
       <div style="margin-right: 20px">
-        <BaseButton type="default" @click="resetClick">重 置</BaseButton>
-        <BaseButton type="primary" @click="confirmClick">确 定</BaseButton>
+        <BaseButton type="default" @click="close">取 消</BaseButton>
+        <BaseButton type="primary" :loading="loading" @click="confirmClick">确 定</BaseButton>
       </div>
     </template>
   </ElDrawer>
