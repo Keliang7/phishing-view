@@ -6,10 +6,10 @@ import { BaseButton } from '@/components/Button'
 import { useValidator } from '@/hooks/web/useValidator'
 import { ref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
-import { ElMessageBox, ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { addApi } from '@/api/dataGather/gatherTask'
 const { t } = useI18n()
-const { required, notSpace } = useValidator()
+const { required, notSpecialCharacters, notSpace } = useValidator()
 const props = defineProps({
   title: {
     type: String,
@@ -19,21 +19,24 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  isPort: {
-    type: Boolean,
-    default: false
-  },
   isFile: {
     type: Boolean,
     default: false
   },
   data: {
-    type: Array as () => Array<{ ipv4: string; url: string; domain: string; [key: string]: any }>
+    type: Array as () => Array<{
+      ipv4: string | null
+      ipv6: string | null
+      ip: string | null
+      url: string | null
+      domain: string | null
+      [key: string]: any
+    }>
   }
 })
 
 const { formRegister, formMethods } = useForm()
-const { getElFormExpose, getFormData, setValues, addSchema, delSchema } = formMethods
+const { getElFormExpose, getFormData, setValues, delSchema, setSchema } = formMethods
 const schema = ref<FormSchema[]>([
   {
     field: 'taskName',
@@ -43,7 +46,7 @@ const schema = ref<FormSchema[]>([
       placeholder: '请输入任务名称'
     },
     formItemProps: {
-      rules: [required(), notSpace()]
+      rules: [required()]
     }
   },
   {
@@ -51,34 +54,48 @@ const schema = ref<FormSchema[]>([
     label: `${t('formDemo.exploreType')}：`,
     component: 'Select',
     componentProps: {
+      options: [
+        {
+          label: '资产探测（可探测title、FID、IP等信息）',
+          value: 'ipAsset'
+        },
+        {
+          label: '网站探测（可探测网站截图）',
+          value: 'webAsset'
+        },
+        {
+          label: '域名探测（可探测WHOIS、网站备案信息）',
+          value: 'domainResolve'
+        }
+      ],
       on: {
         change(v) {
-          delSchema('explorePort')
+          setSchema([
+            {
+              field: 'explorePort',
+              path: 'remove',
+              value: true
+            }
+          ])
           if (v == 'ipAsset') {
-            //设置text里的值
             setValues({
-              exploreAimText: [...new Set(props.data?.map((i) => i.ipv4))]
+              exploreAimText: [...new Set(props.data?.map((i) => i.ipv4 || i.ipv6 || i.ip))]
                 .filter((i) => i !== '')
                 .join(`\n`)
             })
             setValues({
-              explorePort: [...new Set(props.data?.map((i) => i.aimPort))]
-                .filter((i) => i !== '')
-                .join(`\n`)
+              explorePort:
+                [...new Set(props.data?.map((i) => i.aimPort))]
+                  .filter((i) => i !== '')
+                  .join(`\n`) || '80\n443'
             })
-            addSchema(
+            setSchema([
               {
                 field: 'explorePort',
-                label: `${t('formDemo.explorePort')}：`,
-                component: 'Input',
-                componentProps: {
-                  class: 'test',
-                  type: 'textarea',
-                  rows: 4
-                }
-              },
-              -2
-            )
+                path: 'remove',
+                value: false
+              }
+            ])
           }
           if (v == 'webAsset') {
             setValues({
@@ -95,21 +112,7 @@ const schema = ref<FormSchema[]>([
             })
           }
         }
-      },
-      options: [
-        {
-          label: '资产探测（可探测title、FID、IP等信息）',
-          value: 'ipAsset'
-        },
-        {
-          label: '网站探测（可探测网站截图）',
-          value: 'webAsset'
-        },
-        {
-          label: '域名探测（可探测WHOIS、网站备案信息）',
-          value: 'domainResolve'
-        }
-      ]
+      }
     },
     formItemProps: {
       rules: [required()]
@@ -126,7 +129,46 @@ const schema = ref<FormSchema[]>([
       rows: 8
     },
     formItemProps: {
+      rules: [required(), notSpecialCharacters(), notSpace()]
+    }
+  },
+  {
+    field: 'exploreAimFile',
+    label: `${t('formDemo.exploreAim')}：`,
+    component: 'Upload',
+    hidden: !props.isFile,
+    componentProps: {
+      limit: 1,
+      autoUpload: false,
+      ref: 'uploadRef',
+      slots: {
+        trigger: () => <BaseButton type="primary">点击上传</BaseButton>,
+        default: () => (
+          <div class="el-upload__tip">
+            <p>
+              支持上传.xlsx、.xls、.txt、.xml、.json、.csv文件，最大上传文件为1M <a>下载模板</a>
+            </p>
+            <p class="attention">注意：目标地址添加方式为文件上传时，系统调度策略默认按IP拆分。</p>
+          </div>
+        )
+      }
+    },
+    formItemProps: {
       rules: [required()]
+    }
+  },
+  {
+    field: 'explorePort',
+    label: `${t('formDemo.explorePort')}：`,
+    remove: true,
+    component: 'Input',
+    componentProps: {
+      class: 'test',
+      type: 'textarea',
+      rows: 4
+    },
+    formItemProps: {
+      rules: [required(), notSpecialCharacters(), notSpace()]
     }
   },
   {
@@ -161,111 +203,13 @@ const schema = ref<FormSchema[]>([
 //抽屉打开关闭
 const emit = defineEmits(['update:isDrawer'])
 const close = async () => {
-  console.log('关闭弹窗')
   delSchema(`inputType`)
   const elFormExpose = await getElFormExpose()
   elFormExpose?.resetFields()
   emit('update:isDrawer', false)
 }
-const open = () => {
-  if (props.isFile) {
-    addSchema(
-      {
-        field: `inputType`,
-        label: `输入方式：`,
-        component: 'Select',
-        componentProps: {
-          options: [
-            { label: '文本输入', value: 'text' },
-            { label: '文件上传', value: 'file' }
-          ],
-          on: {
-            change: (v) => {
-              delSchema('exploreAimFile')
-              delSchema('exploreAimText')
-              if (v == 'text') {
-                addSchema(
-                  {
-                    field: 'exploreAimText',
-                    component: 'Input',
-                    label: `${t('formDemo.exploreAim')}：`,
-                    componentProps: {
-                      labelWidth: '20px',
-                      type: 'textarea',
-                      placeholder: `'请输入IP、IP段，可支持多行，最多支持10000个目标\n支持格式如下：\n192.168.10.0-100\n192.168.1.2\n192.168.1.0/32'`,
-                      rows: 8
-                    },
-                    formItemProps: {
-                      rules: [required()]
-                    }
-                  },
-                  3
-                )
-              } else {
-                addSchema(
-                  {
-                    field: 'exploreAimFile',
-                    label: `${t('formDemo.exploreAim')}：`,
-                    component: 'Upload',
-                    componentProps: {
-                      limit: 1,
-                      // action: '',
-                      autoUpload: false,
-                      ref: 'uploadRef',
-                      onPreview: (uploadFile) => {
-                        console.log(uploadFile)
-                      },
-                      onRemove: (file) => {
-                        console.log(file)
-                      },
-                      beforeRemove: (uploadFile) => {
-                        return ElMessageBox.confirm(
-                          `Cancel the transfer of ${uploadFile.name} ?`
-                        ).then(
-                          () => true,
-                          () => false
-                        )
-                      },
-                      onExceed: (files, uploadFiles) => {
-                        ElMessage.warning(
-                          `The limit is 1, you selected ${files.length} files this time, add up to ${
-                            files.length + uploadFiles.length
-                          } totally`
-                        )
-                      },
-                      slots: {
-                        trigger: () => <BaseButton type="primary">点击上传</BaseButton>,
-                        default: () => (
-                          <div class="el-upload__tip">
-                            <p>
-                              支持上传.xlsx、.xls、.txt、.xml、.json、.csv文件，最大上传文件为1M{' '}
-                              <a>下载模板</a>
-                            </p>
-                            <p class="attention">
-                              注意：目标地址添加方式为文件上传时，系统调度策略默认按IP拆分。
-                            </p>
-                          </div>
-                        )
-                      }
-                    },
-                    formItemProps: {
-                      rules: [required()]
-                    }
-                  },
-                  3
-                )
-              }
-            }
-          }
-        },
-        formItemProps: {
-          rules: [required()]
-        }
-      },
-      2
-    )
-  }
-  console.log('打开')
+const open = async () => {
+  console.log('data', props.data)
 }
 // 重置
 const resetClick = async () => {
@@ -276,21 +220,19 @@ const resetClick = async () => {
 const loading = ref(false)
 const confirmClick = async () => {
   const elFormExpose = await getElFormExpose()
-  const formData = await getFormData()
-  delete formData.inputType
   elFormExpose?.validate(async (isValid) => {
     if (isValid) {
       loading.value = true
+      const formData = await getFormData()
       if (formData.exploreAimFile) {
         formData.exploreAimFile = formData.exploreAimFile[0].raw
-      } else {
-        delete formData.exploreAimFile
       }
       const res = await addApi(formData)
       if (res.code == 0) {
         loading.value = false
-        close()
-        ElMessage.success('添加任务成功')
+        close().then(() => {
+          ElMessage.success('添加任务成功')
+        })
       }
     }
   })
@@ -314,31 +256,6 @@ const confirmClick = async () => {
   </ElDrawer>
 </template>
 <style lang="less" scope>
-.el-drawer {
-  width: 40% !important;
-  .el-drawer__title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #000;
-  }
-  .el-drawer__header {
-    margin-bottom: 0px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #ebeef5;
-  }
-  .el-upload__tip p {
-    margin: 0;
-  }
-  p a {
-    cursor: pointer;
-    color: var(--el-color-primary);
-  }
-}
-
-.attention {
-  font-size: 13px;
-  color: var(--el-color-error);
-}
 .test::after {
   content: '请输入IP、IP段，可支持多行，最多支持10000个目标,一行一个';
   color: grey;

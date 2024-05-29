@@ -16,7 +16,7 @@ import {
   ElMessage
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
-import { Table, TableColumn, TableSlotDefault } from '@/components/Table'
+import { Table, TableColumn } from '@/components/Table'
 import { getListApi, statisticsApi, exportApi } from '@/api/dataManagement/counterfeitManagement'
 import { backtrackApi, joinSampApi } from '@/api/dataManagement'
 import { useTable } from '@/hooks/web/useTable'
@@ -230,7 +230,7 @@ const Columns: TableColumn[] = [
       default: (data) => {
         return (
           <div class="action-btn">
-            <ElButton type="primary" link onClick={() => gatherFn(data)}>
+            <ElButton type="primary" link onClick={() => gatherFn(data.row)}>
               {t('tableDemo.gather')}
             </ElButton>
             <ElButton disabled type="primary" link onClick={() => extensionFn(data)}>
@@ -347,17 +347,22 @@ const addCounterfeitFn = async (id) => {
     }
   })
 }
-//采集
+// 采集任务事件
 const isSelectData = ref(false)
 const selectData = ref()
-const gatherFn = (data: TableSlotDefault) => {
+const gatherFn = async (data) => {
   isSelectData.value = true
-  selectData.value = [data.row]
-}
-// 批量采集
-const gatherAllFn = () => {
-  isSelectData.value = true
-  selectData.value = ids.value
+  if (!data) {
+    if (isCheckedAll.value) {
+      selectData.value = []
+    } else {
+      const elTableRef = await getElTableExpose()
+      const res = elTableRef?.getSelectionRows()
+      selectData.value = res
+    }
+  } else {
+    selectData.value = [data]
+  }
 }
 //回溯
 const isBacktrack = ref(false)
@@ -444,7 +449,7 @@ const exportFn = async () => {
           <ElButton type="default"> 批量设置 </ElButton>
           <template #dropdown>
             <ElDropdownMenu>
-              <ElDropdownItem @click="gatherAllFn()">{{ t('tableDemo.gather') }}</ElDropdownItem>
+              <ElDropdownItem @click="gatherFn(null)">{{ t('tableDemo.gather') }}</ElDropdownItem>
               <ElDropdownItem @click="extensionFn(ids)">{{
                 t('tableDemo.extension')
               }}</ElDropdownItem>
@@ -507,7 +512,7 @@ const exportFn = async () => {
     :dataSourceInfo="{ name: 'wangdao' }"
   />
   <SelectData
-    :isFile="true"
+    v-if="isSelectData"
     v-model:isDrawer="isSelectData"
     :title="'采集任务'"
     :data="selectData"

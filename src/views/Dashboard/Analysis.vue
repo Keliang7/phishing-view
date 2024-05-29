@@ -486,7 +486,7 @@ onMounted(() => {
       end-placeholder="结束时间"
       :size="'default'"
     />
-    <div class="flex justify-center items-center h-100%">
+    <div class="ml-12px flex justify-center items-center h-100%">
       <div class="bg-#D3DEFE font-size-12px p-8px flex items-center border-rounded-4px">
         <div
           class="border-rounded-2 bg-#0B56FA w-16px h-16px flex justify-center items-center text-white ml-4px mr-4px"

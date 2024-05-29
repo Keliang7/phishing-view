@@ -63,7 +63,7 @@ let schema = ref<FormSchema[]>([
     }
   },
   {
-    field: 'collectStatus',
+    field: 'collectionStatus',
     label: '采集状态：',
     component: 'Select',
     componentProps: {
@@ -531,7 +531,7 @@ let schema = ref<FormSchema[]>([
     componentProps: {
       options: [
         {
-          label: '系统预置',
+          label: '系统内置',
           value: 'system'
         },
         {
