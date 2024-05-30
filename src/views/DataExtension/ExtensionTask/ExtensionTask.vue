@@ -46,7 +46,7 @@ const columns: TableColumn[] = [
   },
   {
     field: 'taskName',
-    width: 240,
+    width: 300,
     label: '任务名称'
   },
   {
@@ -56,7 +56,7 @@ const columns: TableColumn[] = [
   },
   {
     field: 'distributeType',
-    width: 90,
+    width: 120,
     label: '下发方式'
   },
   {
@@ -77,7 +77,7 @@ const columns: TableColumn[] = [
   },
   {
     field: 'useTime',
-    width: 90,
+    width: 120,
     label: '任务耗时',
     formatter: (data) => {
       return (

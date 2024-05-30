@@ -68,7 +68,7 @@ const BWColumns: TableColumn[] = [
   {
     field: 'dataID',
     label: t('tableDemo.dataID'),
-    width: 120
+    width: 280
   },
   {
     field: 'ruleID',
@@ -78,22 +78,22 @@ const BWColumns: TableColumn[] = [
   {
     field: 'url',
     label: t('tableDemo.url'),
-    width: 150
+    width: 280
   },
   {
     field: 'domain',
     label: t('tableDemo.domain'),
-    width: 130
+    width: 180
   },
   {
     field: 'ipv4',
     label: t('tableDemo.ipv4'),
-    width: 120
+    width: 140
   },
   {
     field: 'ipv6',
     label: t('tableDemo.ipv6'),
-    width: 180
+    width: 140
   },
   {
     field: 'aimPort',
@@ -180,7 +180,7 @@ const DomainColumns: TableColumn[] = [
   {
     field: 'dataID',
     label: t('tableDemo.dataID'),
-    width: 120
+    width: 280
   },
   {
     field: 'domain',
@@ -247,12 +247,12 @@ const URLColumns: TableColumn[] = [
   {
     field: 'dataID',
     label: t('tableDemo.dataID'),
-    width: 120
+    width: 280
   },
   {
     field: 'url',
     label: t('tableDemo.url'),
-    width: 150
+    width: 280
   },
   {
     field: 'domain',
@@ -262,12 +262,12 @@ const URLColumns: TableColumn[] = [
   {
     field: 'ipv4',
     label: t('tableDemo.ipv4'),
-    width: 120
+    width: 140
   },
   {
     field: 'ipv6',
     label: t('tableDemo.ipv6'),
-    width: 180
+    width: 140
   },
   {
     field: 'protocol',
@@ -354,7 +354,7 @@ const TLSColumns: TableColumn[] = [
   {
     field: 'dataID',
     label: t('tableDemo.dataID'),
-    width: 120
+    width: 280
   },
   {
     field: 'domain',
@@ -364,12 +364,12 @@ const TLSColumns: TableColumn[] = [
   {
     field: 'ipv4',
     label: t('tableDemo.ipv4'),
-    width: 120
+    width: 140
   },
   {
     field: 'ipv6',
     label: t('tableDemo.ipv6'),
-    width: 180
+    width: 140
   },
   {
     field: 'protocol',
@@ -455,7 +455,7 @@ const ExtColumns: TableColumn[] = [
   {
     field: 'dataID',
     label: t('tableDemo.dataID'),
-    width: 120
+    width: 280
   },
   {
     field: 'domain',
@@ -465,12 +465,12 @@ const ExtColumns: TableColumn[] = [
   {
     field: 'ipv4',
     label: t('tableDemo.ipv4'),
-    width: 120
+    width: 140
   },
   {
     field: 'ipv6',
     label: t('tableDemo.ipv6'),
-    width: 180
+    width: 140
   },
   {
     field: 'protocol',

@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { ContentWrap } from '@/components/ContentWrap'
 import { useI18n } from '@/hooks/web/useI18n'
-import { reactive, ref, onMounted, watch, defineEmits } from 'vue'
+import { reactive, ref, onMounted, watch } from 'vue'
 import { useForm } from '@/hooks/web/useForm'
 import { Form, FormSchema } from '@/components/Form'
 import { Timestamp } from '@/utils'
@@ -249,23 +249,23 @@ let schema = ref<FormSchema[]>([
       options: [
         {
           label: '推送策略过滤，数据未推送',
-          value: 1
+          value: '推送策略过滤，数据未推送'
         },
         {
           label: '仿冒特征规则匹配失败，判定为非仿冒数据',
-          value: 2
+          value: '仿冒特征规则匹配失败，判定为非仿冒数据'
         },
         {
           label: '白名单过滤成功，数据未入库',
-          value: 3
+          value: '白名单过滤成功，数据未入库'
         },
         {
           label: '粗放规则过滤失败，未入库',
-          value: 4
+          value: '粗放规则过滤失败，未入库'
         },
         {
           label: '数据源未推送数据，系统未获取到数据',
-          value: 5
+          value: '数据源未推送数据，系统未获取到数据'
         }
       ],
       placeholder: '请选择漏报原因'
