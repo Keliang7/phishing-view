@@ -11,17 +11,6 @@ import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import { ContentWrap } from '@/components/ContentWrap'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
 import { useRoute } from 'vue-router'
-const dataArray = ref([
-  'taskID',
-  'taskName',
-  'createdBy',
-  'title',
-  'discoveryTime',
-  'domain',
-  'ip',
-  'FID',
-  'netStatusCode'
-])
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
@@ -168,19 +157,33 @@ const exportFn = async () => {
     ElMessage.warning('请选择需要导出的数据')
   }
 }
+
+//设置初始值
+const setValue = ref()
 onBeforeMount(() => {
   // 在组件挂载之前执行的逻辑
   const route = useRoute()
   if (route.query && route.query.taskID) {
-    console.log('我确定我执行了')
     const taskID = route.query.taskID
+    setValue.value = { taskID }
     searchData.value = { taskID }
   }
 })
 </script>
 <template>
   <AdvancedSearch
-    :dataArray="dataArray"
+    :dataArray="[
+      'taskID',
+      'taskName',
+      'createdBy',
+      'title',
+      'discoveryTime',
+      'domain',
+      'ip',
+      'FID',
+      'netStatusCode'
+    ]"
+    :set-value="setValue"
     :total="total"
     :title="'拓线结果查看'"
     tip-title="系统默认展示当天拓线任务，最多可查看30天内任务，超出30天任务不会留存。"

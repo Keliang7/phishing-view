@@ -17,6 +17,9 @@ const props = defineProps({
   total: {
     type: Number
   },
+  setValue: {
+    type: Object
+  },
   tipTitle: {
     type: String,
     default: ''
@@ -24,7 +27,7 @@ const props = defineProps({
 })
 const { t } = useI18n()
 const { formRegister, formMethods } = useForm()
-const { getElFormExpose, getFormData } = formMethods
+const { getElFormExpose, getFormData, setValues } = formMethods
 const emit = defineEmits(['search-data'])
 // 查询到的表格数据
 let schema = ref<FormSchema[]>([
@@ -644,6 +647,9 @@ const getShowData = () => {
   schemaCopy.value = temp
 }
 onMounted(async () => {
+  if (props.setValue) {
+    setValues(props.setValue)
+  }
   await getShowData()
 })
 // 当同一个页面，不同的高级搜索组件进行切换时，需要用watch来监听变化。

@@ -178,11 +178,13 @@ const openDrawerInfo = (data) => {
   isDrawerInfo.value = true
   bodyInfo.value = [{ name: '网页信息', value: data.row.webInfo }]
 }
+const setValue = ref()
 onBeforeMount(() => {
   // 在组件挂载之前执行的逻辑
   const route = useRoute()
   if (route.query && route.query.taskID) {
     const taskID = route.query.taskID
+    setValue.value = { taskID }
     searchData.value = { taskID }
   }
 })
@@ -225,6 +227,7 @@ const exportFn = async () => {
     :total="total"
     :title="`采集结果查看`"
     :tipTitle="'系统默认展示当天拓线数据，最多可查看30天内数据，超出30天数据不会留存。'"
+    :set-value="setValue"
     :dataArray="[
       'taskID',
       'taskName',
