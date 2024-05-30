@@ -68,6 +68,10 @@ const schema = ref<FormSchema[]>([
     }
   }
 ])
+const resetClick = async () => {
+  const elFormExpose = await getElFormExpose()
+  elFormExpose?.resetFields()
+}
 // 查询
 const loading = ref(false)
 const confirmClick = async () => {
@@ -96,7 +100,7 @@ const confirmClick = async () => {
     <Form :autoSetPlaceholder="false" :schema="schema" @register="formRegister" :isCol="false" />
     <template #footer>
       <div style="margin-right: 20px">
-        <BaseButton type="default" @click="close">取 消</BaseButton>
+        <BaseButton type="default" @click="resetClick">重 置</BaseButton>
         <BaseButton type="primary" :loading="loading" @click="confirmClick">确 定</BaseButton>
       </div>
     </template>

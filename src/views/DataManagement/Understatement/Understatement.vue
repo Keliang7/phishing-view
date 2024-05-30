@@ -321,7 +321,6 @@ const openDrawerInfo = async (data) => {
 const isSelectData = ref(false)
 const selectData = ref()
 const gatherFn = async (data) => {
-  isSelectData.value = true
   if (!data) {
     const elTableRef = await getElTableExpose()
     const res = elTableRef?.getSelectionRows()
@@ -329,6 +328,7 @@ const gatherFn = async (data) => {
   } else {
     selectData.value = [data]
   }
+  isSelectData.value = true
 }
 //数据源
 const isDataSource = ref(false)

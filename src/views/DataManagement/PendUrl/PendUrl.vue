@@ -605,7 +605,6 @@ const searchTable = async (value) => {
 const isSelectData = ref(false)
 const selectData = ref()
 const gatherFn = async (data) => {
-  isSelectData.value = true
   if (!data) {
     const elTableRef = await getElTableExpose()
     const res = elTableRef?.getSelectionRows()
@@ -613,6 +612,7 @@ const gatherFn = async (data) => {
   } else {
     selectData.value = [data]
   }
+  isSelectData.value = true
 }
 //backtrack
 const isBacktrack = ref(false)

@@ -6,11 +6,10 @@ import { BaseButton } from '@/components/Button'
 import { useValidator } from '@/hooks/web/useValidator'
 import { ref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
-import { ElUpload } from 'element-plus'
 import { addApi } from '@/api/dataExtension/extensionTask'
 const { t } = useI18n()
 const { required } = useValidator()
-defineProps({
+const props = defineProps({
   title: {
     type: String,
     default: ''
@@ -18,46 +17,25 @@ defineProps({
   isDrawer: {
     type: Boolean,
     default: false
+  },
+  isFile: {
+    type: Boolean,
+    default: false
+  },
+  data: {
+    type: Array as () => Array<{
+      ipv4: string | null
+      ipv6: string | null
+      ip: string | null
+      url: string | null
+      domain: string | null
+      [key: string]: any
+    }>
   }
 })
 
 const { formRegister, formMethods } = useForm()
-const { getElFormExpose, getFormData } = formMethods
-
-const emit = defineEmits(['update:isDrawer'])
-const close = async () => {
-  console.log('关闭弹窗')
-  const elFormExpose = await getElFormExpose()
-  elFormExpose?.resetFields()
-  emit('update:isDrawer', false)
-}
-const open = () => {
-  console.log('打开弹窗')
-}
-
-// 重置
-const resetClick = async () => {
-  const elFormExpose = await getElFormExpose()
-  elFormExpose?.resetFields()
-}
-// 查询
-const confirmClick = async () => {
-  const elFormExpose = await getElFormExpose()
-  elFormExpose?.validate(async (isValid) => {
-    if (isValid) {
-      const formData = await getFormData()
-      let res
-      if (file.value) {
-        res = await addApi({ ...formData, file: file.value[0].raw })
-      } else {
-        res = await addApi({ ...formData })
-      }
-      if (res.code === 0) {
-        ElMessage.success('创建任务成功')
-      }
-    }
-  })
-}
+const { getElFormExpose, getFormData, setValues } = formMethods
 const schema = ref<FormSchema[]>([
   {
     field: 'taskName',
@@ -70,83 +48,6 @@ const schema = ref<FormSchema[]>([
       rules: [required()]
     }
   },
-  /**
-   * 这里的代码暂时隐藏
-   */
-  // {
-  //   field: 'taskType',
-  //   label: `任务类型：`,
-  //   component: 'Select',
-  //   value: ['FID', 'title', 'rootDomain', 'CExpend', 'ICON'],
-  //   componentProps: {
-  //     multiple: true,
-  //     options: [
-  //       {
-  //         label: 'FID',
-  //         value: 'FID'
-  //       },
-  //       {
-  //         label: 'title',
-  //         value: 'title'
-  //       },
-  //       {
-  //         label: '根域',
-  //         value: 'rootDomain'
-  //       },
-  //       {
-  //         label: 'C段扩展',
-  //         value: 'CExpend'
-  //       },
-  //       {
-  //         label: 'ICON',
-  //         value: 'ICON'
-  //       }
-  //     ]
-  //   },
-  //   formItemProps: {
-  //     rules: [required()]
-  //   }
-  // },
-  // {
-  //   field: 'extensionStatus',
-  //   label: `拓线结果数据状态：`,
-  //   component: 'Select',
-  //   value: '全部',
-  //   componentProps: {
-  //     options: [
-  //       {
-  //         label: '全部',
-  //         value: '全部'
-  //       },
-  //       {
-  //         label: '存活',
-  //         value: '存活'
-  //       },
-  //       {
-  //         label: '离线',
-  //         value: '离线'
-  //       }
-  //     ],
-  //     class: 'extension-status'
-  //   },
-  //   formItemProps: {
-  //     rules: [required()]
-  //   }
-  // },
-  // {
-  //   field: 'timeArray',
-  //   label: '拓线结果时间范围：',
-  //   component: 'DatePicker',
-  //   value: timeArray,
-  //   componentProps: {
-  //     type: 'daterange',
-  //     size: 'default',
-  //     class: 'time-array'
-  //   },
-  //   formItemProps: {
-  //     rules: [required()]
-  //   }
-  // },
   {
     field: 'inputAim',
     label: `输入目标：`,
@@ -155,25 +56,74 @@ const schema = ref<FormSchema[]>([
       class: 'input-aim',
       type: 'textarea',
       placeholder: `请输入目标，1行1个目标，最多上传1万个目标，多余的将会被丢弃。`,
-      rows: 3
+      rows: 8
     },
     formItemProps: {
       rules: [required()]
     }
+  },
+  {
+    field: 'file',
+    label: `${t('formDemo.exploreAim')}：`,
+    component: 'Upload',
+    remove: !props.isFile,
+    componentProps: {
+      limit: 1,
+      class: 'ml-50%',
+      autoUpload: false,
+      slots: {
+        trigger: () => (
+          <div>
+            <BaseButton type="primary">点击上传文件</BaseButton>
+            <ElButton type="primary" onClick={() => console.log('todo')} link>
+              下载模版
+            </ElButton>
+          </div>
+        ),
+        tip: () => <div class="el-upload__tip">支持上传上传txt/CSV文件最大上传文件为1M</div>
+      }
+    }
   }
 ])
-const file = ref()
+
+const emit = defineEmits(['update:isDrawer'])
+const close = async () => {
+  const elFormExpose = await getElFormExpose()
+  elFormExpose?.resetFields()
+  emit('update:isDrawer', false)
+}
+const open = async () => {
+  setValues({
+    inputAim: [...new Set(props.data?.map((i) => i.ip))].filter((i) => i !== '').join('\n')
+  })
+}
+// 重置
+const resetClick = async () => {
+  const elFormExpose = await getElFormExpose()
+  elFormExpose?.resetFields()
+}
+// 查询
+const confirmClick = async () => {
+  const elFormExpose = await getElFormExpose()
+  elFormExpose?.validate(async (isValid) => {
+    if (isValid) {
+      const formData = await getFormData()
+      if (formData.file) {
+        formData.file = formData.file[0].raw
+      } else {
+        delete formData.file
+      }
+      await addApi({ ...formData }).then(() => {
+        ElMessage.success('创建任务成功')
+        close()
+      })
+    }
+  })
+}
 </script>
 <template>
   <ElDrawer :title="title" :modelValue="isDrawer" :before-close="close" @open="open">
     <Form :autoSetPlaceholder="false" :schema="schema" @register="formRegister" :isCol="false" />
-    <ElUpload v-model:file-list="file" :auto-upload="false" :limit="1" class="float-right">
-      <BaseButton type="primary">点击上传文件</BaseButton>
-      <ElButton type="primary" @click.stop="console.log('todo')" link>下载模版</ElButton>
-      <template #tip>
-        <div class="el-upload__tip">上传txt/CSV文件</div>
-      </template>
-    </ElUpload>
     <template #footer>
       <div style="margin-right: 20px">
         <BaseButton type="default" @click="resetClick">重 置</BaseButton>
