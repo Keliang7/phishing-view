@@ -70,7 +70,7 @@ const columns: TableColumn[] = [
     label: '操作类型',
     width: 90,
     formatter: (data) => {
-      if (data.operationType === 'Add') return '添加'
+      if (data.operationType === 'Add') return '新增'
       if (data.operationType === 'Edit') return '编辑'
       if (data.operationType === 'Delete') return '删除'
     }

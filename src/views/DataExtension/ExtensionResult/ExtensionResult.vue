@@ -46,28 +46,33 @@ const columns: TableColumn[] = [
   },
   {
     field: 'dataID',
-    label: '数据ID'
+    label: '数据ID',
+    width: 300
   },
   {
     field: 'aimSeed',
-    label: '目标种子'
+    label: '目标种子',
+    width: 200
   },
   {
     field: 'extensionRule',
-    label: '拓线规则'
+    label: '拓线规则',
+    width: 300
   },
   {
     field: 'extensionResult',
     label: '拓线结果（IP|域名|URL）',
-    width: 200
+    width: 240
   },
   {
     field: 'FID',
-    label: 'FID'
+    label: 'FID',
+    width: 220
   },
   {
     field: 'webInfo',
     label: '网页信息',
+    width: 90,
     slots: {
       default: (data) => {
         return (
@@ -80,28 +85,36 @@ const columns: TableColumn[] = [
   },
   {
     field: 'title',
-    label: 'title'
+    label: 'title',
+    width: 90
   },
   {
     field: 'netStatusCode',
     width: 120,
-    label: '网页状态码'
+    label: '网页状态码',
+    headerAlign: 'center',
+    align: 'center'
   },
   {
     field: 'place',
-    label: '地理位置'
+    label: '地理位置',
+    width: 90,
+    align: 'center'
   },
   {
     field: 'updateTime',
+    width: 180,
     label: '更新时间',
     formatter: (data) => formatTime(data.updateTime, 'yyyy-MM-dd HH:mm:ss')
   },
   {
     field: 'taskID',
+    width: 200,
     label: '任务ID'
   },
   {
     field: 'taskName',
+    width: 280,
     label: '任务名称'
   },
   {

@@ -72,7 +72,7 @@ const columns: TableColumn[] = [
   {
     field: 'dataID',
     label: '数据ID',
-    width: 300
+    width: 320
   },
   {
     field: 'screenshot',
@@ -82,7 +82,7 @@ const columns: TableColumn[] = [
   {
     field: 'url',
     label: 'URL',
-    width: 200
+    width: 240
   },
   {
     field: 'domain',
@@ -96,7 +96,8 @@ const columns: TableColumn[] = [
   },
   {
     field: 'victim',
-    label: '受害方'
+    label: '受害方',
+    width: 180
   },
   {
     field: 'victimType',
@@ -162,7 +163,8 @@ const columns: TableColumn[] = [
   },
   {
     field: 'tele',
-    label: '电话'
+    label: '电话',
+    width: 120
   },
   {
     field: 'email',
