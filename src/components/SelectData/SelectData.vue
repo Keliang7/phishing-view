@@ -36,7 +36,7 @@ const props = defineProps({
 })
 
 const { formRegister, formMethods } = useForm()
-const { getElFormExpose, getFormData, setValues, delSchema, setSchema } = formMethods
+const { getElFormExpose, getFormData, setValues, setSchema } = formMethods
 const schema = ref<FormSchema[]>([
   {
     field: 'taskName',
@@ -203,13 +203,9 @@ const schema = ref<FormSchema[]>([
 //抽屉打开关闭
 const emit = defineEmits(['update:isDrawer'])
 const close = async () => {
-  delSchema(`inputType`)
   const elFormExpose = await getElFormExpose()
   elFormExpose?.resetFields()
   emit('update:isDrawer', false)
-}
-const open = async () => {
-  console.log('data', props.data)
 }
 // 重置
 const resetClick = async () => {
@@ -239,13 +235,7 @@ const confirmClick = async () => {
 }
 </script>
 <template>
-  <ElDrawer
-    :title="title"
-    :modelValue="isDrawer"
-    :before-close="close"
-    custom-class="drawerWidth"
-    @open="open"
-  >
+  <ElDrawer :title="title" :modelValue="isDrawer" :before-close="close" custom-class="drawerWidth">
     <Form :autoSetPlaceholder="false" :schema="schema" @register="formRegister" :isCol="false" />
     <template #footer>
       <div style="margin-right: 20px">

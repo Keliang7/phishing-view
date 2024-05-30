@@ -233,7 +233,7 @@ const Columns: TableColumn[] = [
             <ElButton type="primary" link onClick={() => gatherFn(data.row)}>
               {t('tableDemo.gather')}
             </ElButton>
-            <ElButton disabled type="primary" link onClick={() => extensionFn(data)}>
+            <ElButton type="primary" link onClick={() => extensionFn(data.row)}>
               {t('tableDemo.extension')}
             </ElButton>
             <ElButton type="primary" link onClick={() => backtrackFn(data)}>
@@ -351,7 +351,6 @@ const addCounterfeitFn = async (id) => {
 const isSelectData = ref(false)
 const selectData = ref()
 const gatherFn = async (data) => {
-  isSelectData.value = true
   if (!data) {
     const elTableRef = await getElTableExpose()
     const res = elTableRef?.getSelectionRows()
@@ -359,6 +358,7 @@ const gatherFn = async (data) => {
   } else {
     selectData.value = [data]
   }
+  isSelectData.value = true
 }
 //回溯
 const isBacktrack = ref(false)
@@ -370,11 +370,16 @@ const backtrackFn = async (data) => {
   isBacktrack.value = true
 }
 //拓线
-const titleDrawer = ref('')
 const isDataExtension = ref(false)
-const extensionFn = (data: any) => {
-  titleDrawer.value = '创建任务'
-  console.log('拓线任务', data)
+const extensionData = ref()
+const extensionFn = async (data: any) => {
+  if (!data) {
+    const elTableRef = await getElTableExpose()
+    const res = await elTableRef?.getSelectionRows()
+    extensionData.value = res
+  } else {
+    extensionData.value = [data]
+  }
   isDataExtension.value = true
 }
 //查看网页信息
@@ -446,7 +451,7 @@ const exportFn = async () => {
           <template #dropdown>
             <ElDropdownMenu>
               <ElDropdownItem @click="gatherFn(null)">{{ t('tableDemo.gather') }}</ElDropdownItem>
-              <ElDropdownItem @click="extensionFn(ids)">{{
+              <ElDropdownItem @click="extensionFn(null)">{{
                 t('tableDemo.extension')
               }}</ElDropdownItem>
             </ElDropdownMenu>
@@ -483,7 +488,7 @@ const exportFn = async () => {
     </ElRow>
   </ContentWrap>
   <DrawerInfo v-model:isDrawer="isDrawerInfo" :bodyInfo="bodyInfo" />
-  <DataExtension v-model:isDrawer="isDataExtension" :title="'创建任务'" />
+  <DataExtension v-model:isDrawer="isDataExtension" :title="'数据拓线'" :data="extensionData" />
   <DataSource v-model:isDrawer="isDataSource" :dataSourceData="dataSourceData" />
   <ExportFile
     v-if="isExport"
