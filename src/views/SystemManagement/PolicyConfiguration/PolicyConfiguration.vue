@@ -53,6 +53,11 @@ const whiteColumns: TableColumn[] = [
     label: t('tableDemo.addType')
   },
   {
+    field: 'ruleType',
+    width: 150,
+    label: '规则类型'
+  },
+  {
     field: 'createdBy',
     label: t('tableDemo.createdBy')
   },
@@ -189,13 +194,7 @@ const deleteAllFn = async () => {
       @register="tableRegister"
     />
   </ContentWrap>
-  <AddData
-    v-model:isDrawer="isDrawerAddData"
-    :title="'添加白名单'"
-    :placeholder="`请输入确认非仿冒网站的域名，匹配成功将不会入库。
-一行一个域名，可输入多行，最多输入1000行。`"
-    @get-data="getList"
-  />
+  <AddData v-model:isDrawer="isDrawerAddData" :title="'添加白名单'" @get-data="getList" />
   <UploadFile
     v-model:isDrawer="isDrawerUploadFile"
     :title="'上传文件'"
