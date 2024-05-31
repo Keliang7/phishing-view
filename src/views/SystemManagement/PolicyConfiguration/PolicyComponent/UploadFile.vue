@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { ref } from 'vue'
-import { ElDrawer, ElUpload, ElMessage } from 'element-plus'
+import { ElDrawer, ElUpload, ElMessage, ElButton } from 'element-plus'
 import type { UploadProps, UploadUserFile } from 'element-plus'
 import type { UploadInstance } from 'element-plus'
 import { getStaticFileApi } from '@/api/downLoadCenter'
@@ -53,8 +53,16 @@ const submitUpload = () => {
   uploadRef.value?.submit()
 }
 const getStaticFile = async () => {
-  let res = await getStaticFileApi('whiteList')
-  console.log(res)
+  let res = await getStaticFileApi({ fileName: 'whiteList' })
+  const blob = new Blob([res.data])
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `白名单模版.xlsx`
+  document.body.appendChild(a)
+  a.click()
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
 }
 </script>
 <template>
@@ -72,11 +80,13 @@ const getStaticFile = async () => {
       :before-upload="beforeUpload"
       :on-success="onSuccess"
     >
-      <div class="el-upload__text"> 拖放文件或 <em>点击上传</em> </div>
+      <div class="el-upload__text">
+        拖放文件或 <em>点击上传</em>
+        <div class="color-gray font-size-12px">只能上传xlsx文件,不能超过1MB,最多上传5个文件</div>
+      </div>
       <template #tip>
         <div class="el-upload__tip">
-          只能上传xlsx文件,不能超过1MB,最多上传5个文件；文件模版
-          <p @click="getStaticFile">下载</p>
+          <ElButton size="small" link type="primary" @click="getStaticFile">模版下载</ElButton>
         </div>
       </template>
     </ElUpload>

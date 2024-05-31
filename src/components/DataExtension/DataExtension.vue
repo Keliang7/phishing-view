@@ -7,6 +7,7 @@ import { useValidator } from '@/hooks/web/useValidator'
 import { ref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { addApi } from '@/api/dataExtension/extensionTask'
+import { getStaticFileApi } from '@/api/downLoadCenter'
 const { t } = useI18n()
 const { required } = useValidator()
 const props = defineProps({
@@ -75,7 +76,7 @@ const schema = ref<FormSchema[]>([
         trigger: () => (
           <div>
             <BaseButton type="primary">点击上传文件</BaseButton>
-            <ElButton type="primary" onClick={() => console.log('todo')} link>
+            <ElButton type="primary" onClick={getStaticFile} link size="small">
               下载模版
             </ElButton>
           </div>
@@ -119,6 +120,19 @@ const confirmClick = async () => {
       })
     }
   })
+}
+//模版
+const getStaticFile = async () => {
+  let res = await getStaticFileApi({ fileName: 'extension' })
+  const blob = new Blob([res.data])
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `拓线任务模版.xlsx`
+  document.body.appendChild(a)
+  a.click()
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
 }
 </script>
 <template>

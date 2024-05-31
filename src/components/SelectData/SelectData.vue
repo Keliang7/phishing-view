@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ElDrawer } from 'element-plus'
+import { ElDrawer, ElButton } from 'element-plus'
 import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
 import { BaseButton } from '@/components/Button'
@@ -8,6 +8,7 @@ import { ref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElMessage } from 'element-plus'
 import { addApi } from '@/api/dataGather/gatherTask'
+import { getStaticFileApi } from '@/api/downLoadCenter'
 const { t } = useI18n()
 const { required, notSpecialCharacters, notSpace } = useValidator()
 const props = defineProps({
@@ -85,7 +86,7 @@ const schema = ref<FormSchema[]>([
             })
             setValues({
               explorePort:
-                [...new Set(props.data?.map((i) => i.aimPort))]
+                [...new Set(props.data?.map((i) => i.aimPort || i.port))]
                   .filter((i) => i !== '')
                   .join(`\n`) || '80\n443'
             })
@@ -134,10 +135,10 @@ const schema = ref<FormSchema[]>([
   },
   {
     field: 'exploreAimFile',
-    label: `${t('formDemo.exploreAim')}：`,
     component: 'Upload',
     hidden: !props.isFile,
     componentProps: {
+      className: 'ml-90px',
       limit: 1,
       autoUpload: false,
       ref: 'uploadRef',
@@ -145,10 +146,15 @@ const schema = ref<FormSchema[]>([
         trigger: () => <BaseButton type="primary">点击上传</BaseButton>,
         default: () => (
           <div class="el-upload__tip">
-            <p>
-              支持上传.xlsx、.xls、.txt、.xml、.json、.csv文件，最大上传文件为1M <a>下载模板</a>
-            </p>
-            <p class="attention">注意：目标地址添加方式为文件上传时，系统调度策略默认按IP拆分。</p>
+            <div class="font-size-12px">
+              支持上传.xlsx、.xls、.txt、.xml、.json、.csv文件，最大上传文件为1M
+              <ElButton link type="primary" size="small" onClick={getStaticFile}>
+                下载模板
+              </ElButton>
+            </div>
+            <div class="color-red">
+              注意：目标地址添加方式为文件上传时，系统调度策略默认按IP拆分。
+            </div>
           </div>
         )
       }
@@ -232,6 +238,19 @@ const confirmClick = async () => {
       }
     }
   })
+}
+//模版
+const getStaticFile = async () => {
+  let res = await getStaticFileApi({ fileName: 'gather' })
+  const blob = new Blob([res.data])
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `采集任务模版.xlsx`
+  document.body.appendChild(a)
+  a.click()
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
 }
 </script>
 <template>

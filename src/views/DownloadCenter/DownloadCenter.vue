@@ -73,9 +73,7 @@ const columns = reactive<TableColumn[]>([
 ])
 const actionFn = async (data: TableSlotDefault) => {
   let res = await getFileApi({ key: data.row.fileName })
-  console.log(res.data)
-
-  const blob = new Blob([res.data], { type: 'text/xlsx' })
+  const blob = new Blob([res.data])
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

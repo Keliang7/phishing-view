@@ -1,12 +1,9 @@
 <script setup lang="tsx">
-// import { Form, FormSchema } from '@/components/Form'
 import { ref } from 'vue'
-// import { useForm } from '@/hooks/web/useForm'
 import { ElDrawer, ElUpload, ElMessage } from 'element-plus'
 import type { UploadProps, UploadUserFile } from 'element-plus'
-// import { useValidator } from '@/hooks/web/useValidator'
 import type { UploadInstance } from 'element-plus'
-// const { required } = useValidator()
+import { getStaticFileApi } from '@/api/downLoadCenter'
 defineProps({
   title: {
     type: String,
@@ -31,47 +28,6 @@ const close = () => {
   emit('update:isDrawer', false)
   emit('get-data')
 }
-// const { formMethods, formRegister } = useForm()
-// const { getElFormExpose, getFormData } = formMethods
-// const schema = reactive<FormSchema[]>([
-//   {
-//     field: 'field5',
-//     label: '复核人员',
-//     component: 'Select',
-//     formItemProps: {
-//       rules: [required()]
-//     },
-//     componentProps: {
-//       options: [
-//         {
-//           value: '张',
-//           label: '张'
-//         },
-//         {
-//           value: '王',
-//           label: '王'
-//         }
-//       ]
-//     }
-//   }
-// ])
-// const isValid = ref(false)
-// const confirmClick = async () => {
-//   const elFormExpose = await getElFormExpose()
-//   await elFormExpose?.validate((v) => {
-//     isValid.value = v
-//   })
-//   if (isValid.value) {
-//     //获取form数据
-//     let formData = await getFormData()
-//     console.log(formData)
-//     //发起post请求
-//     // if (res.message == '添加成功') {
-
-//     // }
-//     isValid.value = false
-//   }
-// }
 const uploadRef = ref<UploadInstance>()
 const submitUpload = () => {
   uploadRef.value?.submit()
@@ -93,6 +49,18 @@ const onSuccess: UploadProps['onSuccess'] = (response: any) => {
     ElMessage.success('文件上传成功')
   }
 }
+const getStaticFile = async () => {
+  let res = await getStaticFileApi({ fileName: 'phishingRule' })
+  const blob = new Blob([res.data])
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `仿冒数据检测规则模版.xlsx`
+  document.body.appendChild(a)
+  a.click()
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
+}
 </script>
 <template>
   <ElDrawer :title="title" :modelValue="isDrawer" :before-close="close" custom-class="drawerWidth">
@@ -112,11 +80,13 @@ const onSuccess: UploadProps['onSuccess'] = (response: any) => {
       :before-upload="beforeUpload"
       :on-success="onSuccess"
     >
-      <div class="el-upload__text"> 拖放文件或 <em>点击上传</em> </div>
+      <div class="el-upload__text">
+        拖放文件或 <em>点击上传</em>
+        <div class="color-gray font-size-12px">只能上传xlsx文件,不能超过1MB,最多上传5个文件</div>
+      </div>
       <template #tip>
         <div class="el-upload__tip">
-          只能上传xlsx文件,不能超过1MB,最多上传5个文件；文件模版
-          <a href="#">下载</a>
+          <ElButton size="small" link type="primary" @click="getStaticFile">模版下载</ElButton>
         </div>
       </template>
     </ElUpload>
