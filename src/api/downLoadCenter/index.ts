@@ -6,5 +6,5 @@ export const getFileApi = (params: any) => {
   return request.get({ url: '/api/v1/download_center/download', params, responseType: 'blob' })
 }
 export const getStaticFileApi = (params: any) => {
-  return request.get({ url: '/api/v1/download_center/static', params })
+  return request.get({ url: '/api/v1/download_center/static', params, responseType: 'blob' })
 }

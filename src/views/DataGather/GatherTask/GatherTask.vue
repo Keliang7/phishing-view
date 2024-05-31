@@ -93,7 +93,9 @@ const tableColumns: TableColumn[] = [
     field: 'taskFinishTime',
     label: '任务结束时间',
     formatter: (data) => {
-      return data.taskUseTime <= 0 ? 0 : formatTime(data.taskFinishTime, 'yyyy-MM-dd HH:mm:ss')
+      return data.taskUseTime <= 0
+        ? '任务进行中'
+        : formatTime(data.taskFinishTime, 'yyyy-MM-dd HH:mm:ss')
     },
     width: 180
   },
