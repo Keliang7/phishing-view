@@ -72,8 +72,8 @@ let schema = ref<FormSchema[]>([
     componentProps: {
       options: [
         {
-          value: '未采集到',
-          label: '未采集到'
+          value: '未采集',
+          label: '未采集'
         },
         {
           value: '采集中',
