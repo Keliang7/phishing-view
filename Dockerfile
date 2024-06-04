@@ -4,12 +4,11 @@ RUN npm cache clean --force
 RUN npm config set registry https://registry.npmmirror.com/
 
 # # 这是自建的npm镜像仓库
-# # RUN npm config set registry http://172.16.20.30:4873
 RUN npm install vite -g
 RUN npm install pnpm@8.1.0 -g
 COPY . .
 RUN npm i
-RUN sed -i '8312i\MockXMLHttpRequest.prototype.upload = xhr.upload;' node_modules/mockjs/dist/mock.js
+# RUN sed -i '8312i\MockXMLHttpRequest.prototype.upload = xhr.upload;' node_modules/mockjs/dist/mock.js
 RUN npm run build:pro
 
 

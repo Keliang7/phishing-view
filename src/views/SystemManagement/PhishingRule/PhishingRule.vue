@@ -9,6 +9,7 @@ import {
   getVisualApi,
   getSamplelApi,
   exportApi,
+  importApi,
   deleteSampleApi,
   deleteVisualApi,
   intoVisualLabApi
@@ -17,7 +18,7 @@ import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import TableTop from '@/components/TableTop/TableTop.vue'
-import UploadFile from './PhishingRuleComponent/UploadFile.vue'
+import UploadFile from '@/components/UploadFile/UploadFile.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import PhishingRuleOperate from '@/components/PhishingRuleOperate/PhishingRuleOperate.vue'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
@@ -607,7 +608,13 @@ onMounted(() => {
       @register="tableRegister"
     />
   </ContentWrap>
-  <UploadFile v-model:isDrawer="isUploadFileDrawer" :title="'上传数据'" @get-data="getList" />
+  <UploadFile
+    v-if="isUploadFileDrawer"
+    v-model:isDrawer="isUploadFileDrawer"
+    :title="'仿冒检测规则导入数据'"
+    @get-data="getList"
+    :axios-fn="importApi"
+  />
   <ExportFile
     v-model:isDrawer="isExport"
     title="仿冒规则检查"

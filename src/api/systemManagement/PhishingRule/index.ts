@@ -14,8 +14,12 @@ export const editApi = (params: any) => {
 export const exportApi = (params: any) => {
   return request.post({ url: '/api/v1/phishing_rule/export', data: params })
 }
-export const importApi = (params: any) => {
-  return request.post({ url: '/api/v1/phishing_rule/import', data: params })
+export const importApi = (data: any) => {
+  return request.post({
+    url: '/api/v1/phishing_rule/import',
+    data,
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
 }
 //视觉分析库管理
 export const getVisualApi = (params: any) => {

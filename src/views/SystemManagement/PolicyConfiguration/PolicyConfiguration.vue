@@ -4,13 +4,17 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElButton, ElCheckbox, ElMessageBox, ElMessage } from 'element-plus'
 import { Table, TableColumn } from '@/components/Table'
-import { getListApi, deleteApi, exportApi } from '@/api/systemManagement/PhishingConfiguration'
-import { getStaticFileApi } from '@/api/downLoadCenter'
+import {
+  getListApi,
+  deleteApi,
+  exportApi,
+  importApi
+} from '@/api/systemManagement/PhishingConfiguration'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import AddData from './PolicyComponent/AddData.vue'
-import UploadFile from './PolicyComponent/UploadFile.vue'
+import UploadFile from '@/components/UploadFile/UploadFile.vue'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 
@@ -196,9 +200,10 @@ const deleteAllFn = async () => {
   </ContentWrap>
   <AddData v-model:isDrawer="isDrawerAddData" :title="'添加白名单'" @get-data="getList" />
   <UploadFile
+    v-if="isDrawerUploadFile"
     v-model:isDrawer="isDrawerUploadFile"
-    :title="'上传文件'"
-    :axiosFn="getStaticFileApi"
+    :title="'白名单导入数据'"
+    :axiosFn="importApi"
     @get-data="getList"
   />
   <ExportFile

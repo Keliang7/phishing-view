@@ -11,6 +11,10 @@ export const deleteApi = (params: any) => {
 export const exportApi = (params: any) => {
   return request.post({ url: '/api/v1/white_list/export', data: params })
 }
-export const importApi = (params: any) => {
-  return request.post({ url: '/api/v1/white_list/import', data: params })
+export const importApi = (data: any) => {
+  return request.post({
+    url: '/api/v1/white_list/import',
+    data,
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
 }

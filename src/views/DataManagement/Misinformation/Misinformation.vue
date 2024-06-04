@@ -285,14 +285,12 @@ watch(isCheckedAll, () => {
 
 //导出数据
 const isExport = ref(false)
-const fieldName = columns
-  .map((i) => {
-    return {
-      label: i.label,
-      value: i.field
-    }
-  })
-  .slice(1, -1)
+const fieldName = columns.slice(1, -1).map((i) => {
+  return {
+    label: i.label,
+    value: i.field
+  }
+})
 const exportFn = async () => {
   await getSelectedIds()
   if (ids.value.length || isCheckedAll.value) {
