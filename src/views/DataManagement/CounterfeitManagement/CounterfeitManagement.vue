@@ -287,7 +287,7 @@ const setTableSide = async (params) => {
   const res = await statisticsApi(params)
   if (res.data.list.length) {
     tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
-    setActiveNameS(tabSideColumns.value[0].name ?? '1')
+    setActiveNameS(tabSideColumns.value[0].name)
   } else {
     tabSideColumns.value = []
     getList()
