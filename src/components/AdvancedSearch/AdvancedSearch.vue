@@ -460,7 +460,7 @@ let schema = ref<FormSchema[]>([
   //icon我们用插槽
   //用户管理
   {
-    field: 'loginName',
+    field: 'account',
     label: `登录名`,
     component: 'Input',
     componentProps: {
@@ -505,7 +505,7 @@ let schema = ref<FormSchema[]>([
   },
   //日志管理
   {
-    field: 'loginIP',
+    field: 'clientIP',
     label: `登录IP：`,
     component: 'Input',
     componentProps: {

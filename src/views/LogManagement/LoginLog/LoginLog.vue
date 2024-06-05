@@ -26,28 +26,30 @@ const { tableRegister, tableMethods, tableState } = useTable({
 })
 let { loading, total, dataList, currentPage, pageSize } = tableState
 const { getList, getElTableExpose } = tableMethods
-const dataArray = ref(['loginName', 'loginIP'])
+const dataArray = ref(['account', 'clientIP'])
 const columns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection'
   },
   {
-    field: 'loginName',
+    field: 'accountName',
     label: '登录名'
   },
 
   {
-    field: 'loginIP',
+    field: 'accountName',
     label: '操作人'
   },
   {
-    field: 'oprateResult',
-    label: '操作结果'
+    field: 'result',
+    label: '操作结果',
+    formatter: (data) => (data.result === 'TRUE' ? '成功' : '失败')
   },
   {
     field: 'oprateTime',
     label: '操作时间',
+    width: 180,
     formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   }
 ]
@@ -82,6 +84,7 @@ const exportFn = async () => {
   }
 }
 // 清空日志
+// ids=[]
 const clearFn = async () => {
   ElMessageBox.confirm('您确定要清空日志吗？', '温馨提示', {
     confirmButtonText: '确定',

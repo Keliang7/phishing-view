@@ -3,7 +3,7 @@ import { ref, unref, watch } from 'vue'
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElButton, ElCheckbox, ElMessage, ElMessageBox } from 'element-plus'
 import { Table, TableColumn } from '@/components/Table'
-import { getListApi, clearApi, exportApi } from '@/api/logManagement/loginLog'
+import { getListApi, clearApi, exportApi } from '@/api/logManagement/oprationLog'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
@@ -26,34 +26,35 @@ const { tableRegister, tableMethods, tableState } = useTable({
 })
 let { loading, total, dataList, currentPage, pageSize } = tableState
 const { getList, getElTableExpose } = tableMethods
-const dataArray = ref(['loginName', 'loginIP'])
+const dataArray = ref(['account', 'clientIP'])
 const columns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection'
   },
   {
-    field: 'loginName',
+    field: 'accountName',
     label: '登录名'
   },
   {
-    field: 'loginIP',
+    field: 'clientIP',
     label: '登录IP'
   },
   {
-    field: 'oprateType',
+    field: 'operaType',
     label: '操作方式'
   },
   {
-    field: 'operateModule',
+    field: 'operaModel',
     label: '操作模块'
   },
   {
-    field: 'oprateContent',
+    field: 'operaDesc',
     label: '操作内容'
   },
   {
     field: 'oprateTime',
+    width: 180,
     label: '操作时间',
     formatter: (data) => formatTime(data.createdTime, 'yyyy-MM-dd HH:mm:ss')
   }

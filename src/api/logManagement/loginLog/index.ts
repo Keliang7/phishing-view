@@ -1,6 +1,6 @@
 import request from '@/axios'
 export const getListApi = (params) => {
-  return request.get({ url: '/api/v1/login_log/bw', params })
+  return request.get({ url: '/api/v1/login_log', params })
 }
 export const clearApi = () => {
   return request.delete({ url: '/api/v1/login_log' })
