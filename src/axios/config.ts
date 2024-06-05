@@ -42,11 +42,11 @@ const defaultResponseInterceptors = (response: AxiosResponse) => {
     return response.data
   } else {
     ElMessage.error(response?.data?.message)
-    if (response?.data?.code === 401) {
+    if (response.status === 403) {
       const userStore = useUserStoreWithOut()
       userStore.logout()
     }
-    if (response?.data?.message === 'Token不匹配' || 'Token不存在') {
+    if (response?.data?.code === 401) {
       const userStore = useUserStoreWithOut()
       userStore.logout()
     }
