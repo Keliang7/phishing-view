@@ -32,6 +32,10 @@ axiosInstance.interceptors.response.use(
   },
   (error: AxiosError) => {
     ElMessage.error(error.message)
+    if (error.response?.status === 403) {
+      const userStore = useUserStoreWithOut()
+      userStore.logout()
+    }
     return Promise.reject(error)
   }
 )
