@@ -17,7 +17,7 @@ import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
 import { getListApi, statisticsApi, exportApi } from '@/api/dataManagement/understatement'
-import { joinSampApi } from '@/api/dataManagement'
+import { backtrackApi, joinSampApi } from '@/api/dataManagement'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
@@ -25,6 +25,7 @@ import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
 import SelectData from '@/components/SelectData/SelectData.vue'
 import DataSource from '@/components/DataSource/DataSource.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
+import Backtrack from '@/components/Backtrack/Backtrack.vue'
 import { useRouter } from 'vue-router'
 const { tableRegister, tableMethods, tableState } = useTable({
   immediate: false,
@@ -67,7 +68,14 @@ const columns: TableColumn[] = [
   {
     field: 'misReason',
     label: '漏报原因',
-    width: 200
+    width: 300,
+    formatter(data) {
+      return (
+        <ElButton type="primary" link onClick={() => backtrackFn(data)}>
+          {data.misReason}
+        </ElButton>
+      )
+    }
   },
   {
     field: 'dataID',
@@ -301,6 +309,14 @@ const exportFn = async () => {
     ElMessage.warning('请选择需要导出的数据')
   }
 }
+//回溯
+const isBacktrack = ref(false)
+const backtrackData = ref()
+const backtrackFn = async (data) => {
+  const res = await backtrackApi({ id: data.dataID })
+  backtrackData.value = res
+  isBacktrack.value = true
+}
 // 查看网页信息
 const isDrawerInfo = ref(false)
 const titleDrawer = ref('')
@@ -336,8 +352,6 @@ const gatherFn = async (data) => {
 const isDataSource = ref(false)
 const dataSourceData = ref()
 const dataSource = (data) => {
-  console.log(data)
-
   isDataSource.value = true
   dataSourceData.value = data.dataSources
 }
@@ -449,6 +463,7 @@ const addCounterfeitFn = async (id) => {
       }
     "
   />
+  <Backtrack v-model:isDrawer="isBacktrack" :title="'数据回溯'" :backtrackData="backtrackData" />
   <SelectData
     v-if="isSelectData"
     v-model:isDrawer="isSelectData"
