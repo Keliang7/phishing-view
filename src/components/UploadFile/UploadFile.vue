@@ -125,10 +125,19 @@ const confirmClick = async () => {
     }
   })
 }
+const downloadFile = () => {
+  const link = document.createElement('a')
+  link.href = '@/public/123.xlsx' // 静态文件的路径
+  link.download = 'example.xlsx' // 下载的文件名
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
 </script>
 <template>
   <ElDrawer :title="title" :modelValue="isDrawer" :before-close="close" custom-class="drawerWidth">
     <Form :autoSetPlaceholder="false" :schema="schema" @register="formRegister" :isCol="false" />
+    <button @click="downloadFile">测试静态文件下载todo</button>
     <template #footer>
       <div style="margin-right: 20px">
         <BaseButton type="primary" @click="confirmClick">提 交</BaseButton>
