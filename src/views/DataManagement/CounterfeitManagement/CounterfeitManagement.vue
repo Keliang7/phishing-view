@@ -430,7 +430,7 @@ const exportFn = async () => {
   }
 }
 
-//table-left
+//table-left-width
 const tableLeftSpan = ref(3)
 const changeSpan = (collapse: boolean) => {
   tableLeftSpan.value = collapse ? 1 : 3
