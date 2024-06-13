@@ -1,14 +1,13 @@
 <script setup lang="tsx">
 import { ref, unref, watch } from 'vue'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElButton, ElCheckbox, ElMessage, ElMessageBox } from 'element-plus'
+import { ElButton, ElMessage, ElMessageBox } from 'element-plus'
 import { Table, TableColumn } from '@/components/Table'
-import { getListApi, clearApi, exportApi } from '@/api/logManagement/oprationLog'
+import { getListApi, clearApi } from '@/api/logManagement/oprationLog'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
-import ExportFile from '@/components/ExportFile/ExportFile.vue'
 
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
@@ -74,34 +73,28 @@ const clearSelection = async () => {
 }
 const getSelectedIds = async () => {
   const elTableRef = await getElTableExpose()
-  ids.value = elTableRef?.getSelectionRows().map((i) => i.ruleContent)
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.logID + '')
 }
 watch(isCheckedAll, () => {
   clearSelection()
 })
-// 导出多选数据
-const isExport = ref(false)
-const exportFn = async () => {
-  await getSelectedIds()
-  if (ids.value.length || isCheckedAll.value) {
-    isExport.value = true
-  } else {
-    ElMessage.warning('请选择需要导出的数据')
-  }
-}
 // 清空日志
 const clearFn = async () => {
   ElMessageBox.confirm('您确定要清空日志吗？', '温馨提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(async () => {
-    await clearApi()
-      .then(() => {
-        ElMessage.success('清空数据成功')
-      })
-      .catch(() => {})
   })
+    .then(async () => await getSelectedIds())
+    .then(async () => {
+      await clearApi({ ids: ids.value })
+        .then(async () => {
+          ElMessage.success('清空数据成功')
+          await clearSelection()
+          getList()
+        })
+        .catch(() => {})
+    })
 }
 </script>
 <template>
@@ -114,13 +107,7 @@ const clearFn = async () => {
   <ContentWrap>
     <TableTop>
       <template #right>
-        <ElButton type="default">
-          <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
-        </ElButton>
-        <ElButton type="danger" @click="clearFn"> 清空日志 </ElButton>
-        <ElButton type="primary" @click="exportFn">
-          <Icon icon="tdesign:upload" /> 导出数据
-        </ElButton>
+        <ElButton type="danger" @click="clearFn"> 删除日志 </ElButton>
       </template>
     </TableTop>
     <Table
@@ -140,19 +127,5 @@ const clearFn = async () => {
       @register="tableRegister"
     />
   </ContentWrap>
-  <ExportFile
-    v-model:isDrawer="isExport"
-    title="操作日志管理"
-    :ids="ids"
-    :conditions="{ ...searchData }"
-    :total="total"
-    :axiosFn="exportApi"
-    @clear-selection="clearSelection"
-    @is-checked-all="
-      (temp) => {
-        isCheckedAll = temp
-      }
-    "
-  />
 </template>
 <style scoped></style>
