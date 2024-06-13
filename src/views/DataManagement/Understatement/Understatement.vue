@@ -391,6 +391,11 @@ const addCounterfeitFn = async (id) => {
     }
   })
 }
+//table-left-width
+const tableLeftSpan = ref(3)
+const changeSpan = (collapse: boolean) => {
+  tableLeftSpan.value = collapse ? 1 : 3
+}
 </script>
 <template>
   <AdvancedSearch
@@ -421,10 +426,10 @@ const addCounterfeitFn = async (id) => {
       </template>
     </TableTop>
     <ElRow>
-      <ElCol :span="3">
-        <TableSide :data="tabSideColumns" @change="setActiveNameS" />
+      <ElCol :span="tableLeftSpan">
+        <TableSide :data="tabSideColumns" @change="setActiveNameS" @collapse="changeSpan" />
       </ElCol>
-      <ElCol :span="21">
+      <ElCol :span="24 - tableLeftSpan">
         <Table
           :class="{ 'is-checked-all': isCheckedAll }"
           :max-height="446"
