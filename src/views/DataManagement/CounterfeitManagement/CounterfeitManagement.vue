@@ -225,21 +225,28 @@ const Columns: TableColumn[] = [
     fixed: 'right',
     headerAlign: 'center',
     align: 'center',
-    width: 320,
+    width: '180',
     slots: {
       default: (data) => {
         return (
           <div class="action-btn">
-            <ElButton type="primary" link onClick={() => gatherFn(data.row)}>
-              {t('tableDemo.gather')}
-            </ElButton>
-            <ElButton type="primary" link onClick={() => extensionFn(data.row)}>
-              {t('tableDemo.extension')}
-            </ElButton>
-            <ElButton type="primary" link onClick={() => backtrackFn(data)}>
-              {t('tableDemo.recall')}
-            </ElButton>
-            <ElButton type="primary" link onClick={() => addCounterfeitFn(data.row.dataID)}>
+            <div>
+              <ElButton type="primary" size="small" link onClick={() => gatherFn(data.row)}>
+                {t('tableDemo.gather')}
+              </ElButton>
+              <ElButton type="primary" size="small" link onClick={() => extensionFn(data.row)}>
+                {t('tableDemo.extension')}
+              </ElButton>
+              <ElButton type="primary" size="small" link onClick={() => backtrackFn(data)}>
+                {t('tableDemo.recall')}
+              </ElButton>
+            </div>
+            <ElButton
+              type="primary"
+              size="small"
+              link
+              onClick={() => addCounterfeitFn(data.row.dataID)}
+            >
               {t('tableDemo.addCounterfeitSample')}
             </ElButton>
           </div>
@@ -422,6 +429,12 @@ const exportFn = async () => {
     ElMessage.warning('请选择需要导出的数据')
   }
 }
+
+//table-left
+const tableLeftSpan = ref(3)
+const changeSpan = (collapse: boolean) => {
+  tableLeftSpan.value = collapse ? 1 : 3
+}
 </script>
 <template>
   <AdvancedSearch
@@ -463,10 +476,10 @@ const exportFn = async () => {
       </template>
     </TableTop>
     <ElRow>
-      <ElCol :span="3">
-        <TableSide :data="tabSideColumns" @change="setActiveNameS" />
+      <ElCol :span="tableLeftSpan">
+        <TableSide :data="tabSideColumns" @change="setActiveNameS" @collapse="changeSpan" />
       </ElCol>
-      <ElCol :span="21">
+      <ElCol :span="24 - tableLeftSpan">
         <Table
           :class="{ 'is-checked-all': isCheckedAll }"
           :max-height="446"
