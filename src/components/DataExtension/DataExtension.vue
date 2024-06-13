@@ -7,7 +7,6 @@ import { useValidator } from '@/hooks/web/useValidator'
 import { ref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { addApi } from '@/api/dataExtension/extensionTask'
-import { getStaticFileApi } from '@/api/downLoadCenter'
 const { t } = useI18n()
 const { required } = useValidator()
 const props = defineProps({
@@ -65,7 +64,6 @@ const schema = ref<FormSchema[]>([
   },
   {
     field: 'file',
-    label: `${t('formDemo.exploreAim')}：`,
     component: 'Upload',
     remove: !props.isFile,
     componentProps: {
@@ -76,7 +74,15 @@ const schema = ref<FormSchema[]>([
         trigger: () => (
           <div>
             <BaseButton type="primary">点击上传文件</BaseButton>
-            <ElButton type="primary" onClick={getStaticFile} link size="small">
+            <ElButton
+              type="primary"
+              onClick={(event) => {
+                event.stopPropagation()
+                getStaticFile()
+              }}
+              link
+              size="small"
+            >
               下载模版
             </ElButton>
           </div>
@@ -123,16 +129,12 @@ const confirmClick = async () => {
 }
 //模版
 const getStaticFile = async () => {
-  let res = await getStaticFileApi({ fileName: 'extension' })
-  const blob = new Blob([res.data])
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `拓线任务模版.xlsx`
-  document.body.appendChild(a)
-  a.click()
-  window.URL.revokeObjectURL(url)
-  document.body.removeChild(a)
+  const link = document.createElement('a')
+  link.href = `/拓线任务目标上传模板.xlsx`
+  link.download = `拓线任务目标上传模板.xlsx`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 </script>
 <template>

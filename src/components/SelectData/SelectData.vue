@@ -8,7 +8,6 @@ import { ref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElMessage } from 'element-plus'
 import { addApi } from '@/api/dataGather/gatherTask'
-import { getStaticFileApi } from '@/api/downLoadCenter'
 const { t } = useI18n()
 const { required, notSpecialCharacters, notSpace } = useValidator()
 const props = defineProps({
@@ -241,16 +240,12 @@ const confirmClick = async () => {
 }
 //模版
 const getStaticFile = async () => {
-  let res = await getStaticFileApi({ fileName: 'gather' })
-  const blob = new Blob([res.data])
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `采集任务模版.xlsx`
-  document.body.appendChild(a)
-  a.click()
-  window.URL.revokeObjectURL(url)
-  document.body.removeChild(a)
+  const link = document.createElement('a')
+  link.href = `/采集任务目标上传模板.xlsx`
+  link.download = `采集任务目标上传模板.xlsx`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 </script>
 <template>
