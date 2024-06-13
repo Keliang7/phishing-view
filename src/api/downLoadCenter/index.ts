@@ -5,6 +5,3 @@ export const getListApi = (params: any): Promise<IResponse> => {
 export const getFileApi = (params: any) => {
   return request.get({ url: '/api/v1/download_center/download', params, responseType: 'blob' })
 }
-export const getStaticFileApi = (params: any) => {
-  return request.get({ url: '/api/v1/download_center/static', params, responseType: 'blob' })
-}

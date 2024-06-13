@@ -1,7 +1,6 @@
 <script setup lang="tsx">
 import { ref } from 'vue'
 import { ElDrawer, ElMessage, ElButton } from 'element-plus'
-import { getStaticFileApi } from '@/api/downLoadCenter'
 import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
 import { BaseButton } from '@/components/Button'
@@ -61,7 +60,7 @@ const schema = ref<FormSchema[]>([
         ),
         tip: () => (
           <div class="el-upload__tip">
-            <ElButton size="small" link type="primary" onClick={getStaticFile}>
+            <ElButton size="small" link type="primary" onClick={downloadFile}>
               模版下载
             </ElButton>
           </div>
@@ -84,24 +83,6 @@ const emit = defineEmits(['update:isDrawer', 'get-data'])
 const close = async () => {
   emit('update:isDrawer', false)
   emit('get-data')
-}
-//静态文件
-// whiteList/phishingRule/extension/gahter
-const map = new Map([
-  ['白名单导入数据', 'whiteList'],
-  ['仿冒检测规则导入数据', 'phishingRule']
-])
-const getStaticFile = async () => {
-  let res = await getStaticFileApi({ fileName: map.get(props.title + '') })
-  const blob = new Blob([res.data])
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${props.title}模版.xlsx`
-  document.body.appendChild(a)
-  a.click()
-  window.URL.revokeObjectURL(url)
-  document.body.removeChild(a)
 }
 
 const loading = ref(false)
@@ -127,8 +108,10 @@ const confirmClick = async () => {
 }
 const downloadFile = () => {
   const link = document.createElement('a')
-  link.href = '@/public/123.xlsx' // 静态文件的路径
-  link.download = 'example.xlsx' // 下载的文件名
+  console.log(`/${props.title}模板.xlsx`)
+  link.href = `/${props.title}模板.xlsx`
+  // link.href = `/白名单导入数据模版.xlsx`
+  link.download = `${props.title}模板.xlsx`
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
@@ -137,7 +120,6 @@ const downloadFile = () => {
 <template>
   <ElDrawer :title="title" :modelValue="isDrawer" :before-close="close" custom-class="drawerWidth">
     <Form :autoSetPlaceholder="false" :schema="schema" @register="formRegister" :isCol="false" />
-    <button @click="downloadFile">测试静态文件下载todo</button>
     <template #footer>
       <div style="margin-right: 20px">
         <BaseButton type="primary" @click="confirmClick">提 交</BaseButton>
