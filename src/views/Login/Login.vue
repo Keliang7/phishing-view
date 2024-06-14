@@ -67,7 +67,8 @@ const getRole = async () => {
         '/system_management',
         '/system_management/policy_configuration',
         '/system_management/phishing_rule',
-        '/system_management/phishing_recheck'
+        '/system_management/phishing_recheck',
+        '/system_management/rough_rule'
       ]
     }
     res.identity = 'admin'
