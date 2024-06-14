@@ -13,7 +13,8 @@ import {
   ElMessageBox,
   ElRow,
   ElCol,
-  ElMessage
+  ElMessage,
+  ElTooltip
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
 import { Table, TableColumn } from '@/components/Table'
@@ -154,7 +155,7 @@ const Columns: TableColumn[] = [
   {
     field: 'ICON',
     label: 'ICON',
-    formatter: (data) => <img class="max-w-18px" src={data.ICON}></img>
+    width: 60
   },
   {
     field: 'domainOwner',
@@ -225,31 +226,32 @@ const Columns: TableColumn[] = [
     fixed: 'right',
     headerAlign: 'center',
     align: 'center',
-    width: '180',
+    width: '150',
     slots: {
       default: (data) => {
         return (
-          <div class="action-btn">
-            <div>
-              <ElButton type="primary" size="small" link onClick={() => gatherFn(data.row)}>
-                {t('tableDemo.gather')}
-              </ElButton>
-              <ElButton type="primary" size="small" link onClick={() => extensionFn(data.row)}>
-                {t('tableDemo.extension')}
-              </ElButton>
-              <ElButton type="primary" size="small" link onClick={() => backtrackFn(data)}>
-                {t('tableDemo.recall')}
-              </ElButton>
-            </div>
-            <ElButton
-              type="primary"
-              size="small"
-              link
-              onClick={() => addCounterfeitFn(data.row.dataID)}
-            >
-              {t('tableDemo.addCounterfeitSample')}
+          <>
+            <ElButton link type="primary" onClick={() => gatherFn(data.row)}>
+              <ElTooltip content="采集" placement="top" enterable={false}>
+                <Icon icon="svg-icon:data" />
+              </ElTooltip>
             </ElButton>
-          </div>
+            <ElButton link type="primary" onClick={() => extensionFn(data.row)}>
+              <ElTooltip content="拓线" placement="top" enterable={false}>
+                <Icon icon="svg-icon:link" />
+              </ElTooltip>
+            </ElButton>
+            <ElButton link type="primary" onClick={() => backtrackFn(data)}>
+              <ElTooltip content="回溯" placement="top" enterable={false}>
+                <Icon icon="svg-icon:backTrack" />
+              </ElTooltip>
+            </ElButton>
+            <ElButton type="primary" link onClick={() => addCounterfeitFn(data.row.dataID)}>
+              <ElTooltip content="加入仿冒样本库" placement="top" enterable={false}>
+                <Icon icon="svg-icon:add" />
+              </ElTooltip>
+            </ElButton>
+          </>
         )
       }
     }
@@ -485,7 +487,7 @@ const changeSpan = (collapse: boolean) => {
           :max-height="446"
           v-model:pageSize="pageSize"
           v-model:currentPage="currentPage"
-          :image-preview="['webScreenshot']"
+          :image-preview="['webScreenshot', 'ICON']"
           row-key="dataID"
           :columns="Columns"
           :data="dataList"

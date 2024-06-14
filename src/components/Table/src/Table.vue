@@ -7,7 +7,8 @@ import {
   ElTooltipProps,
   ElImage,
   ElEmpty,
-  ElCard
+  ElCard,
+  ElTooltip
 } from 'element-plus'
 import { defineComponent, PropType, ref, computed, unref, watch, onMounted } from 'vue'
 import { propTypes } from '@/utils/propTypes'
@@ -406,13 +407,25 @@ export default defineComponent({
         <div class="flex items-center">
           {imagePreview.includes(field) ? (
             <ElImage
-              src={url}
+              src={'/api/v1/image' + url}
               fit="cover"
-              class="w-[100%] max-h-50px"
+              class={`${field == 'ICON' ? 'w-[100%]' : 'w-[100%]'}  max-h-50px`}
               lazy
-              preview-src-list={[url]}
+              preview-src-list={['/api/v1/image' + url]}
               preview-teleported
-            />
+            >
+              {{
+                error: () => (
+                  <div class={''}>
+                    <ElTooltip content="暂无图片" placement="top" enterable={false}>
+                      <div class="w-100% flex justify-center items-center">
+                        <Icon icon="ep:picture" />
+                      </div>
+                    </ElTooltip>
+                  </div>
+                )
+              }}
+            </ElImage>
           ) : videoPreview.includes(field) ? (
             <BaseButton
               type="primary"

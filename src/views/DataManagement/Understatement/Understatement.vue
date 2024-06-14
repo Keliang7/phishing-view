@@ -10,7 +10,8 @@ import {
   ElMessageBox,
   ElDropdown,
   ElDropdownMenu,
-  ElDropdownItem
+  ElDropdownItem,
+  ElTooltip
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
 import { ContentWrap } from '@/components/ContentWrap'
@@ -237,20 +238,24 @@ const columns: TableColumn[] = [
     field: 'action',
     label: '操作',
     fixed: 'right',
-    width: 200,
+    width: 100,
     headerAlign: 'center',
     align: 'center',
     slots: {
       default: (data) => {
         return (
-          <div>
+          <>
             <ElButton type="primary" link onClick={() => gatherFn(data.row)}>
-              采集
+              <ElTooltip content="采集" placement="top" enterable={false}>
+                <Icon icon="svg-icon:data" />
+              </ElTooltip>
             </ElButton>
             <ElButton type="primary" link onClick={() => addCounterfeitFn(data.row.dataID)}>
-              加入仿冒样本库
+              <ElTooltip content="加入仿冒样本库" placement="top" enterable={false}>
+                <Icon icon="svg-icon:add" />
+              </ElTooltip>
             </ElButton>
-          </div>
+          </>
         )
       }
     }
