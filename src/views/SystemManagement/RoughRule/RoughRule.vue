@@ -35,13 +35,13 @@ const { tableRegister, tableMethods, tableState } = useTable({
     }
   },
   fetchDelApi: async () => {
-    const res = await deleteApi({ rules: unref(ids) })
+    const res = await deleteApi({ ids: unref(ids) })
     return !!res
   }
 })
 let { loading, total, dataList, currentPage, pageSize } = tableState
 const { getList, getElTableExpose, delList } = tableMethods
-const whiteColumns: TableColumn[] = [
+const columns: TableColumn[] = [
   {
     field: 'selection',
     type: 'selection',
@@ -65,7 +65,7 @@ const whiteColumns: TableColumn[] = [
     field: 'isEnable',
     label: '是否启用',
     width: 90,
-    formatter: (data) => (data.isEnabled ? '启用' : '禁用')
+    formatter: (data) => (data.isEnable ? '启用' : '禁用')
   },
   {
     field: 'addType',
@@ -98,10 +98,20 @@ const whiteColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="primary" link onClick={() => enableData(data.row.id)}>
+            <ElButton
+              type="primary"
+              disabled={data.row.isEnable}
+              link
+              onClick={() => enableData(data.row.id)}
+            >
               启用
             </ElButton>
-            <ElButton type="warning" link onClick={() => disableData(data.row.id)}>
+            <ElButton
+              type="warning"
+              disabled={!data.row.isEnable}
+              link
+              onClick={() => disableData(data.row.id)}
+            >
               禁用
             </ElButton>
             <ElButton type="danger" link onClick={() => delData(data)}>
@@ -147,6 +157,14 @@ const exportFn = async () => {
     ElMessage.warning('请选择需要导出的数据')
   }
 }
+const fieldName = ref()
+fieldName.value = columns.slice(1, -1).map((i) => {
+  return {
+    label: i.label,
+    value: i.field
+  }
+})
+
 //删除
 const delLoading = ref(false)
 const delData = async (data) => {
@@ -224,7 +242,7 @@ const disableData = async (data) => {
       stripe
       row-key="id"
       :reserve-selection="true"
-      :columns="whiteColumns"
+      :columns="columns"
       :data="dataList"
       :loading="loading"
       :pagination="{
@@ -248,6 +266,7 @@ const disableData = async (data) => {
     :conditions="{ ...searchData }"
     :total="total"
     :axiosFn="exportApi"
+    :field-name="fieldName"
     @clear-selection="clearSelection"
     @is-checked-all="
       (temp) => {

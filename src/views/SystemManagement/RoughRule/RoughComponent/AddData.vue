@@ -3,8 +3,7 @@ import { ref } from 'vue'
 import { ElDrawer, ElMessage } from 'element-plus'
 import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
-import { addApi } from '@/api/systemManagement/PhishingConfiguration'
-import { useUserStore } from '@/store/modules/user'
+import { addApi } from '@/api/systemManagement/RoughRule'
 import { useValidator } from '@/hooks/web/useValidator'
 const { required } = useValidator()
 defineProps({
@@ -15,10 +14,6 @@ defineProps({
   isDrawer: {
     type: Boolean,
     default: false
-  },
-  bodyInfo: {
-    type: Object,
-    default: null
   },
   placeholder: {
     type: String,
@@ -77,7 +72,7 @@ const schema = ref<FormSchema[]>([
   },
   {
     field: 'applyTable',
-    label: `数据源：`,
+    label: `数据表：`,
     component: 'Input',
     formItemProps: {
       rules: [required()]
@@ -96,15 +91,12 @@ const confirmClick = async () => {
     if (isValid) {
       loading.value = true
       const formData = await getFormData()
-      if (formData.exploreAimFile) {
-        formData.exploreAimFile = formData.exploreAimFile[0].raw
-      }
-      const createdBy = useUserStore().getUserInfo?.username
-      const res = await addApi({ ...formData, createdBy, addType: 'user' })
+      const res = await addApi(formData)
       if (res.code == 0) {
         loading.value = false
         close().then(() => {
           ElMessage.success('添加规则成功')
+          emit('get-data')
         })
       }
     }
