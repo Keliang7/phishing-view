@@ -282,6 +282,14 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         meta: {
           title: 'router.phishing_recheck'
         }
+      },
+      {
+        path: 'rough_rule',
+        component: () => import('@/views/SystemManagement/RoughRule/RoughRule.vue'),
+        name: 'RoughRule',
+        meta: {
+          title: 'router.rough_rule'
+        }
       }
     ]
   }

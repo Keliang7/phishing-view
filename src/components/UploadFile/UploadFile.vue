@@ -26,7 +26,7 @@ const schema = ref<FormSchema[]>([
     field: 'reviewer',
     label: `复核人员：`,
     component: 'Select',
-    remove: props.title === '白名单导入数据',
+    remove: props.title !== '仿冒检测规则导入数据',
     componentProps: {
       options: [
         {
@@ -108,9 +108,7 @@ const confirmClick = async () => {
 }
 const downloadFile = () => {
   const link = document.createElement('a')
-  console.log(`/${props.title}模板.xlsx`)
   link.href = `/${props.title}模板.xlsx`
-  // link.href = `/白名单导入数据模版.xlsx`
   link.download = `${props.title}模板.xlsx`
   document.body.appendChild(link)
   link.click()
