@@ -2,7 +2,7 @@
 import { ref, reactive, unref, onMounted, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElTabs, ElTabPane, ElButton, ElCheckbox, ElMessage } from 'element-plus'
+import { ElTabs, ElTabPane, ElButton, ElCheckbox, ElMessage, ElTooltip } from 'element-plus'
 import { Table, TableColumn } from '@/components/Table'
 import {
   getBwListApi,
@@ -21,6 +21,7 @@ import SelectData from '@/components/SelectData/SelectData.vue'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import Backtrack from '@/components/Backtrack/Backtrack.vue'
+import { Icon } from '@/components/Icon'
 
 const { t } = useI18n()
 const { tableRegister, tableMethods, tableState } = useTable({
@@ -154,16 +155,19 @@ const BWColumns: TableColumn[] = [
     fixed: 'right',
     headerAlign: 'center',
     align: 'center',
-    width: 150,
     slots: {
       default: (data) => {
         return (
-          <div>
+          <div class="flex justify-center items-center">
             <ElButton link type="primary" onClick={() => gatherFn(data.row)}>
-              {t('tableDemo.gather')}
+              <ElTooltip content="采集" placement="top" enterable={false}>
+                <Icon icon="svg-icon:data" />
+              </ElTooltip>
             </ElButton>
             <ElButton link type="primary" onClick={() => backtrackFn(data)}>
-              回溯
+              <ElTooltip content="回溯" placement="top" enterable={false}>
+                <Icon icon="svg-icon:backTrack" />
+              </ElTooltip>
             </ElButton>
           </div>
         )
@@ -231,7 +235,9 @@ const DomainColumns: TableColumn[] = [
       default: (data) => {
         return (
           <ElButton link type="primary" onClick={() => gatherFn(data.row)}>
-            {t('tableDemo.gather')}
+            <ElTooltip content="采集" placement="top" enterable={false}>
+              <Icon icon="svg-icon:data" color="rgb(64, 158, 255)" />
+            </ElTooltip>
           </ElButton>
         )
       }
@@ -535,12 +541,13 @@ const ExtColumns: TableColumn[] = [
     fixed: 'right',
     headerAlign: 'center',
     align: 'center',
-    width: 120,
     slots: {
       default: (data) => {
         return (
-          <ElButton type="primary" link onClick={() => gatherFn(data.row)}>
-            {t('tableDemo.gather')}
+          <ElButton link type="primary" onClick={() => gatherFn(data.row)}>
+            <ElTooltip content="采集" placement="top" enterable={false}>
+              <Icon icon="svg-icon:data" />
+            </ElTooltip>
           </ElButton>
         )
       }
@@ -697,7 +704,7 @@ const exportFn = async () => {
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
         <ElButton type="default" @click="gatherFn(null)" :disabled="isCheckedAll">
-          <Icon icon="ep:operation" /> 批量采集
+          批量采集
         </ElButton>
         <ElButton type="primary" @click="exportFn">
           <Icon icon="tdesign:upload" /> 导出数据

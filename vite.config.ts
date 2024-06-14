@@ -164,6 +164,10 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           target: 'http://10.10.11.131:32080',
           changeOrigin: true
         }
+        // '/webfile': {
+        //   target: 'http://10.10.11.131:32080',
+        //   changeOrigin: true
+        // }
         /* 
           网关转发服务:32080
           业务系统管理服务	   /eyfm/service/sys_mgr                32081
