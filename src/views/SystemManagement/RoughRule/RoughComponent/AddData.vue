@@ -56,6 +56,7 @@ const schema = ref<FormSchema[]>([
     field: 'isEnable',
     label: `是否启用：`,
     component: 'Select',
+    value: true,
     componentProps: {
       options: [
         {

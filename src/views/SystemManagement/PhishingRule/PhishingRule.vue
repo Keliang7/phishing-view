@@ -414,6 +414,16 @@ const setTable = async (tableName) => {
   dataArray.value = dataArrayMap[tableName] || []
   await getList()
   loading.value = false
+  //然后改一下导出的filedName
+  console.log(temp[tableName])
+  fieldName.value = temp[tableName]
+    .map((i) => {
+      return {
+        label: i.label,
+        value: i.field
+      }
+    })
+    .slice(1, -1)
 }
 const isDrawerInfo = ref(false)
 const bodyInfo = ref()
@@ -461,12 +471,21 @@ const clearSelection = async () => {
 }
 const getSelectedIds = async () => {
   const elTableRef = await getElTableExpose()
-  ids.value = elTableRef?.getSelectionRows().map((i) => i.id)
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.id - 0)
 }
 watch(isCheckedAll, () => {
   clearSelection()
 })
 //导出
+const fieldName = ref()
+fieldName.value = ruleColumns
+  .map((i) => {
+    return {
+      label: i.label,
+      value: i.field
+    }
+  })
+  .slice(1, -1)
 const isExport = ref(false)
 const exportFn = async () => {
   await getSelectedIds()
@@ -617,8 +636,10 @@ onMounted(() => {
   />
   <ExportFile
     v-model:isDrawer="isExport"
+    v-if="isExport"
     title="仿冒规则检查"
     :ids="ids"
+    :field-name="fieldName"
     :conditions="{ ...searchData }"
     :total="total"
     :axiosFn="exportApi"
