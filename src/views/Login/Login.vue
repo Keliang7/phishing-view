@@ -11,68 +11,41 @@ import type { RouteRecordRaw } from 'vue-router'
 const userStore = useUserStore()
 const permissionStore = usePermissionStore()
 const { addRoute, push } = useRouter()
+const loading = ref(false)
 onBeforeMount(async () => {
   if (useRoute().query.SESSION_DATA) {
+    loading.value = true
     const res = await loginApi({ sessionData: useRoute().query.SESSION_DATA })
     userStore.setUserInfo(res.data)
-    if (res) {
-      userStore.setToken('Bearer ' + res.data.token)
-      getRole()
-      push({ path: '/dashboard' })
-    }
+    userStore.setToken('Bearer ' + res.data.token)
+    await getRole()
+    loading.value = true
   }
 })
+//key<=>router
+const routerMap = {
+  'APP.FM.P.Total': '/data_management',
+  'APP.FM.P.Manger': '/data_management',
+  'APP.FM.P.Manger.Process': '/data_management/pend_url',
+  'APP.FM.P.Manger.Counterfeiting': '/data_management/counterfeit_management',
+  'APP.FM.P.Manger.Mission': '/data_management/understatement',
+  'APP.FM.P.Manger.Error': '/data_management/misinformation',
+  'APP.FM.P.Extension': '/data_extension',
+  'APP.FM.P.Extension.Manger': '/data_extension/extension_task',
+  'APP.FM.P.Results': '/data_extension/extension_result',
+  'APP.FM.P.Collecting': '/data_gather',
+  'APP.FM.P.Collecting.Manger': '/data_gather/gather_task',
+  'APP.FM.P.Collecting.Results': '/data_gather/gather_result',
+  'APP.FM.P.System': '/system_management',
+  'APP.FM.P.System.WhiteList': '/system_management/policy_configuration',
+  'APP.FM.P.System.RuleManger': '/system_management/phishing_rule',
+  'APP.FM.P.System.RuleReview': '/system_management/phishing_recheck'
+}
 const getRole = async () => {
   let res
-  let temp = await getMenuApi()
-  if (temp.identity === 'user') {
-    const map = {
-      'APP.FM.P.Total': '/data_management',
-      'APP.FM.P.Manger': '/data_management',
-      'APP.FM.P.Manger.Process': '/data_management/pend_url',
-      'APP.FM.P.Manger.Counterfeiting': '/data_management/counterfeit_management',
-      'APP.FM.P.Manger.Mission': '/data_management/understatement',
-      'APP.FM.P.Manger.Error': '/data_management/misinformation',
-      'APP.FM.P.Extension': '/data_extension',
-      'APP.FM.P.Extension.Manger': '/data_extension/extension_task',
-      'APP.FM.P.Results': '/data_extension/extension_result',
-      'APP.FM.P.Collecting': '/data_gather',
-      'APP.FM.P.Collecting.Manger': '/data_gather/gather_task',
-      'APP.FM.P.Collecting.Results': '/data_gather/gather_result',
-      'APP.FM.P.System': '/system_management',
-      'APP.FM.P.System.WhiteList': '/system_management/policy_configuration',
-      'APP.FM.P.System.RuleManger': '/system_management/phishing_rule',
-      'APP.FM.P.System.RuleReview': '/system_management/phishing_recheck'
-    }
-    const data = temp.data.menu.map((i) => (i.privilegeKey = map[i.privilegeKey]))
-    res = { ...temp, data }
-  } else {
-    res = {
-      data: [
-        '/data_management',
-        '/data_management',
-        '/data_management/pend_url',
-        '/data_management/counterfeit_management',
-        '/data_management/understatement',
-        '/data_management/misinformation',
-        '/data_extension',
-        '/data_extension/extension_task',
-        '/data_extension/extension_result',
-        '/data_gather',
-        '/data_gather/gather_task',
-        '/data_gather/gather_result',
-        '/log_management',
-        '/log_management/login_log',
-        '/log_management/operation_log',
-        '/system_management',
-        '/system_management/policy_configuration',
-        '/system_management/phishing_rule',
-        '/system_management/phishing_recheck',
-        '/system_management/rough_rule'
-      ]
-    }
-    res.identity = 'admin'
-  }
+  const temp = await getMenuApi()
+  const data = temp.data.menu.map((i) => (i.privilegeKey = routerMap[i.privilegeKey]))
+  res = { ...temp, data }
   if (res) {
     const routers = res.data || []
     userStore.setRoleRouters(routers)
@@ -97,7 +70,10 @@ const toLogin = () => {
 </script>
 
 <template>
-  <div class="h-[100%] relative lt-sm:px-10px lt-xl:px-10px lt-md:px-10px login-page-box">
+  <div
+    v-loading="loading"
+    class="h-[100%] relative lt-sm:px-10px lt-xl:px-10px lt-md:px-10px login-page-box"
+  >
     <ElScrollbar class="h-full">
       <div class="relative flex mx-auto min-h-100vh">
         <div :class="`flex-1 relative p-30px lt-xl:hidden`">
