@@ -38,8 +38,12 @@ import { onMounted } from 'vue'
 import { set } from 'lodash-es'
 import { useRouter } from 'vue-router'
 import { formatTime } from '@/utils/index'
+import { useSystemConstantsWithOut } from '@/store/modules/systemConstant'
 const { t } = useI18n()
 const loading = ref(true)
+
+// 在应用程序加载时获取系统全局静态变量数据
+const systemConstants = useSystemConstantsWithOut()
 
 //选择日期
 const today = new Date()
@@ -472,6 +476,7 @@ watch(timeArray, () => {
   init()
 })
 onMounted(() => {
+  systemConstants.fetchSystemConstants()
   init()
 })
 </script>

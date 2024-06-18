@@ -111,8 +111,7 @@ const resultColumns: TableColumn[] = [
   },
   {
     field: 'ICON',
-    label: 'ICON',
-    formatter: (data) => <img class="max-w-18px" src={data.ICON}></img>
+    label: 'ICON'
   },
   {
     field: 'netStatusCode',
@@ -259,7 +258,7 @@ const exportFn = async () => {
       v-model:currentPage="currentPage"
       :max-height="446"
       stripe
-      :image-preview="['screenshot']"
+      :image-preview="['screenshot', 'ICON']"
       row-key="dataID"
       :reserve-selection="true"
       :columns="resultColumns"
