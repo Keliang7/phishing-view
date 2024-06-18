@@ -26,7 +26,10 @@ export const useSystemConstantsStore = defineStore({
     // 仿冒数据-更新状态(查询ZDTC)
     updateStatus: [{}],
     // 漏报原因
-    omissionReason: [{}]
+    omissionReason: [{}],
+    //粗泛规则
+    applyTable: [{}],
+    applyTableSelect: [{}]
   }),
   actions: {
     async fetchSystemConstants() {
@@ -86,6 +89,12 @@ export const useSystemConstantsStore = defineStore({
       //   value,
       //   label
       // }))
+      //粗泛规则
+      this.applyTable = res.data.applyTable
+      this.applyTableSelect = Object.entries(res.data.applyTable).map(([value, label]) => ({
+        value,
+        label
+      }))
     }
   }
 })

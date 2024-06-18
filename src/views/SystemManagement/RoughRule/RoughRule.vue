@@ -19,7 +19,8 @@ import AddData from './RoughComponent/AddData.vue'
 import UploadFile from '@/components/UploadFile/UploadFile.vue'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
-
+import { useSystemConstantsStore } from '@/store/modules/systemConstant'
+const staticField = useSystemConstantsStore()
 const { t } = useI18n()
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
@@ -74,7 +75,9 @@ const columns: TableColumn[] = [
   },
   {
     field: 'applyTable',
-    label: '数据表'
+    label: '数据表',
+    width: 150,
+    formatter: (data) => staticField.applyTable[data.applyTable]
   },
   {
     field: 'createdBy',

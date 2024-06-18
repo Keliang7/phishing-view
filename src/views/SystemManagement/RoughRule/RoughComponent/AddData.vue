@@ -5,6 +5,8 @@ import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
 import { addApi } from '@/api/systemManagement/RoughRule'
 import { useValidator } from '@/hooks/web/useValidator'
+import { useSystemConstantsStore } from '@/store/modules/systemConstant'
+const staticField = useSystemConstantsStore()
 const { required } = useValidator()
 defineProps({
   title: {
@@ -73,7 +75,10 @@ const schema = ref<FormSchema[]>([
   {
     field: 'applyTable',
     label: `数据表：`,
-    component: 'Input',
+    component: 'Select',
+    componentProps: {
+      options: staticField.applyTableSelect
+    },
     formItemProps: {
       rules: [required()]
     }
