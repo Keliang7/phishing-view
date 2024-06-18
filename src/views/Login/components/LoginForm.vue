@@ -158,7 +158,6 @@ const signIn = async () => {
       try {
         const res = await loginApi(formData)
         if (res) {
-          // 是否记住我
           if (unref(remember)) {
             userStore.setLoginInfo({
               username: formData.username,
@@ -179,33 +178,33 @@ const signIn = async () => {
   })
 }
 // 获取角色信息
+const adminRouter = [
+  '/data_management',
+  '/data_management',
+  '/data_management/pend_url',
+  '/data_management/counterfeit_management',
+  '/data_management/understatement',
+  '/data_management/misinformation',
+  '/data_extension',
+  '/data_extension/extension_task',
+  '/data_extension/extension_result',
+  '/data_gather',
+  '/data_gather/gather_task',
+  '/data_gather/gather_result',
+  '/log_management',
+  '/log_management/login_log',
+  '/log_management/operation_log',
+  '/system_management',
+  '/system_management/policy_configuration',
+  '/system_management/phishing_rule',
+  '/system_management/phishing_recheck',
+  '/system_management/rough_rule'
+]
 const getRole = async () => {
   const res = await getMenuApi()
   if (res) {
-    const routers = [
-      '/data_management',
-      '/data_management',
-      '/data_management/pend_url',
-      '/data_management/counterfeit_management',
-      '/data_management/understatement',
-      '/data_management/misinformation',
-      '/data_extension',
-      '/data_extension/extension_task',
-      '/data_extension/extension_result',
-      '/data_gather',
-      '/data_gather/gather_task',
-      '/data_gather/gather_result',
-      '/log_management',
-      '/log_management/login_log',
-      '/log_management/operation_log',
-      '/system_management',
-      '/system_management/policy_configuration',
-      '/system_management/phishing_rule',
-      '/system_management/phishing_recheck',
-      '/system_management/rough_rule'
-    ]
-    userStore.setRoleRouters(routers)
-    await permissionStore.generateRoutes('frontEnd', routers).catch(() => {})
+    userStore.setRoleRouters(adminRouter)
+    await permissionStore.generateRoutes('frontEnd', adminRouter).catch(() => {})
     permissionStore.getAddRouters.forEach((route) => {
       addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
     })
