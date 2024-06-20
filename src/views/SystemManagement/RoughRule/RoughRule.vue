@@ -2,7 +2,7 @@
 import { ref, unref, watch } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElButton, ElCheckbox, ElMessageBox, ElMessage } from 'element-plus'
+import { ElButton, ElCheckbox, ElMessage } from 'element-plus'
 import { Table, TableColumn } from '@/components/Table'
 import {
   getListApi,
@@ -19,8 +19,14 @@ import AddData from './RoughComponent/AddData.vue'
 import UploadFile from '@/components/UploadFile/UploadFile.vue'
 import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
-import { useSystemConstantsStore } from '@/store/modules/systemConstant'
+import { useSystemConstantsStore, useSystemConstantsWithOut } from '@/store/modules/systemConstant'
+import { onMounted } from 'vue'
+// 在应用程序加载时获取系统全局静态变量数据
+const systemConstants = useSystemConstantsWithOut()
 const staticField = useSystemConstantsStore()
+onMounted(async () => {
+  await systemConstants.fetchSystemConstants()
+})
 const { t } = useI18n()
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
@@ -37,6 +43,7 @@ const { tableRegister, tableMethods, tableState } = useTable({
   },
   fetchDelApi: async () => {
     const res = await deleteApi({ ids: unref(ids) })
+    clearSelection()
     return !!res
   }
 })
@@ -171,33 +178,27 @@ fieldName.value = columns.slice(1, -1).map((i) => {
 //删除
 const delLoading = ref(false)
 const delData = async (data) => {
+  // if (isCheckedAll.value) {
+  //   ElMessageBox.confirm(t('common.delMessage'), t('common.delWarning'), {
+  //     confirmButtonText: t('common.delOk'),
+  //     cancelButtonText: t('common.delCancel'),
+  //     type: 'warning'
+  //   }).then(async () => {
+  //     const res = await deleteApi({ isCheckedAll: true })
+  //     if (res) {
+  //       ElMessage.success(t('common.delSuccess'))
+  //       isCheckedAll.value = false
+  //       getList()
+  //     }
+  //   })
+  // } else {
   const elTableExpose = await getElTableExpose()
   ids.value = data ? [data.row.id] : elTableExpose?.getSelectionRows().map((v) => v.id) || []
   delLoading.value = true
   await delList(unref(ids).length).finally(() => {
     delLoading.value = false
   })
-}
-//全选删除
-const deleteAllFn = async () => {
-  if (isCheckedAll.value) {
-    ElMessageBox.confirm(t('common.delMessage'), t('common.delWarning'), {
-      confirmButtonText: t('common.delOk'),
-      cancelButtonText: t('common.delCancel'),
-      type: 'warning'
-    }).then(async () => {
-      const res = await deleteApi({ isCheckedAll: true })
-      if (res) {
-        ElMessage.success(t('common.delSuccess'))
-        isCheckedAll.value = false
-        getList()
-        clearSelection()
-      }
-    })
-  } else {
-    delData(null)
-    clearSelection()
-  }
+  // }
 }
 // 启用
 const enableData = async (data) => {
@@ -216,7 +217,7 @@ const disableData = async (data) => {
 </script>
 <template>
   <AdvancedSearch
-    :title="`粗泛规则管理`"
+    :title="`粗放规则管理`"
     :total="total"
     :dataArray="['ruleContent', 'ruleName', 'addType', 'createdBy', 'createdTime']"
     @search-data="searchTable"
@@ -227,7 +228,9 @@ const disableData = async (data) => {
         <ElButton type="default">
           <ElCheckbox v-model="isCheckedAll" label="选择全部" size="large" />
         </ElButton>
-        <ElButton type="danger" @click="deleteAllFn"> 批量删除 </ElButton>
+        <ElButton type="danger" :disabled="isCheckedAll" @click="delData(null)">
+          批量删除
+        </ElButton>
         <ElButton type="primary" @click="isDrawerAddData = !isDrawerAddData"> 添加 </ElButton>
         <ElButton type="primary" @click="isDrawerUploadFile = !isDrawerUploadFile">
           导入数据
@@ -254,17 +257,17 @@ const disableData = async (data) => {
       @register="tableRegister"
     />
   </ContentWrap>
-  <AddData v-model:isDrawer="isDrawerAddData" :title="'添加粗泛规则'" @get-data="getList" />
+  <AddData v-model:isDrawer="isDrawerAddData" :title="'添加粗放规则'" @get-data="getList" />
   <UploadFile
     v-if="isDrawerUploadFile"
     v-model:isDrawer="isDrawerUploadFile"
-    :title="'粗泛规则导入数据'"
+    :title="'粗放规则导入数据'"
     :axiosFn="importApi"
     @get-data="getList"
   />
   <ExportFile
     v-model:isDrawer="isExport"
-    title="粗泛规则管理"
+    title="粗放规则管理"
     :ids="ids"
     :conditions="{ ...searchData }"
     :total="total"

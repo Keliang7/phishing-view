@@ -80,22 +80,26 @@ const columns: TableColumn[] = [
     width: 120,
     label: '任务耗时',
     formatter: (data) => {
-      return (
-        <div style={{ display: 'flex' }}>
-          <span style={{ display: data.useTime / 1000 > 86400 ? 'block' : 'none' }}>
-            {Math.floor(data.useTime / 1000 / 86400)}天
-          </span>
-          <span style={{ display: data.useTime / 1000 > 3600 ? 'block' : 'none' }}>
-            {Math.floor(((data.useTime / 1000) % 86400) / 3600)}时
-          </span>
-          <span style={{ display: data.useTime / 1000 > 60 ? 'block' : 'none' }}>
-            {Math.floor(((data.useTime / 1000) % 3600) / 60)}分
-          </span>
-          <span style={{ display: data.useTime / 1000 > 0 ? 'block' : 'none' }}>
-            {Math.floor(data.useTime / 1000) % 60}秒
-          </span>
-        </div>
-      )
+      if (!data.useTime) {
+        return <p>0</p>
+      } else {
+        return (
+          <div style={{ display: 'flex' }}>
+            <span style={{ display: data.useTime / 1000 > 86400 ? 'block' : 'none' }}>
+              {Math.floor(data.useTime / 1000 / 86400)}天
+            </span>
+            <span style={{ display: data.useTime / 1000 > 3600 ? 'block' : 'none' }}>
+              {Math.floor(((data.useTime / 1000) % 86400) / 3600)}时
+            </span>
+            <span style={{ display: data.useTime / 1000 > 60 ? 'block' : 'none' }}>
+              {Math.floor(((data.useTime / 1000) % 3600) / 60)}分
+            </span>
+            <span style={{ display: data.useTime / 1000 > 0 ? 'block' : 'none' }}>
+              {Math.floor(data.useTime / 1000) % 60}秒
+            </span>
+          </div>
+        )
+      }
     }
   },
   {

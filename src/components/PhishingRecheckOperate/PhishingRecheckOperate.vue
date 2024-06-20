@@ -103,6 +103,7 @@ const schema = reactive<FormSchema[]>([
       rules: [required()]
     },
     componentProps: {
+      disabled: () => props.title === '查看规则复核',
       placeholder: '请输入特征名称'
     }
   },
@@ -114,6 +115,7 @@ const schema = reactive<FormSchema[]>([
       rules: [required()]
     },
     componentProps: {
+      disabled: () => props.title === '查看规则复核',
       placeholder: '请输入受害方'
     }
   },
@@ -125,6 +127,7 @@ const schema = reactive<FormSchema[]>([
       rules: [required()]
     },
     componentProps: {
+      disabled: () => props.title === '查看规则复核',
       options: [
         {
           value: '政府',
@@ -169,6 +172,7 @@ const schema = reactive<FormSchema[]>([
       rules: [required()]
     },
     componentProps: {
+      disabled: () => props.title === '查看规则复核',
       type: 'textarea',
       autosize: { minRows: 11, maxRows: 16 },
       resize: 'none',

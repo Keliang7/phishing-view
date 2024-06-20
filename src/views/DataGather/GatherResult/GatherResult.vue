@@ -156,6 +156,11 @@ const resultColumns: TableColumn[] = [
     label: '任务名称'
   },
   {
+    field: 'collectionStatus',
+    width: 120,
+    label: '采集状态'
+  },
+  {
     field: 'updateTime',
     label: '更新时间',
     width: 180,
@@ -237,7 +242,8 @@ const exportFn = async () => {
       'ip',
       'FID',
       'netStatusCode',
-      'icon'
+      'website',
+      'collectionStatus'
     ]"
     @search-data="searchTable"
   />

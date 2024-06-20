@@ -4,7 +4,8 @@ export const getListApi = (params: any) => {
 }
 export const statisticsApi = (params) => {
   return request.get({
-    url: '/api/v1/understatement/statistics'
+    url: '/api/v1/understatement/statistics',
+    params
   })
 }
 export const exportApi = (params: any) => {

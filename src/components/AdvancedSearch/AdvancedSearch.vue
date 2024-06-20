@@ -660,6 +660,17 @@ let schema = ref<FormSchema[]>([
     colProps: {
       span: 6
     }
+  },
+  {
+    field: 'website',
+    label: `网站地址：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入网址地址'
+    },
+    colProps: {
+      span: 6
+    }
   }
 ])
 let schemaCopy = ref<FormSchema[]>([])

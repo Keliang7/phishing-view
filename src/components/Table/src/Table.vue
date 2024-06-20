@@ -409,7 +409,7 @@ export default defineComponent({
             <ElImage
               src={'/api/v1/image' + url}
               fit="cover"
-              class={`${field == 'ICON' ? 'w-[100%]' : 'w-[100%]'}  max-h-50px`}
+              class={`${field == 'ICON' ? 'w-[60%] m-auto' : 'w-[100%]'}  max-h-50px`}
               lazy
               preview-src-list={['/api/v1/image' + url]}
               preview-teleported

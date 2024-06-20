@@ -157,9 +157,6 @@ const schema = ref<FormSchema[]>([
           </div>
         )
       }
-    },
-    formItemProps: {
-      rules: [required()]
     }
   },
   {

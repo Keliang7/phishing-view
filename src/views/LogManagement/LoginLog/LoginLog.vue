@@ -35,7 +35,10 @@ const columns: TableColumn[] = [
     field: 'accountName',
     label: '登录名'
   },
-
+  {
+    field: 'clientIP',
+    label: '登录IP'
+  },
   {
     field: 'accountName',
     label: '操作人'
