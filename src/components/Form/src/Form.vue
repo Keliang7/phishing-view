@@ -238,7 +238,9 @@ export default defineComponent({
             <Com {...{ contentPosition: 'left', ...item.componentProps }}>{item?.label}</Com>
           ) : isCol ? (
             // 如果需要栅格，需要包裹 ElCol
-            <ElCol {...setGridProp(item.colProps)}>{renderFormItem(item)}</ElCol>
+            <ElCol {...setGridProp(item.colProps)} xs={24}>
+              {renderFormItem(item)}
+            </ElCol>
           ) : (
             renderFormItem(item)
           )
