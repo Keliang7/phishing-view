@@ -38,7 +38,7 @@ const dataArray = ref([
   'addType',
   'createBy',
   'createTime',
-  'featureID',
+  'id',
   'victim',
   'victimType'
 ])
@@ -440,7 +440,7 @@ const dataArrayMap = {
     'addType',
     'createdBy',
     'createdTime',
-    'featureID',
+    'id',
     'victim',
     'victimType',
     'checkStatus'

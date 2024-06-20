@@ -376,7 +376,20 @@ const getCategoryOptions = async (type) => {
             return item.value
           })
         }
-      ]
+      ],
+      graphic:
+        res.data.length === 0
+          ? {
+              type: 'text',
+              left: 'center',
+              top: 'middle',
+              style: {
+                text: '暂无数据',
+                fontSize: 20,
+                fill: '#aaa'
+              }
+            }
+          : []
     }
     let dom = document.getElementById(`${type}Div`)
     let echartRef = echarts.init(dom)
@@ -384,6 +397,7 @@ const getCategoryOptions = async (type) => {
   }
 }
 const handleClick = async (tab) => {
+  console.log(1)
   if (tab === 'dataCount') {
     getTableDataCount()
   } else {
@@ -472,7 +486,6 @@ const init = async () => {
   })
 }
 watch(timeArray, () => {
-  console.log('timeArray: ' + timeArray.value)
   init()
 })
 onMounted(() => {
@@ -649,7 +662,7 @@ onMounted(() => {
         <div class="flex justify-between items-center">
           <span class="text-14px"
             >最近一个人工采集完成任务：{{
-              formatTime(taskMessageData.lastTime, 'yyyy-mm-dd HH:MM:ss')
+              formatTime(taskMessageData.lastTime, 'yyyy-MM-dd HH:mm:ss')
             }}</span
           >
           <ElButton class="mb-4px" type="primary" @click="router.push({ name: 'GatherTask' })"
@@ -754,7 +767,7 @@ onMounted(() => {
         <div class="flex justify-between items-center">
           <span class="text-14px"
             >最近一个人工拓线完成任务：{{
-              formatTime(extensionData.lastTime, 'yyyy-mm-dd HH:MM:ss')
+              formatTime(extensionData.lastTime, 'yyyy-MM-dd HH:mm:ss')
             }}</span
           >
           <ElButton class="mb-4px" type="primary" @click="router.push({ name: 'ExtensionTask' })"

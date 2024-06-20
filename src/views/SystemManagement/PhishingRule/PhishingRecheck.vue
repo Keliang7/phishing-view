@@ -188,7 +188,7 @@ const recheckOrViewFn = async (data, title) => {
       'addType',
       'createdBy',
       'createdTime',
-      'featureID',
+      'id',
       'victim',
       'victimType',
       'operationType'
