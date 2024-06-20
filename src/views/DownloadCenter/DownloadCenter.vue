@@ -63,7 +63,11 @@ const columns = reactive<TableColumn[]>([
     slots: {
       default: (data) => {
         return (
-          <ElButton type="primary" onClick={() => actionFn(data)}>
+          <ElButton
+            type="primary"
+            disabled={data.row.status !== 'success'}
+            onClick={() => actionFn(data)}
+          >
             立即下载
           </ElButton>
         )

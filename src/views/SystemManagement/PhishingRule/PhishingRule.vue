@@ -404,6 +404,7 @@ const getTableData = async (params) => {
     return res
   }
 }
+//
 const setTable = async (tableName) => {
   loading.value = true
   isCheckedAll.value = false

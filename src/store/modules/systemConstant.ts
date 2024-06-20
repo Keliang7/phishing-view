@@ -27,7 +27,7 @@ export const useSystemConstantsStore = defineStore({
     updateStatus: [{}],
     // 漏报原因
     omissionReason: [{}],
-    //粗泛规则
+    //粗放规则
     applyTable: [{}],
     applyTableSelect: [{}]
   }),
@@ -89,7 +89,7 @@ export const useSystemConstantsStore = defineStore({
       //   value,
       //   label
       // }))
-      //粗泛规则
+      //粗放规则
       this.applyTable = res.data.applyTable
       this.applyTableSelect = Object.entries(res.data.applyTable).map(([value, label]) => ({
         value,

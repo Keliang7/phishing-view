@@ -261,13 +261,24 @@ const columns: TableColumn[] = [
     }
   }
 ]
+// 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
+const searchData = ref({})
+const searchTable = async (value) => {
+  searchData.value = value
+  await setTableSide(value)
+}
 //tableSide
 const tabSideColumns = ref()
 const activeNameS = ref()
 const setTableSide = async (searchParams) => {
   const res = await statisticsApi(searchParams)
-  tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
-  setActiveNameS(tabSideColumns.value[0].name)
+  if (res.data.list.length) {
+    tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
+    setActiveNameS(tabSideColumns.value[0].name)
+  } else {
+    tabSideColumns.value = []
+    getList()
+  }
 }
 const setActiveNameS = (name) => {
   activeNameS.value = name
@@ -276,12 +287,6 @@ const setActiveNameS = (name) => {
 onMounted(async () => {
   await setTableSide(null)
 })
-// 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
-const searchData = ref({})
-const searchTable = async (value) => {
-  searchData.value = value
-  await setTableSide(value)
-}
 //是否全选
 const ids = ref([])
 const isCheckedAll = ref(false)
@@ -305,7 +310,7 @@ const fieldName = columns
       value: i.field
     }
   })
-  .slice(1, -1)
+  .slice(2, -1)
 const exportFn = async () => {
   await getSelectedIds()
   if (ids.value.length || isCheckedAll.value) {

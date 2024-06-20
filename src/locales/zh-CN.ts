@@ -144,7 +144,7 @@ export default {
     system_management: '系统管理',
     // policy_configuration: '策略配置管理',
     policy_configuration: '白名单管理',
-    rough_rule: '粗泛规则管理',
+    rough_rule: '粗放规则管理',
     phishing_rule: '仿冒检测规则管理',
     phishing_recheck: ' 仿冒检测规则复核',
     level: '多级菜单',
