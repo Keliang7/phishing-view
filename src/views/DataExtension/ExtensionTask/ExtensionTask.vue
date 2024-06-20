@@ -187,7 +187,7 @@ const clearSelection = async () => {
 }
 const getSelectedIds = async () => {
   const elTableRef = await getElTableExpose()
-  ids.value = elTableRef?.getSelectionRows().map((i) => i.taskID)
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.taskID - 0)
 }
 watch(isCheckedAll, () => {
   clearSelection()
