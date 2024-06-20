@@ -34,6 +34,7 @@ const { tableRegister, tableMethods, tableState } = useTable({
   },
   fetchDelApi: async () => {
     const res = await deleteApi({ rules: unref(ids) })
+    await clearSelection()
     return !!res
   }
 })
@@ -81,7 +82,12 @@ const whiteColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton type="danger" link onClick={() => delData(data)}>
+            <ElButton
+              type="danger"
+              disabled={data.row.addType === '系统内置'}
+              link
+              onClick={() => delData(data)}
+            >
               {t('tableDemo.delete')}
             </ElButton>
           </div>
@@ -163,7 +169,6 @@ const deleteAllFn = async () => {
     })
   } else {
     delData(null)
-    clearSelection()
   }
 }
 </script>

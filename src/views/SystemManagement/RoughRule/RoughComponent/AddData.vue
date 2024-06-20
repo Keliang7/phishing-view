@@ -28,7 +28,7 @@ const close = async () => {
 }
 
 const { formRegister, formMethods } = useForm()
-const { getElFormExpose, getFormData } = formMethods
+const { getElFormExpose, getFormData, setSchema } = formMethods
 const schema = ref<FormSchema[]>([
   {
     field: 'ruleName',
@@ -108,9 +108,24 @@ const confirmClick = async () => {
     }
   })
 }
+const open = async () => {
+  setSchema([
+    {
+      field: 'applyTable',
+      path: 'componentProps.options',
+      value: staticField.applyTableSelect
+    }
+  ])
+}
 </script>
 <template>
-  <ElDrawer :title="title" :modelValue="isDrawer" :before-close="close" custom-class="drawerWidth">
+  <ElDrawer
+    :title="title"
+    :modelValue="isDrawer"
+    :before-close="close"
+    @open="open"
+    custom-class="drawerWidth"
+  >
     <Form :autoSetPlaceholder="false" :schema="schema" @register="formRegister" :isCol="false" />
     <template #footer>
       <div style="margin-right: 20px">

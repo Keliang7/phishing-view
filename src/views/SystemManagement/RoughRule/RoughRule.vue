@@ -178,27 +178,12 @@ fieldName.value = columns.slice(1, -1).map((i) => {
 //删除
 const delLoading = ref(false)
 const delData = async (data) => {
-  // if (isCheckedAll.value) {
-  //   ElMessageBox.confirm(t('common.delMessage'), t('common.delWarning'), {
-  //     confirmButtonText: t('common.delOk'),
-  //     cancelButtonText: t('common.delCancel'),
-  //     type: 'warning'
-  //   }).then(async () => {
-  //     const res = await deleteApi({ isCheckedAll: true })
-  //     if (res) {
-  //       ElMessage.success(t('common.delSuccess'))
-  //       isCheckedAll.value = false
-  //       getList()
-  //     }
-  //   })
-  // } else {
   const elTableExpose = await getElTableExpose()
   ids.value = data ? [data.row.id] : elTableExpose?.getSelectionRows().map((v) => v.id) || []
   delLoading.value = true
   await delList(unref(ids).length).finally(() => {
     delLoading.value = false
   })
-  // }
 }
 // 启用
 const enableData = async (data) => {
