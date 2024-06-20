@@ -559,7 +559,7 @@ let schema = ref<FormSchema[]>([
     }
   },
   {
-    field: 'featureID',
+    field: 'id', //目前使用的地方只有系统管理-仿冒检查规则管理/复核，0620，featureID=>id
     label: `${t('formDemo.featureID')}：`,
     component: 'Input',
     componentProps: {
