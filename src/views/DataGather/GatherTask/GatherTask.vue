@@ -147,12 +147,7 @@ const tableColumns: TableColumn[] = [
       default: (data) => {
         return (
           <div>
-            <ElButton
-              type="primary"
-              link
-              disabled={data.row.taskStatus === '执行中'}
-              onClick={() => viewData(data)}
-            >
+            <ElButton type="primary" link onClick={() => viewData(data)}>
               查看数据
             </ElButton>
             <ElButton
