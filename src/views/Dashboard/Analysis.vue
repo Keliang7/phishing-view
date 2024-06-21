@@ -50,9 +50,12 @@ const today = new Date()
 const sevenDaysAgo = new Date()
 sevenDaysAgo.setDate(today.getDate() - 7)
 const timeArray: any = ref([sevenDaysAgo.getTime(), today.getTime()])
-let timeObj = { startTime: timeArray.value[0], endTime: timeArray.value[1] }
+let timeObj = { startTime: timeArray.value[0], endTime: timeArray.value[1] + 86399999 }
 watch(timeArray, () => {
-  timeObj = { startTime: timeArray.value[0].getTime(), endTime: timeArray.value[1].getTime() }
+  timeObj = {
+    startTime: timeArray.value[0].getTime(),
+    endTime: timeArray.value[1].getTime() + 86399999
+  }
 })
 //头部三个
 const { getPrefixCls } = useDesign()
@@ -183,7 +186,23 @@ const getCounterfeitingIndustry = async () => {
     'legend.data',
     res.data.map((item) => item.name)
   )
-  set(pieOptions, 'series[0].data', res.data)
+  set(pieOptions, 'series[0].data', res.data),
+    set(
+      pieOptions,
+      'graphic',
+      res.data.length === 0
+        ? {
+            type: 'text',
+            left: 'center',
+            top: 'middle',
+            style: {
+              text: '暂无数据',
+              fontSize: 20,
+              fill: '#aaa'
+            }
+          }
+        : []
+    )
 }
 //仿冒意图统计
 const pieOptions2: EChartsOption = {
@@ -223,6 +242,22 @@ const getCounterfeitIntent = async () => {
     res.data.map((i) => i.name)
   )
   set(pieOptions2, 'series[0].data', res.data)
+  set(
+    pieOptions2,
+    'graphic',
+    res.data.length === 0
+      ? {
+          type: 'text',
+          left: 'center',
+          top: 'middle',
+          style: {
+            text: '暂无数据',
+            fontSize: 20,
+            fill: '#aaa'
+          }
+        }
+      : []
+  )
 }
 // 仿冒资产地域分布TOP10
 const barOptions: EChartsOption = {
@@ -310,6 +345,22 @@ const getGeographicalDistribution = async () => {
     res.data.map((item) => {
       return item.value
     })
+  )
+  set(
+    barOptions,
+    'graphic',
+    res.data.length === 0
+      ? {
+          type: 'text',
+          left: 'center',
+          top: 'middle',
+          style: {
+            text: '暂无数据',
+            fontSize: 20,
+            fill: '#aaa'
+          }
+        }
+      : []
   )
 }
 // 数据统计category
@@ -662,7 +713,9 @@ onMounted(() => {
         <div class="flex justify-between items-center">
           <span class="text-14px"
             >最近一个人工采集完成任务：{{
-              formatTime(taskMessageData.lastTime, 'yyyy-MM-dd HH:mm:ss')
+              taskMessageData.lastTime
+                ? formatTime(taskMessageData.lastTime, 'yyyy-MM-dd HH:mm:ss')
+                : ''
             }}</span
           >
           <ElButton class="mb-4px" type="primary" @click="router.push({ name: 'GatherTask' })"
@@ -693,6 +746,7 @@ onMounted(() => {
           <el-table-column width="90" label="操作">
             <div
               class="text-blue select-none cursor-pointer"
+              v-if="taskMessageData.taskID"
               @click="
                 router.push({ name: 'GatherResult', query: { taskID: taskMessageData.taskID } })
               "
@@ -767,7 +821,9 @@ onMounted(() => {
         <div class="flex justify-between items-center">
           <span class="text-14px"
             >最近一个人工拓线完成任务：{{
-              formatTime(extensionData.lastTime, 'yyyy-MM-dd HH:mm:ss')
+              extensionData.lastTime
+                ? formatTime(extensionData.lastTime, 'yyyy-MM-dd HH:mm:ss')
+                : ''
             }}</span
           >
           <ElButton class="mb-4px" type="primary" @click="router.push({ name: 'ExtensionTask' })"
@@ -784,11 +840,11 @@ onMounted(() => {
                 title="探测内容"
                 width="200"
                 trigger="hover"
-                :content="row.traceResult"
+                :content="row.taskName ? row.traceResult : ''"
               >
                 <template #reference>
                   <div class="overflow">
-                    {{ row.traceResult }}
+                    {{ row.taskName ? row.traceResult : '' }}
                   </div>
                 </template>
               </el-popover>
@@ -797,6 +853,7 @@ onMounted(() => {
           <el-table-column prop="issuanceMethod" label="下发方式" />
           <el-table-column width="90" label="操作">
             <div
+              v-if="extensionData.taskId"
               class="text-blue select-none cursor-pointer"
               @click="
                 router.push({ name: 'ExtensionResult', query: { taskID: extensionData.taskID } })
