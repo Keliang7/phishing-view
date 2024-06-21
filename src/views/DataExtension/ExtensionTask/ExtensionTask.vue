@@ -6,7 +6,7 @@ import { ElButton, ElCheckbox, ElRow, ElCol, ElMessage } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useTable } from '@/hooks/web/useTable'
-import { getListApi, exportApi, statisticsApi } from '@/api/dataExtension/extensionTask'
+import { getListApi, exportApi, statisticsApi, delApi } from '@/api/dataExtension/extensionTask'
 import { formatTime } from '@/utils/index'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import TableSide from '@/components/TableSide/TableSide.vue'
@@ -29,10 +29,14 @@ const { tableRegister, tableMethods, tableState } = useTable({
       list: res.data.list,
       total: res.data.total
     }
+  },
+  fetchDelApi: async () => {
+    const res = await delApi({ ids: unref(ids) })
+    return !!res
   }
 })
 const { loading, total, dataList, currentPage, pageSize } = tableState
-const { getList, getElTableExpose } = tableMethods
+const { getList, getElTableExpose, delList } = tableMethods
 const columns: TableColumn[] = [
   {
     field: 'selection',
@@ -81,7 +85,7 @@ const columns: TableColumn[] = [
     label: '任务耗时',
     formatter: (data) => {
       if (!data.useTime) {
-        return <p>0</p>
+        return <>0</>
       } else {
         return (
           <div style={{ display: 'flex' }}>
@@ -138,8 +142,8 @@ const columns: TableColumn[] = [
             <ElButton type="primary" link onClick={() => viewData(data)}>
               数据
             </ElButton>
-            <ElButton type="primary" link onClick={() => editData(data)}>
-              编辑
+            <ElButton type="danger" link onClick={() => delData(data)}>
+              删除
             </ElButton>
           </div>
         )
@@ -178,9 +182,14 @@ const viewData = (data) => {
   })
 }
 //编辑
-const editData = (data) => {
-  console.log(data)
-  extensionFn()
+const delLoading = ref(false)
+const delData = async (data) => {
+  const elTableExpose = await getElTableExpose()
+  ids.value = data ? [data.row.id] : elTableExpose?.getSelectionRows().map((v) => v.id) || []
+  delLoading.value = true
+  await delList(unref(ids).length).finally(() => {
+    delLoading.value = false
+  })
 }
 //多选
 const ids = ref([])
@@ -191,7 +200,7 @@ const clearSelection = async () => {
 }
 const getSelectedIds = async () => {
   const elTableRef = await getElTableExpose()
-  ids.value = elTableRef?.getSelectionRows().map((i) => i.taskID - 0)
+  ids.value = elTableRef?.getSelectionRows().map((i) => i.id)
 }
 watch(isCheckedAll, () => {
   clearSelection()

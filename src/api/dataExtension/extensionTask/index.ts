@@ -13,6 +13,12 @@ export const addApi = (data: any) => {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
 }
+export const delApi = (data: any) => {
+  return request.delete({
+    url: '/api/v1/data_extension/extension_task',
+    data
+  })
+}
 export const statisticsApi = (params: any) => {
   return request.get({
     url: '/api/v1/data_extension/extension_task/statistics',

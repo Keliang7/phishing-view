@@ -1,7 +1,7 @@
 import { useI18n } from '@/hooks/web/useI18n'
 import { Table, TableExpose, TableProps, TableSetProps, TableColumn } from '@/components/Table'
 import { ElTable, ElMessageBox, ElMessage } from 'element-plus'
-import { ref, watch, unref, nextTick, onMounted } from 'vue'
+import { h, ref, watch, unref, nextTick, onMounted } from 'vue'
 
 const { t } = useI18n()
 
@@ -148,20 +148,36 @@ export const useTable = (config: UseTableConfig) => {
     //   // to do something
     // }
     // 删除数据
-    delList: async (idsLength: number) => {
+    delList: async (idsLength: number, isWhiteList: boolean = false) => {
+      console.log(idsLength)
       const { fetchDelApi } = config
       if (!fetchDelApi) {
         console.warn('fetchDelApi is undefined')
         return
       }
-      ElMessageBox.confirm(t('common.delMessage'), t('common.delWarning'), {
-        confirmButtonText: t('common.delOk'),
-        cancelButtonText: t('common.delCancel'),
-        type: 'warning'
-      }).then(async () => {
+      ElMessageBox.confirm(
+        h('p', null, [
+          h('span', null, t('common.delMessage')),
+          isWhiteList
+            ? h(
+                'i',
+                {
+                  style: 'color: #32AA9F'
+                },
+                '(系统内置规则不会被删除)'
+              )
+            : ''
+        ]),
+        t('common.delWarning'),
+        {
+          confirmButtonText: t('common.delOk'),
+          cancelButtonText: t('common.delCancel'),
+          type: 'warning'
+        }
+      ).then(async () => {
         const res = await fetchDelApi()
         if (res) {
-          ElMessage.success(t('common.delSuccess'))
+          ElMessage.success(isWhiteList ? '操作成功' : t('common.delSuccess'))
 
           // 计算出临界点
           const current =

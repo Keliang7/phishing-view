@@ -99,7 +99,7 @@ const confirmClick = async () => {
         if (res.code == 0) {
           loading.value = false
           close().then(() => {
-            ElMessage.success('导入文件成功')
+            ElMessage.success('文件导入成功，系统正在读取数据...')
           })
         }
       }
