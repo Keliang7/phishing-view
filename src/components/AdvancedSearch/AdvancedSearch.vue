@@ -90,7 +90,7 @@ let schema = ref<FormSchema[]>([
     }
   },
   {
-    field: 'extstatus',
+    field: 'fmStatus',
     label: '状态：',
     component: 'Select',
     componentProps: {

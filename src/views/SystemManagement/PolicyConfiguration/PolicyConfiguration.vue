@@ -147,7 +147,7 @@ const delData = async (data) => {
     ? [data.row.ruleContent]
     : elTableExpose?.getSelectionRows().map((v) => v.ruleContent) || []
   delLoading.value = true
-  await delList(unref(ids).length).finally(() => {
+  await delList(unref(ids).length, true).finally(() => {
     delLoading.value = false
   })
 }
