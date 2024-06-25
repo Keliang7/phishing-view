@@ -10,9 +10,7 @@ import AdvancedSearch from '@/components/AdvancedSearch/AdvancedSearch.vue'
 import TableTop from '@/components/TableTop/TableTop.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
-import { useRoute } from 'vue-router'
-import { useRouter } from 'vue-router'
-
+import { useRoute, useRouter } from 'vue-router'
 const router = useRouter()
 const { tableRegister, tableMethods, tableState } = useTable({
   immediate: true,

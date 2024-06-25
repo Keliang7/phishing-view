@@ -104,7 +104,7 @@ const tableColumns: TableColumn[] = [
     label: '任务耗时',
     formatter: (data) => {
       if (!data.taskUseTime) {
-        return <p>0</p>
+        return <div>0</div>
       } else {
         return (
           <div style={{ display: 'flex' }}>
