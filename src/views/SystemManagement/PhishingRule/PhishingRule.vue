@@ -23,6 +23,7 @@ import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import PhishingRuleOperate from '@/components/PhishingRuleOperate/PhishingRuleOperate.vue'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
 import { useRoute } from 'vue-router'
+import router from '@/router'
 const { t } = useI18n()
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
@@ -89,7 +90,16 @@ const ruleColumns: TableColumn[] = [
   {
     field: 'count',
     label: '疑似仿冒数据量',
-    width: 140
+    width: 140,
+    slots: {
+      default: (data) => {
+        return (
+          <ElButton type="primary" link onClick={() => goCounterfeit(data.row.id)}>
+            {data.row.count}
+          </ElButton>
+        )
+      }
+    }
   },
   {
     field: 'featureName',
@@ -202,7 +212,16 @@ const visualColumns: TableColumn[] = [
     label: '疑似仿冒数据量',
     width: 140,
     headerAlign: 'center',
-    align: 'center'
+    align: 'center',
+    slots: {
+      default: (data) => {
+        return (
+          <ElButton type="primary" link onClick={() => goCounterfeit(data.row.id)}>
+            {data.row.count}
+          </ElButton>
+        )
+      }
+    }
   },
   {
     field: 'address',
@@ -511,6 +530,16 @@ const exportFn = async () => {
 }
 //导入
 const isUploadFileDrawer = ref(false)
+//疑似仿冒数据量 点击事件
+const goCounterfeit = (id) => {
+  router.push({
+    name: 'CounterfeitManagement',
+    query: {
+      featureNumber: id
+    }
+  })
+}
+
 //仿冒检测特征增删改
 const operateTitle = ref('')
 const isOperateDrawer = ref(false)
