@@ -14,12 +14,14 @@ import {
   ElRow,
   ElCol,
   ElMessage,
-  ElTooltip
+  ElTooltip,
+  ElPopover
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
 import { Table, TableColumn } from '@/components/Table'
 import { getListApi, statisticsApi, exportApi } from '@/api/dataManagement/counterfeitManagement'
 import { backtrackApi, joinSampApi } from '@/api/dataManagement'
+import { getDetailByIdApi } from '@/api/systemManagement/PhishingRule'
 import { useTable } from '@/hooks/web/useTable'
 import { formatTime } from '@/utils/index'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
@@ -112,13 +114,60 @@ const Columns: TableColumn[] = [
   },
   {
     field: 'featureNumber',
-    label: t('tableDemo.featureNumber'),
+    label: '特征ID',
     align: 'center',
+    slots: {
+      default(data) {
+        return (
+          <ElPopover placement="left" width={'fitContent'}>
+            {{
+              default: () => {
+                if (featureContentObj.value[data.row.featureNumber]) {
+                  return (
+                    <div>
+                      {featureContentObj.value[data.row.featureNumber].map((item) => (
+                        <div key={item.id}>
+                          <div>
+                            <b>特征ID：</b>
+                            {item.id}
+                          </div>
+                          <div>
+                            <b>特征名称：</b>
+                            {item.name}
+                          </div>
+                          <div class="mb-12px max-w-400px">
+                            <b>特征内容：</b>
+                            {item.content}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                }
+              },
+              reference: () => {
+                return (
+                  <div onMouseenter={() => featureMouseEnter(data.row.featureNumber)}>
+                    <ElButton
+                      link
+                      type="primary"
+                      onClick={() => featureDetail(data.row.featureNumber)}
+                    >
+                      {data.row.featureNumber}
+                    </ElButton>
+                  </div>
+                )
+              }
+            }}
+          </ElPopover>
+        )
+      }
+    },
     width: 90
   },
   {
     field: 'featureMatch',
-    label: t('tableDemo.featureMatch'),
+    label: '特征名称',
     width: 130
   },
   {
@@ -312,7 +361,24 @@ const setActiveNameS = (name) => {
 onMounted(async () => {
   await setTableSide({ tableName: unref(activeNameH) })
 })
-
+//特征ID鼠标进入
+const featureContentObj = ref({})
+const featureMouseEnter = async (featureNumber) => {
+  if (!featureContentObj.value[featureNumber]) {
+    //查询，并存一下
+    let res = await getDetailByIdApi({ ids: featureNumber })
+    featureContentObj.value[featureNumber] = res.data.list
+  }
+}
+//特征ID跳转
+const featureDetail = (featureNumber) => {
+  router.push({
+    name: 'PhishingRule',
+    query: {
+      featureNumber
+    }
+  })
+}
 //数据源
 const isDataSource = ref(false)
 const dataSourceData = ref()
@@ -441,7 +507,16 @@ const changeSpan = (collapse: boolean) => {
 <template>
   <AdvancedSearch
     :title="t('tableDemo.CounterfeitManagement')"
-    :dataArray="['url', 'domain', 'ip', 'extstatus', 'victim', 'discoveryTime']"
+    :dataArray="[
+      'url',
+      'domain',
+      'ip',
+      'extstatus',
+      'victim',
+      'discoveryTime',
+      'featureNumber',
+      'featureMatch'
+    ]"
     :tipTitle="'系统默认展示当天接入数据，最多可查看5年内数据，超出5年数据不会留存。'"
     @search-data="searchTable"
   />

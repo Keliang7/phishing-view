@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref, reactive, unref, watch, onMounted } from 'vue'
+import { ref, reactive, unref, watch, onMounted, onBeforeMount } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElTabs, ElTabPane, ElButton, ElCheckbox, ElMessage, ElMessageBox } from 'element-plus'
@@ -22,6 +22,7 @@ import UploadFile from '@/components/UploadFile/UploadFile.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import PhishingRuleOperate from '@/components/PhishingRuleOperate/PhishingRuleOperate.vue'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
+import { useRoute } from 'vue-router'
 const { t } = useI18n()
 const { tableRegister, tableMethods, tableState } = useTable({
   fetchDataApi: async () => {
@@ -44,6 +45,18 @@ const dataArray = ref([
 ])
 let { loading, total, dataList, currentPage, pageSize } = tableState
 const { getList, setProps, getElTableExpose } = tableMethods
+
+//跳转过来的逻辑
+const setValue = ref()
+onBeforeMount(() => {
+  // 在组件挂载之前执行的逻辑
+  const route = useRoute()
+  if (route.query && route.query.featureNumber) {
+    const id = route.query.featureNumber
+    setValue.value = { id }
+    searchData.value = { id }
+  }
+})
 // tableTop
 const tabColumns = [
   {
@@ -573,6 +586,7 @@ onMounted(() => {
   <AdvancedSearch
     :title="'仿冒检测规则管理'"
     :total="total"
+    :set-value="setValue"
     :dataArray="dataArray"
     :isTip="false"
     @search-data="searchTable"

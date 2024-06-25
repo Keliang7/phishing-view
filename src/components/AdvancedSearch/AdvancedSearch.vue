@@ -559,6 +559,28 @@ let schema = ref<FormSchema[]>([
     }
   },
   {
+    field: 'featureNumber',
+    label: `特征ID：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入特征ID'
+    },
+    colProps: {
+      span: 6
+    }
+  },
+  {
+    field: 'featureMatch',
+    label: `特征名称：`,
+    component: 'Input',
+    componentProps: {
+      placeholder: '请输入特征名称'
+    },
+    colProps: {
+      span: 6
+    }
+  },
+  {
     field: 'id', //目前使用的地方只有系统管理-仿冒检查规则管理/复核，0620，featureID=>id
     label: `${t('formDemo.featureID')}：`,
     component: 'Input',

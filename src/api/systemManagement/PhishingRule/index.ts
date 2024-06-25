@@ -38,3 +38,8 @@ export const deleteSampleApi = (params: any) => {
 export const intoVisualLabApi = (params: any) => {
   return request.post({ url: '/api/v1/visual_analysis', data: params })
 }
+
+//用在仿冒数据管理
+export const getDetailByIdApi = (params) => {
+  return request.get({ url: '/api/v1/phishing_rule/id', params })
+}
