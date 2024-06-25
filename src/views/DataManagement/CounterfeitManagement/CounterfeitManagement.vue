@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref, unref, watch, h, onMounted } from 'vue'
+import { ref, unref, watch, h, onMounted, onBeforeMount } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ContentWrap } from '@/components/ContentWrap'
 import {
@@ -34,6 +34,7 @@ import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import Backtrack from '@/components/Backtrack/Backtrack.vue'
 import SelectData from '@/components/SelectData/SelectData.vue'
 import DataSource from '@/components/DataSource/DataSource.vue'
+import { useRoute } from 'vue-router'
 const { t } = useI18n()
 const { tableRegister, tableMethods, tableState } = useTable({
   immediate: false,
@@ -53,6 +54,17 @@ const { tableRegister, tableMethods, tableState } = useTable({
 })
 const { loading, total, dataList, currentPage, pageSize } = tableState
 const { getElTableExpose, getList } = tableMethods
+
+const setValue = ref()
+onBeforeMount(() => {
+  // 在组件挂载之前执行的逻辑
+  const route = useRoute()
+  if (route.query && route.query.featureNumber) {
+    const featureNumber = route.query.featureNumber
+    setValue.value = { featureNumber }
+    searchData.value = { featureNumber }
+  }
+})
 const Columns: TableColumn[] = [
   {
     field: 'selection',
@@ -507,6 +519,7 @@ const changeSpan = (collapse: boolean) => {
 <template>
   <AdvancedSearch
     :title="t('tableDemo.CounterfeitManagement')"
+    :set-value="setValue"
     :dataArray="[
       'url',
       'domain',
