@@ -882,7 +882,7 @@ onMounted(() => {
           <el-table-column prop="issuanceMethod" label="下发方式" />
           <el-table-column width="90" label="操作">
             <div
-              v-if="extensionData.taskId"
+              v-if="extensionData.taskID"
               class="text-blue select-none cursor-pointer"
               @click="
                 router.push({ name: 'ExtensionResult', query: { taskID: extensionData.taskID } })
