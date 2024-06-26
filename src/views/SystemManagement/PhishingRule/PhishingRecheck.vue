@@ -22,15 +22,6 @@ const { tableRegister, tableMethods, tableState } = useTable({
 })
 let { loading, total, dataList, currentPage, pageSize } = tableState
 const { getList, addColumn, delColumn } = tableMethods
-// 高级搜索的数据
-const searchData = ref({})
-const searchTable = async (value) => {
-  searchData.value = value
-  await getTableData(activeName.value)
-}
-// 定义分页器展示的内容
-const layout = 'prev, pager, next, sizes,jumper,->, total'
-
 const columns: TableColumn[] = [
   {
     field: 'selection',
@@ -133,6 +124,17 @@ const editTabelColumn = (type) => {
     })
   }
 }
+// 高级搜索的数据
+const AdvancedSearchRef = ref<InstanceType<typeof AdvancedSearch>>()
+const clearSearch = async () => {
+  searchData.value = {}
+  await AdvancedSearchRef.value?.verifyReset()
+}
+const searchData = ref({})
+const searchTable = async (value) => {
+  searchData.value = value
+  await getTableData(activeName.value)
+}
 //获取数据
 const getTableData = async (params) => {
   loading.value = true
@@ -163,6 +165,7 @@ const tabHeadColumns = [
 ]
 const activeName = ref(tabHeadColumns[0].name)
 const handleClick = async (tab) => {
+  await clearSearch()
   editTabelColumn(tab.props.name)
   currentPage.value = 1
   pageSize.value = 10
@@ -181,6 +184,7 @@ const recheckOrViewFn = async (data, title) => {
 </script>
 <template>
   <AdvancedSearch
+    ref="AdvancedSearchRef"
     :title="'仿冒检测特征复核'"
     :total="total"
     :dataArray="[
@@ -220,7 +224,7 @@ const recheckOrViewFn = async (data, title) => {
       :loading="loading"
       :pagination="{
         total: total,
-        layout: layout
+        layout: 'prev, pager, next, sizes,jumper,->, total'
       }"
       @register="tableRegister"
     />

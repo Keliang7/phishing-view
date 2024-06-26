@@ -733,6 +733,9 @@ const searchFn = async () => {
   }
   emit('search-data', searchData)
 }
+defineExpose({
+  verifyReset
+})
 </script>
 <template>
   <ContentWrap class="advance-search" style="margin-bottom: 20px">

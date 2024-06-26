@@ -98,13 +98,15 @@ const actionFn = async (data: TableSlotDefault) => {
     <Table
       v-model:pageSize="pageSize"
       v-model:currentPage="currentPage"
+      :max-height="600"
       :columns="columns"
       :data="dataList"
       row-key="id"
       :loading="loading"
       sortable
       :pagination="{
-        total: total
+        total: total,
+        layout: 'prev, pager, next, sizes,jumper,->, total'
       }"
       @register="tableRegister"
     />
