@@ -113,7 +113,7 @@ const resultColumns: TableColumn[] = [
   },
   {
     field: 'netStatusCode',
-    label: '网页状态码',
+    label: '网络状态码',
     width: 120,
     headerAlign: 'center',
     align: 'center'

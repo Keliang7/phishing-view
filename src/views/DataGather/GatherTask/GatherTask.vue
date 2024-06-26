@@ -185,8 +185,8 @@ const stopTask = async (data) => {
   const res = await stopApi(data.row.taskID)
   if (res.code === 0) {
     ElMessage.success('停止任务成功')
+    getList()
   }
-  console.log(res)
 }
 
 //多选

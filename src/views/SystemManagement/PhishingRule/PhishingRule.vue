@@ -444,6 +444,7 @@ const setTable = async (tableName) => {
   setProps({
     columns: temp[tableName]
   })
+  await clearSearch()
   dataArray.value = dataArrayMap[tableName] || []
   await getList()
   loading.value = false
@@ -465,6 +466,11 @@ const openDrawerInfo = (data) => {
   bodyInfo.value = [{ name: '网页信息', value: data.row.webInfo }]
 }
 // 高级搜索功能，接收从AdvancedSearch组件中传过来的数据
+const AdvancedSearchRef = ref<InstanceType<typeof AdvancedSearch>>()
+const clearSearch = async () => {
+  searchData.value = {}
+  await AdvancedSearchRef.value?.verifyReset()
+}
 const searchData = ref({})
 const dataArrayMap = {
   ruleColumns: [
@@ -613,6 +619,7 @@ onMounted(() => {
 </script>
 <template>
   <AdvancedSearch
+    ref="AdvancedSearchRef"
     :title="'仿冒检测规则管理'"
     :total="total"
     :set-value="setValue"

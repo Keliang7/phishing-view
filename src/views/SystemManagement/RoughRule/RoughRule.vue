@@ -242,7 +242,12 @@ const disableData = async (data) => {
       @register="tableRegister"
     />
   </ContentWrap>
-  <AddData v-model:isDrawer="isDrawerAddData" :title="'添加粗放规则'" @get-data="getList" />
+  <AddData
+    v-if="isDrawerAddData"
+    v-model:isDrawer="isDrawerAddData"
+    :title="'添加粗放规则'"
+    @get-data="getList"
+  />
   <UploadFile
     v-if="isDrawerUploadFile"
     v-model:isDrawer="isDrawerUploadFile"

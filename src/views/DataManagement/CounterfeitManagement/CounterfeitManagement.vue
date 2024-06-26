@@ -347,7 +347,14 @@ const tabHeadColumns = [
   }
 ]
 const activeNameH = ref(tabHeadColumns[0].name)
+const AdvancedSearchRef = ref<InstanceType<typeof AdvancedSearch>>()
+const clearSearch = async () => {
+  searchData.value = {}
+  await AdvancedSearchRef.value?.verifyReset()
+}
 const setActiveNameH = async (name) => {
+  await clearSearch() //清搜索
+  activeNameS.value = null
   activeNameH.value = name
 }
 //tableSide
@@ -518,6 +525,7 @@ const changeSpan = (collapse: boolean) => {
 </script>
 <template>
   <AdvancedSearch
+    ref="AdvancedSearchRef"
     :title="t('tableDemo.CounterfeitManagement')"
     :set-value="setValue"
     :dataArray="[

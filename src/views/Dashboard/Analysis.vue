@@ -175,7 +175,20 @@ const pieOptions: EChartsOption = {
       radius: ['40%', '70%'],
       center: ['50%', '60%'],
       bottom: 30,
-      color: ['#2465FA', '#1BB9B9', '#29369D', '#FFB227', '#18C6FC', '#551EEE']
+      color: [
+        '#2465FA',
+        '#1BB9B9',
+        '#29369D',
+        '#FFB227',
+        '#18C6FC',
+        '#551EEE',
+        '#9C4EF6',
+        '#5A72FF',
+        '#68D8D6',
+        '#6FB1FC',
+        '#8D92C6',
+        '#93C9FF'
+      ]
     }
   ]
 }
@@ -230,7 +243,20 @@ const pieOptions2: EChartsOption = {
       center: ['50%', '60%'],
       bottom: 30,
       data: [],
-      color: ['#2465FA', '#1BB9B9', '#29369D', '#FFB227', '#18C6FC', '#551EEE']
+      color: [
+        '#2465FA',
+        '#1BB9B9',
+        '#29369D',
+        '#FFB227',
+        '#18C6FC',
+        '#551EEE',
+        '#9C4EF6',
+        '#5A72FF',
+        '#68D8D6',
+        '#6FB1FC',
+        '#8D92C6',
+        '#93C9FF'
+      ]
     }
   ]
 }
@@ -419,6 +445,9 @@ const getCategoryOptions = async (type) => {
       },
       yAxis: {
         type: 'value'
+      },
+      tooltip: {
+        trigger: 'axis'
       },
       series: [
         {

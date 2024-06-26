@@ -13,7 +13,9 @@ import DataSource from '@/components/DataSource/DataSource.vue'
 import DrawerInfo from '@/components/DrawerInfo/DrawerInfo.vue'
 import ExportFile from '@/components/ExportFile/ExportFile.vue'
 import DataExtension from '@/components/DataExtension/DataExtension.vue'
+import Backtrack from '@/components/Backtrack/Backtrack.vue'
 import { useI18n } from '@/hooks/web/useI18n'
+import { backtrackApi } from '@/api/dataManagement'
 const { t } = useI18n()
 const { tableRegister, tableMethods, tableState } = useTable({
   immediate: false,
@@ -55,7 +57,14 @@ const columns: TableColumn[] = [
   {
     field: 'wrongReason',
     label: '误报原因',
-    width: 200
+    width: 200,
+    formatter(data) {
+      return (
+        <ElButton type="primary" link onClick={() => backtrackFn(data.dataID)}>
+          {data.wrongReason}
+        </ElButton>
+      )
+    }
   },
   {
     field: 'dataID',
@@ -218,6 +227,11 @@ const columns: TableColumn[] = [
   }
 ]
 // 高级搜索
+const AdvancedSearchRef = ref<InstanceType<typeof AdvancedSearch>>()
+const clearSearch = async () => {
+  searchData.value = {}
+  await AdvancedSearchRef.value?.verifyReset()
+}
 const dataArray = ref(['url', 'domain', 'ip', 'discoveryTime', 'victim'])
 const searchData = ref({})
 const searchTable = async (value) => {
@@ -248,6 +262,8 @@ const tabHeadColumns = [
 ]
 const activeNameH = ref(tabHeadColumns[0].name)
 const setActiveNameH = async (name) => {
+  await clearSearch() //清搜索
+  activeNameS.value = null
   activeNameH.value = name
 }
 //tableSide
@@ -255,8 +271,13 @@ const tabSideColumns = ref()
 const activeNameS = ref()
 const setTableSide = async (params) => {
   const res = await statisticsApi(params)
-  tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
-  setActiveNameS(tabSideColumns.value[0].name)
+  if (res.data.list.length) {
+    tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
+    setActiveNameS(tabSideColumns.value[0].name)
+  } else {
+    tabSideColumns.value = []
+    getList()
+  }
 }
 watch([searchData, activeNameH], ([newSearchData, newActiveNameH]) =>
   setTableSide({ ...newSearchData, tableName: newActiveNameH })
@@ -304,6 +325,14 @@ const isDataExtension = ref(false)
 const extensionFn = () => {
   isDataExtension.value = true
 }
+//误报原因（回溯）
+const isBacktrack = ref(false)
+const backtrackData = ref()
+const backtrackFn = async (dataID) => {
+  const res = await backtrackApi({ id: dataID })
+  backtrackData.value = res
+  isBacktrack.value = true
+}
 // 查看网页信息
 const isDrawerInfo = ref(false)
 const titleDrawer = ref('')
@@ -338,6 +367,7 @@ const changeSpan = (collapse: boolean) => {
 </script>
 <template>
   <AdvancedSearch
+    ref="AdvancedSearchRef"
     :dataArray="dataArray"
     :total="total"
     :title="'误报数据管理'"
@@ -409,5 +439,6 @@ const changeSpan = (collapse: boolean) => {
       }
     "
   />
+  <Backtrack v-model:isDrawer="isBacktrack" :title="'误报原因'" :backtrackData="backtrackData" />
 </template>
 <style scoped></style>

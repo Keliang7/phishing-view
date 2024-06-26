@@ -31,7 +31,7 @@ const open = () => {
     custom-class="drawerWidth"
     @open="open"
   >
-    <p>{{ backtrackData?.data.suggestion }}</p>
+    <p>{{ backtrackData?.data.suggestion || '优化建议：' + backtrackData?.data.suggestion }}</p>
     <p>溯源过程：</p>
     <ElTimeline>
       <el-timeline-item
