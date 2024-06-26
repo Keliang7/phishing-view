@@ -125,11 +125,6 @@ const editTabelColumn = (type) => {
   }
 }
 // 高级搜索的数据
-const AdvancedSearchRef = ref<InstanceType<typeof AdvancedSearch>>()
-const clearSearch = async () => {
-  searchData.value = {}
-  await AdvancedSearchRef.value?.verifyReset()
-}
 const searchData = ref({})
 const searchTable = async (value) => {
   searchData.value = value
@@ -165,7 +160,6 @@ const tabHeadColumns = [
 ]
 const activeName = ref(tabHeadColumns[0].name)
 const handleClick = async (tab) => {
-  await clearSearch()
   editTabelColumn(tab.props.name)
   currentPage.value = 1
   pageSize.value = 10
@@ -184,7 +178,6 @@ const recheckOrViewFn = async (data, title) => {
 </script>
 <template>
   <AdvancedSearch
-    ref="AdvancedSearchRef"
     :title="'仿冒检测特征复核'"
     :total="total"
     :dataArray="[

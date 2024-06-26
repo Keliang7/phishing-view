@@ -157,7 +157,7 @@ const activeNameS = ref()
 const setTableSide = async (searchParams) => {
   const res = await statisticsApi(searchParams)
   tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
-  setActiveNameS(tabSideColumns.value[0].name)
+  setActiveNameS(tabSideColumns.value[0]?.name)
 }
 const setActiveNameS = (name) => {
   activeNameS.value = name

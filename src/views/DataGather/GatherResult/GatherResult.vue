@@ -88,7 +88,7 @@ const resultColumns: TableColumn[] = [
     width: 200
   },
   {
-    field: 'info',
+    field: 'webInfo',
     label: '网页信息',
     headerAlign: 'center',
     align: 'center',

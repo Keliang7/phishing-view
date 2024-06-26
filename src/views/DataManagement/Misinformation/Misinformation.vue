@@ -227,11 +227,6 @@ const columns: TableColumn[] = [
   }
 ]
 // 高级搜索
-const AdvancedSearchRef = ref<InstanceType<typeof AdvancedSearch>>()
-const clearSearch = async () => {
-  searchData.value = {}
-  await AdvancedSearchRef.value?.verifyReset()
-}
 const dataArray = ref(['url', 'domain', 'ip', 'discoveryTime', 'victim'])
 const searchData = ref({})
 const searchTable = async (value) => {
@@ -262,8 +257,6 @@ const tabHeadColumns = [
 ]
 const activeNameH = ref(tabHeadColumns[0].name)
 const setActiveNameH = async (name) => {
-  await clearSearch() //清搜索
-  activeNameS.value = null
   activeNameH.value = name
 }
 //tableSide
@@ -271,13 +264,8 @@ const tabSideColumns = ref()
 const activeNameS = ref()
 const setTableSide = async (params) => {
   const res = await statisticsApi(params)
-  if (res.data.list.length) {
-    tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
-    setActiveNameS(tabSideColumns.value[0].name)
-  } else {
-    tabSideColumns.value = []
-    getList()
-  }
+  tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
+  setActiveNameS(tabSideColumns.value[0]?.name)
 }
 watch([searchData, activeNameH], ([newSearchData, newActiveNameH]) =>
   setTableSide({ ...newSearchData, tableName: newActiveNameH })
@@ -367,7 +355,6 @@ const changeSpan = (collapse: boolean) => {
 </script>
 <template>
   <AdvancedSearch
-    ref="AdvancedSearchRef"
     :dataArray="dataArray"
     :total="total"
     :title="'误报数据管理'"

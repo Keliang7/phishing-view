@@ -586,7 +586,6 @@ const setTable = async (tableName) => {
     TLS: TLSColumns,
     Ext: ExtColumns
   }
-  await clearSearch()
   setProps({
     columns: temp[tableName]
   })
@@ -604,11 +603,6 @@ const setTable = async (tableName) => {
     .slice(1, -1)
 }
 //search
-const AdvancedSearchRef = ref<InstanceType<typeof AdvancedSearch>>()
-const clearSearch = async () => {
-  searchData.value = {}
-  await AdvancedSearchRef.value?.verifyReset()
-}
 const searchData = ref({})
 const searchTable = async (value) => {
   searchData.value = value
@@ -688,7 +682,6 @@ const exportFn = async () => {
 </script>
 <template>
   <AdvancedSearch
-    ref="AdvancedSearchRef"
     :title="t('tableDemo.pendUrl')"
     :dataArray="['url', 'domain', 'ip', 'collectionStatus', 'discoveryTime']"
     :tipTitle="'系统默认展示当天接入数据，最多可查看7天内数据，超出7天数据不会留存。'"
