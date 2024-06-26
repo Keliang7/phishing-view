@@ -55,16 +55,6 @@ const { tableRegister, tableMethods, tableState } = useTable({
 const { loading, total, dataList, currentPage, pageSize } = tableState
 const { getElTableExpose, getList } = tableMethods
 
-const setValue = ref()
-onBeforeMount(() => {
-  // 在组件挂载之前执行的逻辑
-  const route = useRoute()
-  if (route.query && route.query.featureNumber) {
-    const featureNumber = route.query.featureNumber
-    setValue.value = { featureNumber }
-    searchData.value = { featureNumber }
-  }
-})
 const Columns: TableColumn[] = [
   {
     field: 'selection',
@@ -347,14 +337,7 @@ const tabHeadColumns = [
   }
 ]
 const activeNameH = ref(tabHeadColumns[0].name)
-const AdvancedSearchRef = ref<InstanceType<typeof AdvancedSearch>>()
-const clearSearch = async () => {
-  searchData.value = {}
-  await AdvancedSearchRef.value?.verifyReset()
-}
 const setActiveNameH = async (name) => {
-  await clearSearch() //清搜索
-  activeNameS.value = null
   activeNameH.value = name
 }
 //tableSide
@@ -362,13 +345,8 @@ const tabSideColumns = ref()
 const activeNameS = ref()
 const setTableSide = async (params) => {
   const res = await statisticsApi(params)
-  if (res.data.list.length) {
-    tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
-    setActiveNameS(tabSideColumns.value[0].name)
-  } else {
-    tabSideColumns.value = []
-    getList()
-  }
+  tabSideColumns.value = res.data.list.sort((a, b) => b.count - a.count)
+  setActiveNameS(tabSideColumns.value[0]?.name)
 }
 watch([searchData, activeNameH], ([newSearchData, newActiveNameH]) =>
   setTableSide({ ...newSearchData, tableName: newActiveNameH })
@@ -377,8 +355,17 @@ const setActiveNameS = (name) => {
   activeNameS.value = name
   getList()
 }
+const setValue = ref()
+onBeforeMount(() => {
+  const route = useRoute()
+  if (route.query && route.query.featureNumber) {
+    const featureNumber = route.query.featureNumber
+    setValue.value = { featureNumber }
+    searchData.value = { featureNumber }
+  }
+})
 onMounted(async () => {
-  await setTableSide({ tableName: unref(activeNameH) })
+  if (!setValue.value) await setTableSide({ tableName: unref(activeNameH) })
 })
 //特征ID鼠标进入
 const featureContentObj = ref({})
